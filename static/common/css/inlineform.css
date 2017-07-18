@@ -1,0 +1,11 @@
+.inline-deletelink {
+    float: right;
+    text-indent: -9999px;
+    background: transparent url(../images/inline-delete.png) no-repeat;
+    width: 15px;
+    height: 15px;
+    border: 0px none;
+    outline: 0; /* Remove dotted border around link */
+}
+
+.deletefield { display: none; }
