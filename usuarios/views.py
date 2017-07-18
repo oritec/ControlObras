@@ -36,9 +36,8 @@ def ingresar(request, homepage):
             login(request, user)
             return HttpResponseRedirect(reverse(homepage))
     
-    return render_to_response('usuarios/login.html',
-          {'form': form},
-           context_instance=RequestContext(request))
+    return render(request,'usuarios/login.html',
+          {'form': form})
 
 # ========== Logout ==========
 def salir(request):

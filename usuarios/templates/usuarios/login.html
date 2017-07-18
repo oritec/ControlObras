@@ -18,34 +18,39 @@ License: You must have a valid license purchased only from themeforest(the above
 <!--<![endif]-->
 <!-- BEGIN HEAD -->
 <head>
-<meta charset="utf-8"/>
-<title>Sistema de gesti&oacute;n de Informaci&oacute;n ORITEC</title>
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<meta http-equiv="Content-type" content="text/html; charset=utf-8">
-<meta content="" name="description"/>
-<meta content="" name="author"/>
-<!-- BEGIN GLOBAL MANDATORY STYLES -->
-<link href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700&subset=all" rel="stylesheet" type="text/css"/>
-<link href="{% static 'common/assets/global/plugins/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css"/>
-<link href="{% static 'common/assets/global/plugins/simple-line-icons/simple-line-icons.min.css' %}" rel="stylesheet" type="text/css"/>
-<link href="{% static 'common/assets/global/plugins/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css"/>
-<link href="{% static 'common/assets/global/plugins/uniform/css/uniform.default.css' %}" rel="stylesheet" type="text/css"/>
-<link href="{% static 'common/assets/global/plugins/bootstrap-switch/css/bootstrap-switch.min.css' %}" rel="stylesheet" type="text/css"/>
-<!-- END GLOBAL MANDATORY STYLES -->
-<!-- BEGIN PAGE LEVEL STYLES -->
-<link href="{% static 'common/assets/global/plugins/select2/select2.css' %}" rel="stylesheet" type="text/css"/>
-<link href="{% static 'common/assets/admin/pages/css/login-soft.css' %}" rel="stylesheet" type="text/css"/>
-<!-- END PAGE LEVEL SCRIPTS -->
-<!-- BEGIN THEME STYLES -->
-<link href="{% static 'common/assets/global/css/components.css' %}" rel="stylesheet" type="text/css"/>
-<link href="{% static 'common/assets/global/css/plugins.css' %}" rel="stylesheet" type="text/css"/>
-<link href="{% static 'common/assets/admin/layout/css/layout.css' %}" rel="stylesheet" type="text/css"/>
-<link id="style_color" href="{% static 'common/assets/admin/layout/css/themes/default.css' %}" rel="stylesheet" type="text/css"/>
-<link href="{% static 'common/assets/admin/layout/css/custom.css' %}" rel="stylesheet" type="text/css"/>
-<!-- END THEME STYLES -->
-<link rel="shortcut icon" href="favicon.ico"/>
+    <meta charset="utf-8"/>
+    <title>Saroen Global | Sistema </title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta content="" name="description"/>
+    <meta content="" name="author"/>
+    <!-- BEGIN GLOBAL MANDATORY STYLES -->
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700&subset=all" rel="stylesheet" type="text/css"/>
+
+    <link href="{% static 'common/assets/global/plugins/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/assets/global/plugins/simple-line-icons/simple-line-icons.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/assets/global/plugins/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/assets/global/plugins/bootstrap-switch/css/bootstrap-switch.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END GLOBAL MANDATORY STYLES -->
+    <!-- BEGIN PAGE LEVEL PLUGINS -->
+    <link href="{% static 'common/assets/global/plugins/select2/css/select2.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/assets/global/plugins/select2/css/select2-bootstrap.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL PLUGINS -->
+    <!-- BEGIN THEME GLOBAL STYLES -->
+    <link href="{% static 'common/assets/global/css/components.min.css' %}" rel="stylesheet" id="style_components" type="text/css" />
+    <link href="{% static 'common/assets/global/css/plugins.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END THEME GLOBAL STYLES -->
+    <!-- BEGIN PAGE LEVEL STYLES -->
+    <link href="{% static 'common/assets/pages/css/login-4.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL STYLES -->
+    <!-- BEGIN THEME LAYOUT STYLES -->
+    <!-- END THEME LAYOUT STYLES -->
+    <link rel="shortcut icon" href="favicon.ico" />
 </head>
+<!-- END HEAD -->
+
+
 <!-- END HEAD -->
 <!-- BEGIN BODY -->
 <!-- DOC: Apply "page-header-fixed-mobile" and "page-footer-fixed-mobile" class to body element to force fixed header or footer in mobile devices -->
@@ -61,7 +66,7 @@ License: You must have a valid license purchased only from themeforest(the above
 <!-- BEGIN LOGO -->
 <div class="logo">
 	<a href="index.html">
-    <img src="{% static 'common/images/logotipo-ccrrt-70x35.png' %}" alt="logo" class="logo-default" style="margin-top:5px"/>	</a>
+    <img src="{% static 'common/images/saroen4.png' %}" alt="logo" class="logo-default" style="margin-top:5px"/>	</a>
 </div>
 <!-- END LOGO -->
 <!-- BEGIN SIDEBAR TOGGLER BUTTON -->
@@ -121,7 +126,7 @@ License: You must have a valid license purchased only from themeforest(the above
 <!-- END LOGIN -->
 <!-- BEGIN COPYRIGHT -->
 <div class="copyright">
-	 2015 &copy; Sistema de gesti&oacute;n de Informaci&oacute;n ORITEC
+	 {% now "Y" %} &copy; Saroen Global - Oritec SpA.
 </div>
 <!-- END COPYRIGHT -->
 <!-- BEGIN JAVASCRIPTS(Load javascripts at bottom, this will reduce page load time) -->
@@ -129,107 +134,105 @@ License: You must have a valid license purchased only from themeforest(the above
 <!--[if lt IE 9]>
 <script src="{% static 'common/assets/global/plugins/respond.min.js' %}"></script>
 <script src="{% static 'common/assets/global/plugins/excanvas.min.js' %}"></script>
+<script src="{% static 'common/assets/global/plugins/ie8.fix.min.js' %}"></script>
 <![endif]-->
-<script src="{% static 'common/assets/global/plugins/jquery.min.js' %}" type="text/javascript"></script>
-<script src="{% static 'common/assets/global/plugins/jquery-migrate.min.js' %}" type="text/javascript"></script>
-<!-- IMPORTANT! Load jquery-ui-1.10.3.custom.min.js before bootstrap.min.js to fix bootstrap tooltip conflict with jquery ui tooltip -->
-<script src="{% static 'common/assets/global/plugins/jquery-ui/jquery-ui-1.10.3.custom.min.js' %}" type="text/javascript"></script>
-<script src="{% static 'common/assets/global/plugins/bootstrap/js/bootstrap.min.js' %}" type="text/javascript"></script>
-<script src="{% static 'common/assets/global/plugins/bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js' %}" type="text/javascript"></script>
-<script src="{% static 'common/assets/global/plugins/jquery-slimscroll/jquery.slimscroll.min.js' %}" type="text/javascript"></script>
-<script src="{% static 'common/assets/global/plugins/jquery.blockui.min.js' %}" type="text/javascript"></script>
-<script src="{% static 'common/assets/global/plugins/jquery.cokie.min.js' %}" type="text/javascript"></script>
-<script src="{% static 'common/assets/global/plugins/uniform/jquery.uniform.min.js' %}" type="text/javascript"></script>
-<script src="{% static 'common/assets/global/plugins/bootstrap-switch/js/bootstrap-switch.min.js' %}" type="text/javascript"></script>
-<!-- END CORE PLUGINS -->
-<!-- BEGIN PAGE LEVEL PLUGINS -->
-<script src="{% static 'common/assets/global/plugins/jquery-validation/js/jquery.validate.min.js' %}" type="text/javascript"></script>
-<script src="{% static 'common/assets/global/plugins/backstretch/jquery.backstretch.min.js' %}" type="text/javascript"></script>
-<script type="text/javascript" src="{% static 'common/assets/global/plugins/select2/select2.min.js' %}"></script>
-<!-- END PAGE LEVEL PLUGINS -->
-<!-- BEGIN PAGE LEVEL SCRIPTS -->
-<script src="{% static 'common/assets/global/scripts/metronic.js' %}" type="text/javascript"></script>
-<script src="{% static 'common/assets/admin/layout/scripts/layout.js' %}" type="text/javascript"></script>
-<script src="{% static 'common/assets/admin/layout/scripts/quick-sidebar.js' %}" type="text/javascript"></script>
-<script src="{% static 'common/assets/admin/layout/scripts/demo.js' %}" type="text/javascript"></script>
-<script src="{% static 'common/assets/admin/pages/scripts/login-soft.js' %}" type="text/javascript"></script>
-<!-- END PAGE LEVEL SCRIPTS -->
-<script>
-jQuery(document).ready(function() {
-  Metronic.init(); // init metronic core components
-Layout.init(); // init current layout
-QuickSidebar.init(); // init quick sidebar
-Demo.init(); // init demo features
-  Login.init();
-       // init background slide images
-       $.backstretch([
-        "{% static 'common/assets/admin/pages/media/bg/1.jpg' %}",
-        "{% static 'common/assets/admin/pages/media/bg/2.jpg' %}",
-        "{% static 'common/assets/admin/pages/media/bg/3.jpg' %}",
-        "{% static 'common/assets/admin/pages/media/bg/4.jpg' %}"
-        ], {
-          fade: 1000,
-          duration: 8000
-    }
-    );
-});
-</script>
-<!-- END JAVASCRIPTS -->
-</body>
-<!-- END BODY -->
+    <!-- BEGIN CORE PLUGINS -->
+    <script src="{% static 'common/assets/global/plugins/jquery.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap/js/bootstrap.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/js.cookie.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/jquery-slimscroll/jquery.slimscroll.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/jquery.blockui.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-switch/js/bootstrap-switch.min.js' %}" type="text/javascript"></script>
+    <!-- END CORE PLUGINS -->
+    <!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="{% static 'common/assets/global/plugins/jquery-validation/js/jquery.validate.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/jquery-validation/js/additional-methods.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/select2/js/select2.full.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/backstretch/jquery.backstretch.min.js' %}" type="text/javascript"></script>
+    <!-- END PAGE LEVEL PLUGINS -->
+    <!-- BEGIN THEME GLOBAL SCRIPTS -->
+    <script src="{% static 'common/assets/global/scripts/app.min.js' %}" type="text/javascript"></script>
+    <!-- END THEME GLOBAL SCRIPTS -->
+    <!-- BEGIN THEME LAYOUT SCRIPTS -->
+    <!-- END THEME LAYOUT SCRIPTS -->
+
+    <script>
+
+        var handleLogin = function() {
+		    $('.login-form').validate({
+                errorElement: 'span', //default input error message container
+                errorClass: 'help-block', // default input error message class
+                focusInvalid: false, // do not focus the last invalid input
+                rules: {
+                    username: {
+                        required: true
+                    },
+                    password: {
+                        required: true
+                    },
+                },
+
+                messages: {
+                    username: {
+                        required: "Username is required."
+                    },
+                    password: {
+                        required: "Password is required."
+                    }
+                },
+
+                invalidHandler: function (event, validator) { //display error alert on form submit
+                    $('.alert-danger', $('.login-form')).show();
+                },
+
+                highlight: function (element) { // hightlight error inputs
+                    $(element)
+                        .closest('.form-group').addClass('has-error'); // set error class to the control group
+                },
+
+                success: function (label) {
+                    label.closest('.form-group').removeClass('has-error');
+                    label.remove();
+                },
+
+                errorPlacement: function (error, element) {
+                    error.insertAfter(element.closest('.input-icon'));
+                },
+
+                submitHandler: function (form) {
+                    form.submit();
+                }
+            });
+
+            $('.login-form input').keypress(function (e) {
+                if (e.which == 13) {
+                    if ($('.login-form').validate().form()) {
+                        $('.login-form').submit();
+                    }
+                    return false;
+                }
+            });
+        }
+
+        jQuery(document).ready(function() {
+            handleLogin();
+
+            // init background slide images
+		    $.backstretch([
+		        "{% static 'common/assets/pages/media/bg/1.jpg' %}",
+		        "{% static 'common/assets/pages/media/bg/2.jpg' %}",
+		        "{% static 'common/assets/pages/media/bg/3.jpg' %}",
+		        "{% static 'common/assets/pages/media/bg/4.jpg' %}"
+		        ], {
+		          fade: 1000,
+		          duration: 8000
+		    	}
+        	);
+        });
+    </script>
+    </body>
+
 </html>
-
-
-<!-- BEGIN SIDEBAR & CONTENT -->
-<!--<div class="row margin-bottom-40">
-  &lt;!&ndash; BEGIN SIDEBAR &ndash;&gt;
-  <div class="sidebar col-md-3 col-sm-3">
-  </div>
-  &lt;!&ndash; END SIDEBAR &ndash;&gt;
-&lt;!&ndash; BEGIN CONTENT &ndash;&gt;
-    <div class="col-md-9 col-sm-9">
-        <h1>Ingresar al Sistema</h1>
-        <div class="content-form-page">
-          <div class='row'>
-            <div class='col-md-7 col-sm-7'>
-                <form class="form-horizontal form-without-legend" method='post'>
-                    {% csrf_token %}
-                    {% for field in form %}
-                        <div class='form-group'>
-                        	<label class="col-lg-4 control-label">{{ field.label }} <span class='require'>*</span></label>
-                            <div class='col-lg-8'>
-                                {{ field }} {{ field.errors }}
-                            </div>
-                        </div>
-                    {% endfor %}
-                    <div class='row'>
-                      <div class='col-lg-8 col-md-offset-4 padding-left-0'>
-                        <a href='page-forgotton-password.html'>Recordar contraseña</a>
-                      </div>
-                    </div>
-                    <div class='row'>
-                          <div class='col-lg-8 col-md-offset-4 padding-left-0 padding-top-20'>
-                              <input type="submit" value="Login" class="btn btn-primary"/>
-                          </div>
-                    </div>
-                </form>
-            </div>
-
-
-            <div class="col-md-4 col-sm-4 pull-right">
-              <div class="form-info">
-                <h2><em>Important</em> Information</h2>
-                <p>Duis autem vel eum iriure at dolor vulputate velit esse vel molestie at dolore.</p>
-                <button type="button" class="btn btn-default">More details</button>
-              </div>
-            </div>
-          </div>
-        </div>
-    </div>
-&lt;!&ndash; END CONTENT &ndash;&gt;
-</div>-->
-
-
 
 
 
