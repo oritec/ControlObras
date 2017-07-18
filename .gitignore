@@ -124,3 +124,6 @@ Temporary Items
 
 /static/common/assets.zip
 .idea
+db.sqlite3
+usuarios/migrations/
+vista/migrations/
