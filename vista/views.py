@@ -42,6 +42,6 @@ def home(request,slug):
 def del_parque(request):
     if request.method == 'POST':
         if 'parque' in request.POST:
-            aux = ParqueSolar.objects.get(id=int(request.POST['parque']))
+            aux = ParqueSolar.objects.get(slug__exact=request.POST['parque'])
             aux.delete()
     return HttpResponseRedirect(reverse('vista:index'))
