@@ -36,9 +36,24 @@
 
 					<ul class="sub-menu">
 						<li class="nav-item " id="menu2-resumen">
-							<a href="/" class="nav-link ">
-								<i class="icon-bar-chart"></i>
-								<span class="title">Inicio</span>
+							<a href="{% url 'vista:home' parque.slug %}" class="nav-link ">
+								<i class="fa fa-info-circle"></i>
+								<span class="title">Informaci&oacute;n Parque</span>
+
+							</a>
+						</li>
+					</ul>
+
+                    <!--El resto de los menú solo se muestran si la configuración existe...-->
+
+                    {% if parque.no_aerogeneradores > 0 %}
+                    {% endif %}
+
+                    <ul class="sub-menu">
+						<li class="nav-item " id="menu2-configuracion">
+							<a href="{% url 'vista:configuracion' parque.slug %}" class="nav-link ">
+								<i class="fa fa-wrench"></i>
+								<span class="title">Configuraci&oacute;n</span>
 
 							</a>
 						</li>

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load customtags %}
+{% load tz %}
+{% block css %}
+    <!-- BEGIN PAGE LEVEL STYLES -->
+    <!-- END PAGE LEVEL STYLES -->
+{% endblock %}
+
+{% block contenido %}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-cogs"></i> Información del parque
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <form action="{% url 'vista:configuracion' parque.slug %}" class="horizontal-form" method="post">
+                    {% csrf_token %}
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">{{ form.nombre.label }}</label>
+                                    {{ form.nombre }}
+                                    <span class="help-block"> {{ form.nombre.errors }} </span>
+                                </div>
+                            </div>
+                            <!--/span-->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">{{ form.cliente.label }}</label>
+                                    {{ form.cliente }}
+                                    <span class="help-block"> {{ form.cliente.errors }} </span>
+                                </div>
+                            </div>
+                            <!--/span-->
+                        </div>
+                        <!--/row-->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">{{ form.suministrador.label }}</label>
+                                    {{ form.suministrador }}
+                                    <span class="help-block"> {{ form.suministrador.errors }} </span>
+                                </div>
+                            </div>
+                            <!--/span-->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">{{ form.plataforma.label }}</label>
+                                    {{ form.plataforma }}
+                                    <span class="help-block"> {{ form.plataforma.errors }} </span>
+                                </div>
+                            </div>
+                            <!--/span-->
+                        </div>
+                        <!--/row-->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">{{ form.no_aerogeneradores.label }}</label>
+                                    {{ form.no_aerogeneradores }}
+                                    <span class="help-block"> {{ form.no_aerogeneradores.errors }} </span>
+                                </div>
+                            </div>
+                            <!--/span-->
+                        </div>
+                        <!--/row-->
+                    </div>
+                    <div class="form-actions right">
+                        <button type="button" class="btn default">Cancelar</button>
+                        <button type="submit" class="btn blue">
+                            <i class="fa fa-check"></i> Guardar </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<!-- BEGIN PAGE LEVEL PLUGINS -->
+
+<!-- END PAGE LEVEL PLUGINS -->
+{% endblock %}
+
+{% block jquery %}
+
+
+{% endblock %}

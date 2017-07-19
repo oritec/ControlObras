@@ -1,14 +1,21 @@
 # -*- coding: utf-8 -*-
 from django import forms
 from models import ParqueSolar
-from django.template import defaultfilters
 
-class ParqueChoiceForm(forms.Form):
-    parque = forms.ModelChoiceField(queryset=ParqueSolar.objects.all(), empty_label=None)
-
+class ParqueFormFull(forms.ModelForm):
+    class Meta:
+        model = ParqueSolar
+        fields = ['nombre','cliente','suministrador','plataforma','no_aerogeneradores']
+        labels = {
+            'no_aerogeneradores': 'Nº de Aerogeneradores',
+        }
     def __init__(self, *args, **kwargs):
-        super(ParqueChoiceForm, self).__init__(*args, **kwargs)
-        self.fields['parque'].widget.attrs['class'] = 'selectpicker form-control'
+        super(ParqueFormFull, self).__init__(*args, **kwargs)
+        self.fields['nombre'].widget.attrs['class'] = 'form-control'
+        self.fields['cliente'].widget.attrs['class'] = 'form-control'
+        self.fields['suministrador'].widget.attrs['class'] = 'form-control'
+        self.fields['plataforma'].widget.attrs['class'] = 'form-control'
+        self.fields['no_aerogeneradores'].widget.attrs['class'] = 'form-control'
 
 class ParqueForm(forms.ModelForm):
     class Meta:
@@ -17,3 +24,5 @@ class ParqueForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ParqueForm, self).__init__(*args, **kwargs)
         self.fields['nombre'].widget.attrs['class'] = 'form-control'
+
+

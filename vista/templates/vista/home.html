@@ -10,19 +10,18 @@
 {% block contenido %}
 
 <div class="row">
-
-    <div class="col-md-12">
-        <div class="portlet">
-            <div class="portlet-title">
-                <div class="caption">
-                    <i class="fa fa-cogs"></i> Caption
-                </div>
-            </div>
-            <div class="portlet-body">
-
-            </div>
+    {% if parque.no_aerogeneradores == 0 %}
+        <div class="col-md-11 col-md-offset-1">
+            <h4>Por favor, ingresar la información del parque (Configuraci&oacute;n).</h4>
         </div>
+    {%  else %}
+    <div class="col-md-12">
+        <p><b>Cliente:</b>  {{ parque.cliente }}</p>
+        <p><b>Suministrador:</b> {{ parque.suministrador }}</p>
+        <p><b>Plataforma:</b> {{ parque.plataforma }}</p>
+        <p><b>Nº de Aerogeneradores:</b> {{ parque.no_aerogeneradores }}</p>
     </div>
+    {% endif %}
 
 </div>
 
