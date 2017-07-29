@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load customtags %}
+{% load tz %}
+{% block css %}
+    <!-- BEGIN PAGE LEVEL STYLES -->
+    <!-- END PAGE LEVEL STYLES -->
+{% endblock %}
+
+{% block contenido %}
+
+
+    {% if parque.no_aerogeneradores == 0 %}
+        <div class="row">
+            <div class="col-md-11 col-md-offset-1">
+                <h4>Por favor, ingresar la informaci&oacute;n del parque (Configuraci&oacute;n).</h4>
+            </div>
+        </div>
+    {%  else %}
+        <div class="row">
+            <div class="col-md-12">
+                <!-- BEGIN SAMPLE TABLE PORTLET-->
+                <div class="portlet box blue-soft">
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-comments"></i> Listado de observaciones
+                        </div>
+                    </div>
+                    <div class="portlet-body">
+                    {% if observaciones|length > 0 %}
+                        <div class="table-scrollable">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th> # </th>
+                                        {% if table_show_ag %} <th> Aerogenerador</th>{% endif %}
+                                        <th> Componente </th>
+                                        <th> Descripción </th>
+                                        <th> Acci&oacute;n </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for observacion in observaciones %}
+                                    <tr>
+                                        <td> {{ forloop.counter }}</td>
+                                        {% if table_show_ag %} <td> WTG{{ observacion.aerogenerador|stringformat:"02d" }}</td>{% endif %}
+                                        <td> {{ observacion.componente.nombre }} </td>
+                                        <td> {{ observacion.nombre }} </td>
+                                        <td>
+                                            <a href="{% url 'ncr:observaciones-show' parque.slug observacion.id %}" class="btn btn-circle btn-xs grey-cascade">
+                                                Ver <i class="fa fa-search"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        No existen observaciones.
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <a href="{% url 'ncr:observaciones-agregar' parque.slug %}{{ url_append }}" class="btn green-steel"> Agregar Observaci&oacute;n
+                    <i class="fa fa-plus"></i>
+                </a>
+            </div>
+        </div>
+    {% endif %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+<!-- BEGIN PAGE LEVEL PLUGINS -->
+
+<!-- END PAGE LEVEL PLUGINS -->
+{% endblock %}
+
+{% block jquery %}
+
+
+{% endblock %}

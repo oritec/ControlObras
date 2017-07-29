@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load customtags %}
+{% load tz %}
+{% block css %}
+    <!-- BEGIN PAGE LEVEL STYLES -->
+    <link href="{% static 'common/assets/global/plugins/bootstrap-select/css/bootstrap-select.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/assets/global/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL STYLES -->
+{% endblock %}
+
+{% block contenido %}
+
+<div class="row">
+    {% if parque.no_aerogeneradores == 0 %}
+        <div class="col-md-11 col-md-offset-1">
+            <h4>Por favor, ingresar la información del parque (Configuraci&oacute;n).</h4>
+        </div>
+    {%  else %}
+        <div class="row">
+            <div class="portlet box blue" style="margin-left:30px;margin-right:30px;">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-search"></i> Ingresar Observaci&oacute;n
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <!-- BEGIN FORM-->
+                    <form action="{% url 'ncr:observaciones-agregar' parque.slug %}" class="form-horizontal form-bordered" id="form_observacion" method="post">
+                        {% csrf_token %}
+                        {{ observacionForm.parque }}
+                        {{ revisionForm.fecha_revision }}
+                        <div class="form-body">
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ observacionForm.aerogenerador.label }}</label>
+                                <div class="col-md-9">
+                                    {{ observacionForm.aerogenerador }}
+                                    <span class="help-block"> {{ observacionForm.aerogenerador.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ observacionForm.nombre.label }}</label>
+                                <div class="col-md-9">
+                                    {{ observacionForm.nombre }}
+                                    <span class="help-block"> {{ observacionForm.nombre.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ observacionForm.fecha_observacion.label }}:</label>
+                                <div class="col-md-9">
+                                    <div class="input-group input-medium date date-picker" data-date-format="dd-mm-yyyy" data-date-show-today-button="true">
+                                        {{ observacionForm.fecha_observacion }}
+                                        <span class="input-group-btn">
+                                            <button class="btn default" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                    <span class="help-block"> {{ observacionForm.fecha_observacion.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ observacionForm.componente.label }}</label>
+                                <div class="col-md-9">
+                                    {{ observacionForm.componente }}
+                                    <span class="help-block"> {{ observacionForm.componente.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ observacionForm.sub_componente.label }}:</label>
+                                <div class="col-md-9">
+                                    {{ observacionForm.sub_componente }}
+                                    <span class="help-block"> {{ observacionForm.sub_componente.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ observacionForm.tipo.label }}</label>
+                                <div class="col-md-9">
+                                    {{ observacionForm.tipo }}
+                                    <span class="help-block"> {{ observacionForm.tipo.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ revisionForm.severidad.label }}</label>
+                                <div class="col-md-9">
+                                    {{ revisionForm.severidad }}
+                                    <span class="help-block"> {{ revisionForm.severidad.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ observacionForm.punchlist.label }}:</label>
+                                <div class="col-md-9">
+                                    {{ observacionForm.punchlist }}
+                                    <span class="help-block"> {{ observacionForm.punchlist.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ revisionForm.descripcion.label }}</label>
+                                <div class="col-md-9">
+                                    {{ revisionForm.descripcion }}
+                                    <span class="help-block"> {{ revisionForm.descripcion.errors }} </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <div class="row">
+                                <div class="col-md-offset-3 col-md-9">
+                                    <button type="submit" class="btn green">
+                                        <i class="fa fa-save"></i> Guardar </button>
+                                    <a href="{{ back_url }}" class="btn default">Cancelar</a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="{% static 'common/js/moment/moment-with-locales.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/pages/scripts/components-bootstrap-switch.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-select/js/bootstrap-select.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js' %}" type="text/javascript"></script>
+    <!--
+    <script src="{% static 'common/assets/pages/scripts/components-date-time-pickers.min.js' %}" type="text/javascript"></script>
+    -->
+    <!-- END PAGE LEVEL PLUGINS -->
+{% endblock %}
+
+{% block jquery %}
+    if (jQuery().datepicker) {
+        $('.date-picker').datepicker({
+            locale: "es",
+            language: "es",
+            rtl: App.isRTL(),
+            orientation: "right",
+            autoclose: true,
+            showTodayButton: true,
+            toolbarPlacement:"bottom",
+            todayHighlight:true,
+            todayBtn:"linked",
+
+        });
+        //$('body').removeClass("modal-open"); // fix bug when inline picker is used in modal
+    }
+
+    /* Workaround to restrict daterange past date select: http://stackoverflow.com/questions/11933173/how-to-restrict-the-selectable-date-ranges-in-bootstrap-datepicker */
+
+    // Workaround to fix datepicker position on window scroll
+    $( document ).scroll(function(){
+        $('#form_modal2 .date-picker').datepicker('place'); //#modal is the id of the modal
+    });
+    $('.bs-select').selectpicker({
+        iconBase: 'fa',
+        tickIcon: 'fa-check',
+        dropupAuto: false,
+    });
+
+    $("#form_observacion").submit(function( event ) {
+        alert('');
+        console.log($("#id_fecha_observacion").val());
+        $("#id_fecha_revision").val($("#id_fecha_observacion").val());
+
+    });
+
+    {% if ag_readonly %}
+        $("#id_aerogenerador").prop('disabled', true).selectpicker('refresh');;
+    {% endif %}
+{% endblock %}

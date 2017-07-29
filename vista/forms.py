@@ -24,5 +24,3 @@ class ParqueForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ParqueForm, self).__init__(*args, **kwargs)
         self.fields['nombre'].widget.attrs['class'] = 'form-control'
-
-

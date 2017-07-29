@@ -61,8 +61,7 @@ def configuracion(request,slug):
         form = ParqueFormFull(request.POST, instance=parque)
         if form.is_valid():
             logger.debug("Formulario es válido")
-            parque = form.save(commit=False)
-            parque.save()
+            parque = form.save()
             mensaje = 'Información modificada con éxito'
             messages.add_message(request, messages.SUCCESS, mensaje)
             response = redirect('vista:home', slug=parque.slug)

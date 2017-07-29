@@ -1,4 +1,5 @@
 {% load staticfiles %}
+{% load customtags %}
 
 <!-- BEGIN SIDEBAR -->
 	<div class="page-sidebar-wrapper">
@@ -21,8 +22,6 @@
                         <span></span>
                     </div>
                 </li>
-
-
 				<!-- END SIDEBAR TOGGLER BUTTON -->
                 &nbsp;
 				<!--<li class="start ">-->
@@ -42,14 +41,9 @@
 
 							</a>
 						</li>
-					</ul>
-
                     <!--El resto de los menú solo se muestran si la configuración existe...-->
-
                     {% if parque.no_aerogeneradores > 0 %}
                     {% endif %}
-
-                    <ul class="sub-menu">
 						<li class="nav-item " id="menu2-configuracion">
 							<a href="{% url 'vista:configuracion' parque.slug %}" class="nav-link ">
 								<i class="fa fa-wrench"></i>
@@ -60,6 +54,33 @@
 					</ul>
 
 				</li>
+                {% if parque.no_aerogeneradores > 0 %}
+                <!--<li class="start ">-->
+                <li class="nav-item" id="menu-ncr">
+					<a href="javascript:;" class="nav-link nav-toggle">
+						<i class="fa fa-edit"></i>
+						<span class="title">NCR</span>
+						<span class="selected"></span>
+						<span class="arrow open"></span>
+					</a>
+                    <ul class="sub-menu">
+                        <li class="nav-item " id="menu2-observaciones-resumen">
+							<a href="{% url 'ncr:observaciones-resumen' parque.slug %}" class="nav-link ">
+								<i class="fa fa-caret-right"></i>
+								<span class="title">Resumen</span>
+							</a>
+						</li>
+                    {% for wtg in 0|get_range:parque.no_aerogeneradores %}
+						<li class="nav-item " id="menu2-observaciones-{{ wtg|add:"1" }}">
+							<a href="{% url 'ncr:observaciones' parque.slug wtg|add:"1" %}" class="nav-link ">
+								<i class="fa fa-caret-right"></i>
+								<span class="title">WTG{{ wtg|add:"1"|stringformat:"02d" }}</span>
+							</a>
+						</li>
+                    {% endfor %}
+                    </ul>
+				</li>
+                {% endif %}
 			</ul>
 			<!-- END SIDEBAR MENU -->
 		</div>

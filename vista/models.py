@@ -21,6 +21,5 @@ class ParqueSolar(models.Model):
         return '%s' % (self.nombre)
 
     def save(self, *args, **kwargs):
-        if not self.id:
-            self.slug = defaultfilters.slugify(self.nombre)
+        self.slug = defaultfilters.slugify(self.nombre)
         super(ParqueSolar, self).save(*args, **kwargs)

@@ -14,6 +14,7 @@ register = template.Library()
 
 @register.filter
 def get_range( value,arg ):
+    #logger.debug(range(value,arg))
     return range( value,arg )
 
 @register.filter()

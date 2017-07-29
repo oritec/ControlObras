@@ -1,0 +1,400 @@
+[
+    {
+        "model": "ncr.componente",
+        "pk": 1,
+        "fields": {
+            "nombre": "Palas"
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 2,
+        "fields": {
+            "nombre": "Hub"
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 3,
+        "fields": {
+            "nombre": "Drive Train"
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 4,
+        "fields": {
+            "nombre": "Nacelle"
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 5,
+        "fields": {
+            "nombre": "Cooler Top"
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 6,
+        "fields": {
+            "nombre": "Torre"
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 7,
+        "fields": {
+            "nombre": "T4"
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 8,
+        "fields": {
+            "nombre": "T3"
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 9,
+        "fields": {
+            "nombre": "T2"
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 10,
+        "fields": {
+            "nombre": "T1"
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 11,
+        "fields": {
+            "nombre": "Celda"
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 12,
+        "fields": {
+            "nombre": "Elevador"
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 13,
+        "fields": {
+            "nombre": "General"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 1,
+        "fields": {
+            "nombre": "Armarios"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 2,
+        "fields": {
+            "nombre": "Cableado"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 3,
+        "fields": {
+            "nombre": "Corona"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 4,
+        "fields": {
+            "nombre": "Escalera exterior"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 5,
+        "fields": {
+            "nombre": "Escalera interior"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 6,
+        "fields": {
+            "nombre": "Estructura"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 7,
+        "fields": {
+            "nombre": "Exterior"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 8,
+        "fields": {
+            "nombre": "Fibra"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 9,
+        "fields": {
+            "nombre": "Generador"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 10,
+        "fields": {
+            "nombre": "Guardapolvo"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 11,
+        "fields": {
+            "nombre": "Iluminación"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 12,
+        "fields": {
+            "nombre": "Interior"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 13,
+        "fields": {
+            "nombre": "Jaula"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 14,
+        "fields": {
+            "nombre": "LCTU"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 15,
+        "fields": {
+            "nombre": "Motor giro"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 16,
+        "fields": {
+            "nombre": "Multiplicadora"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 17,
+        "fields": {
+            "nombre": "Pistón Pitch"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 18,
+        "fields": {
+            "nombre": "Señaletica"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 19,
+        "fields": {
+            "nombre": "Tornilleria"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 20,
+        "fields": {
+            "nombre": "Transformador"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 21,
+        "fields": {
+            "nombre": "Tuberías, manguitos"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 22,
+        "fields": {
+            "nombre": "Otro"
+        }
+    },
+    {
+        "model": "ncr.tipo",
+        "pk": 1,
+        "fields": {
+            "nombre": "Ajuste, montaje"
+        }
+    },
+    {
+        "model": "ncr.tipo",
+        "pk": 2,
+        "fields": {
+            "nombre": "Apriete"
+        }
+    },
+    {
+        "model": "ncr.tipo",
+        "pk": 3,
+        "fields": {
+            "nombre": "Avería"
+        }
+    },
+    {
+        "model": "ncr.tipo",
+        "pk": 4,
+        "fields": {
+            "nombre": "Daño"
+        }
+    },
+    {
+        "model": "ncr.tipo",
+        "pk": 5,
+        "fields": {
+            "nombre": "Fugo, derrame"
+        }
+    },
+    {
+        "model": "ncr.tipo",
+        "pk": 6,
+        "fields": {
+            "nombre": "Oxidación, sulfatación"
+        }
+    },
+    {
+        "model": "ncr.tipo",
+        "pk": 7,
+        "fields": {
+            "nombre": "Pintura"
+        }
+    },
+    {
+        "model": "ncr.tipo",
+        "pk": 8,
+        "fields": {
+            "nombre": "Protección, preservación"
+        }
+    },
+    {
+        "model": "ncr.tipo",
+        "pk": 9,
+        "fields": {
+            "nombre": "Seguridad"
+        }
+    },
+    {
+        "model": "ncr.tipo",
+        "pk": 10,
+        "fields": {
+            "nombre": "Sellado"
+        }
+    },
+    {
+        "model": "ncr.tipo",
+        "pk": 11,
+        "fields": {
+            "nombre": "Suciedad"
+        }
+    },
+    {
+        "model": "ncr.tipo",
+        "pk": 12,
+        "fields": {
+            "nombre": "Tensionado"
+        }
+    },
+    {
+        "model": "ncr.tipo",
+        "pk": 13,
+        "fields": {
+            "nombre": "Otro"
+        }
+    },
+    {
+        "model": "ncr.severidad",
+        "pk": 1,
+        "fields": {
+            "nombre": "0"
+        }
+    },
+    {
+        "model": "ncr.severidad",
+        "pk": 2,
+        "fields": {
+            "nombre": "1"
+        }
+    },
+    {
+        "model": "ncr.severidad",
+        "pk": 3,
+        "fields": {
+            "nombre": "2"
+        }
+    },
+    {
+        "model": "ncr.severidad",
+        "pk": 4,
+        "fields": {
+            "nombre": "3"
+        }
+    },
+    {
+        "model": "ncr.severidad",
+        "pk": 5,
+        "fields": {
+            "nombre": "4"
+        }
+    },
+    {
+        "model": "ncr.severidad",
+        "pk": 6,
+        "fields": {
+            "nombre": "5"
+        }
+    },{
+        "model": "ncr.estadorevision",
+        "pk": 1,
+        "fields": {
+            "nombre": "No Reparado"
+        }
+    },
+    {
+        "model": "ncr.estadorevision",
+        "pk": 2,
+        "fields": {
+            "nombre": "Parcialmente Reparado"
+        }
+    },
+    {
+        "model": "ncr.estadorevision",
+        "pk": 3,
+        "fields": {
+            "nombre": "Reparado"
+        }
+    }
+]

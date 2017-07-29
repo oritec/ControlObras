@@ -127,3 +127,4 @@ Temporary Items
 db.sqlite3
 usuarios/migrations/
 vista/migrations/
+/ncr/migrations/
