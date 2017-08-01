@@ -38,7 +38,7 @@ def observaciones_resumen(request,slug):
     contenido.titulo=u'Resumen de Observaciones'
     contenido.subtitulo='Parque '+parque.nombre
     contenido.menu = ['menu-ncr', 'menu2-observaciones-resumen']
-    observaciones = Observacion.objects.filter()
+    observaciones = Observacion.objects.filter(parque=parque)
     url_append = ''
     table_show_ag = True
     return render(request, 'ncr/resumen.html',
@@ -59,7 +59,7 @@ def observaciones(request,slug,ag_id):
     contenido.menu = ['menu-ncr', 'menu2-observaciones-'+str(ag_id)]
     url_append='?aerogenerador='+str(ag_id)
 
-    observaciones = Observacion.objects.filter(aerogenerador__exact=ag_id)
+    observaciones = Observacion.objects.filter(aerogenerador__exact=ag_id, parque= parque)
     return render(request, 'ncr/resumen.html',
         {'cont': contenido,
          'parque': parque,
