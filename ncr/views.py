@@ -274,3 +274,33 @@ def add_revision(request,slug,observacion_id):
          'observacion': observacion,
          'revisionForm': revisionForm,
         })
+
+@login_required(login_url='ingresar')
+def informeNCR(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    contenido=ContenidoContainer()
+    contenido.user=request.user
+    contenido.titulo=u'Informe NCR'
+    contenido.subtitulo='Parque '+ parque.nombre
+    contenido.menu = ['menu-ncr', 'menu2-informeNCR']
+
+
+    return render(request, 'ncr/informeNCR.html',
+        {'cont': contenido,
+         'parque': parque,
+        })
+
+@login_required(login_url='ingresar')
+def punchlist(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    contenido=ContenidoContainer()
+    contenido.user=request.user
+    contenido.titulo=u'Punchlist'
+    contenido.subtitulo='Parque '+ parque.nombre
+    contenido.menu = ['menu-ncr', 'menu2-punchlist']
+
+
+    return render(request, 'ncr/punchlist.html',
+        {'cont': contenido,
+         'parque': parque,
+        })

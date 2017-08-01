@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import forms
-from models import Observacion, Revision
+from models import Observacion, Revision,EstadoRevision
 import logging
 logger = logging.getLogger('oritec')
 
@@ -86,3 +86,11 @@ class RevisionFormFull(forms.ModelForm):
         self.fields['descripcion'].widget.attrs['row'] = '3'
         self.fields['fecha_revision'].widget.attrs['class'] = 'form-control'
         self.fields['estado'].widget.attrs['class'] = 'bs-select form-control'
+
+class NCR(forms.Form):
+    aerogenerador = forms.ChoiceField(choices=[])
+    parque = forms.ModelChoiceField(queryset=EstadoRevision.objects.all(), empty_label=None)
+    def __init__(self, *args, **kwargs):
+        super(NCR, self).__init__(*args, **kwargs)
+
+        self.fields['parque'].widget.attrs['class'] = 'selectpicker form-control'

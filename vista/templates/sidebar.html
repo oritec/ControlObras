@@ -70,6 +70,18 @@
 								<span class="title">Resumen</span>
 							</a>
 						</li>
+                        <li class="nav-item " id="menu2-informeNCR">
+							<a href="{% url 'ncr:informeNCR' parque.slug %}" class="nav-link ">
+								<i class="fa fa-caret-right"></i>
+								<span class="title">Informe NCR</span>
+							</a>
+						</li>
+                        <li class="nav-item " id="menu2-punchlist">
+							<a href="{% url 'ncr:punchlist' parque.slug %}" class="nav-link ">
+								<i class="fa fa-caret-right"></i>
+								<span class="title">Punchlist</span>
+							</a>
+						</li>
                     {% for wtg in 0|get_range:parque.no_aerogeneradores %}
 						<li class="nav-item " id="menu2-observaciones-{{ wtg|add:"1" }}">
 							<a href="{% url 'ncr:observaciones' parque.slug wtg|add:"1" %}" class="nav-link ">

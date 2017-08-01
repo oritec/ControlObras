@@ -14,7 +14,7 @@
 <div class="row">
     {% if parque.no_aerogeneradores == 0 %}
         <div class="col-md-11 col-md-offset-1">
-            <h4>Por favor, ingresar la información del parque (Configuraci&oacute;n).</h4>
+            <h4>Por favor, ingresar la informaci&oacute;n del parque (Configuraci&oacute;n).</h4>
         </div>
     {%  else %}
         <div class="row">
@@ -26,15 +26,26 @@
                 </div>
                 <div class="portlet-body form">
                     <!-- BEGIN FORM-->
-                    <form action="{% url 'ncr:observaciones-agregar' parque.slug %}" class="form-horizontal form-bordered" id="form_observacion" method="post">
+                    {% if request.GET.aerogenerador %}
+                        <form action="{% url 'ncr:observaciones-agregar' parque.slug %}?aerogenerador={{ request.GET.aerogenerador }}" class="form-horizontal form-bordered" id="form_observacion" method="post">
+                    {% else %}
+                         <form action="{% url 'ncr:observaciones-agregar' parque.slug %}" class="form-horizontal form-bordered" id="form_observacion" method="post">
+                    {% endif %}
                         {% csrf_token %}
                         {{ observacionForm.parque }}
                         {{ revisionForm.fecha_revision }}
+                        {% if request.GET.aerogenerador %}
+                        {{ observacionForm.aerogenerador.as_hidden }}
+                        {% endif %}
                         <div class="form-body">
                             <div class="form-group">
                                 <label class="control-label col-md-3">{{ observacionForm.aerogenerador.label }}</label>
-                                <div class="col-md-9">
-                                    {{ observacionForm.aerogenerador }}
+                                <div class="col-md-9" style="padding-top:20px">
+                                    {% if request.GET.aerogenerador %}
+                                    WTG{{ observacionForm.aerogenerador.value|stringformat:"02d" }}
+                                    {% else %}
+                                        {{ observacionForm.aerogenerador }}
+                                    {% endif %}
                                     <span class="help-block"> {{ observacionForm.aerogenerador.errors }} </span>
                                 </div>
                             </div>
@@ -178,7 +189,4 @@
 
     });
 
-    {% if ag_readonly %}
-        $("#id_aerogenerador").prop('disabled', true).selectpicker('refresh');;
-    {% endif %}
 {% endblock %}
