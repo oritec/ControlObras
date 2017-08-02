@@ -153,7 +153,7 @@ def add_images(request,slug,revision_id):
     response_data['files'] = []
     if request.method == 'POST':
         for key, file in request.FILES.items():
-            #logger.debug(file)
+            logger.debug(file)
             primary = False
             instance = Fotos(imagen=file,revision=revision)
             instance.save()

@@ -106,6 +106,7 @@ class Fotos(models.Model):
         )
 
     def save(self, *args, **kwargs):
+        logger.debug("Saving Image")
         updateThumbnail = True
         if self.pk is not None:
             orig = Fotos.objects.get(pk=self.pk)
@@ -113,7 +114,9 @@ class Fotos(models.Model):
                 updateThumbnail = False
 
         if updateThumbnail:
+            logger.debug("Before create_thumbnail")
             self.create_thumbnail()
+            logger.debug("After create_thumbnail")
 
         force_update = False
 
