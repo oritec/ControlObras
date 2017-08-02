@@ -131,7 +131,7 @@ def show_observacion(request,slug,observacion_id):
         fotos[r.id]=[]
         results = Fotos.objects.filter(revision=r,principal=True)
         if results.count() > 0:
-            main_fotos[r.id]=results[0].imagen.url
+            main_fotos[r.id]=results[0].thumbnail.url
         results = Fotos.objects.filter(revision=r)
         for foto in results:
             fotos[r.id].append(foto.imagen.url)
@@ -153,7 +153,7 @@ def add_images(request,slug,revision_id):
     response_data['files'] = []
     if request.method == 'POST':
         for key, file in request.FILES.items():
-            logger.debug(file)
+            #logger.debug(file)
             primary = False
             instance = Fotos(imagen=file,revision=revision)
             instance.save()
@@ -242,7 +242,7 @@ def primary_image(request,slug):
         #logger.debug("post")
         set_primary_photo(foto_id=request.POST['foto_id'])
         foto = Fotos.objects.get(pk=request.POST['foto_id'])
-        return HttpResponse(foto.imagen.url)
+        return HttpResponse(foto.thumbnail.url)
 
 @login_required(login_url='ingresar')
 def add_revision(request,slug,observacion_id):

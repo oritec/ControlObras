@@ -106,7 +106,7 @@ class Fotos(models.Model):
         )
 
     def save(self, *args, **kwargs):
-        logger.debug("Saving Image")
+        #logger.debug("Saving Image")
         updateThumbnail = True
         if self.pk is not None:
             orig = Fotos.objects.get(pk=self.pk)
