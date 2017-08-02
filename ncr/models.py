@@ -114,9 +114,11 @@ class Fotos(models.Model):
                 updateThumbnail = False
 
         if updateThumbnail:
-            logger.debug("Before create_thumbnail")
-            self.create_thumbnail()
-            logger.debug("After create_thumbnail")
+            try:
+                self.create_thumbnail()
+            except Exception as e:
+                print e.__doc__
+                print e.message
 
         force_update = False
 
