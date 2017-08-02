@@ -117,8 +117,8 @@ class Fotos(models.Model):
             try:
                 self.create_thumbnail()
             except Exception as e:
-                print e.__doc__
-                print e.message
+                logger.debug(e.__doc__)
+                logger.debug(e.message)
 
         force_update = False
 
