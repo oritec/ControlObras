@@ -63,6 +63,14 @@
                             </div>
 
                             <div class="form-group">
+                                <label class="control-label col-md-3">{{ revisionForm.reported_by.label }}</label>
+                                <div class="col-md-9">
+                                    {{ revisionForm.reported_by }}
+                                    <span class="help-block"> {{ revisionForm.reported_by.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
                                 <label class="control-label col-md-3">{{ revisionForm.descripcion.label }}</label>
                                 <div class="col-md-9">
                                     {{ revisionForm.descripcion }}

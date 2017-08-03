@@ -9,9 +9,10 @@ class ObservacionForm(forms.ModelForm):
                                  input_formats=('%d-%m-%Y',))
     class Meta:
         model = Observacion
-        fields = ['parque','nombre','aerogenerador','fecha_observacion','componente','sub_componente','tipo','punchlist']
+        fields = ['parque','nombre','aerogenerador','fecha_observacion','componente','sub_componente','tipo','punchlist','reported_by']
         labels = {
             'nombre': 'Descripción',
+            'reported_by': 'Reportado por'
         }
     def __init__(self, *args, **kwargs):
         super(ObservacionForm, self).__init__(*args, **kwargs)
@@ -46,6 +47,9 @@ class ObservacionForm(forms.ModelForm):
         self.fields['punchlist'].widget.attrs['data-size'] = 'small'
         self.fields['punchlist'].widget.attrs['data-on-text'] = 'Si'
         self.fields['punchlist'].widget.attrs['data-off-text'] = 'No'
+        self.fields['reported_by'].widget.attrs['class'] = 'bs-select form-control'
+        self.fields['reported_by'].widget.attrs['data-live-search'] = 'true'
+        self.fields['reported_by'].widget.attrs['data-size'] = '8'
 
 class RevisionForm(forms.ModelForm):
     fecha_revision = forms.DateField(widget=forms.HiddenInput(),
@@ -71,9 +75,10 @@ class RevisionFormFull(forms.ModelForm):
                                  input_formats=('%d-%m-%Y',))
     class Meta:
         model = Revision
-        fields = ['observacion','fecha_revision','severidad','descripcion', 'estado']
+        fields = ['observacion','fecha_revision','severidad','descripcion', 'estado','reported_by']
         labels = {
             'descripcion': 'Detalle',
+            'reported_by': 'Reportado por'
         }
     def __init__(self, *args, **kwargs):
         super(RevisionFormFull, self).__init__(*args, **kwargs)
@@ -86,6 +91,9 @@ class RevisionFormFull(forms.ModelForm):
         self.fields['descripcion'].widget.attrs['row'] = '3'
         self.fields['fecha_revision'].widget.attrs['class'] = 'form-control'
         self.fields['estado'].widget.attrs['class'] = 'bs-select form-control'
+        self.fields['reported_by'].widget.attrs['class'] = 'bs-select form-control'
+        self.fields['reported_by'].widget.attrs['data-live-search'] = 'true'
+        self.fields['reported_by'].widget.attrs['data-size'] = '8'
 
 class NCR(forms.Form):
     aerogenerador = forms.ChoiceField(choices=[])

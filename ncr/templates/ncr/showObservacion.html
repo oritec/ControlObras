@@ -53,6 +53,8 @@
                             <li> <b>Nombre:</b> {{ observacion.nombre }}</li>
                             <li> <b>Descripci&oacute;n:</b> {{ revision.descripcion }}</li>
                             <li> <b>Punchlist:</b> {% if observacion.punchlist %} S&iacute; {% else %} No {% endif %}</li>
+                            <li> <b>Reportado por:</b> {{ observacion.reported_by }} </li>
+                            <li> <b>Creado por:</b> {{ observacion.created_by }} </li>
                         </ul>
                     </div>
                 {% else %}
@@ -63,6 +65,8 @@
                             <li> <b>Severidad:</b> {{ revision.severidad }}</li>
                             <li> <b>Nombre:</b> {{ observacion.nombre }}</li>
                             <li> <b>Descripci&oacute;n:</b> {{ revision.descripcion }}</li>
+                            <li> <b>Reportado por:</b> {{ observacion.reported_by }} </li>
+                            <li> <b>Creado por:</b> {{ observacion.created_by }} </li>
                         </ul>
                     </div>
                 {% endif %}

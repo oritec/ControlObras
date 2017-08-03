@@ -91,9 +91,13 @@ def add_observacion(request,slug):
         revisionForm = RevisionForm(request.POST)
         if observacionForm.is_valid() and revisionForm.is_valid():
             logger.debug('Formularios válidos.')
-            observacion = observacionForm.save()
+            observacion = observacionForm.save(commit=False)
+            observacion.created_by = request.user
+            observacion.save()
             revision = revisionForm.save(commit=False)
             revision.observacion = observacion
+            revision.created_by = request.user
+            revision.reported_by = observacion.reported_by
             revision.save()
             return HttpResponseRedirect(reverse('ncr:observaciones-show', args=[parque.slug,observacion.id]))
         else:
@@ -260,7 +264,9 @@ def add_revision(request,slug,observacion_id):
         revisionForm = RevisionFormFull(request.POST)
         if revisionForm.is_valid():
             logger.debug('Formulario válido.')
-            revision = revisionForm.save()
+            revision = revisionForm.save(commit=False)
+            revision.created_by = request.user
+            revision.save()
             return HttpResponseRedirect(reverse('ncr:observaciones-show', args=[parque.slug,observacion.id]))
         else:
             logger.debug('Formulario no es válido...')
