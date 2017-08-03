@@ -396,5 +396,12 @@
         "fields": {
             "nombre": "Reparado"
         }
+    },
+    {
+        "model": "ncr.observador",
+        "pk": 1,
+        "fields": {
+            "nombre": "Félix Echevarría"
+        }
     }
 ]

@@ -3,10 +3,17 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
+from django.contrib.auth.models import User
 from django.template import defaultfilters
 #from vista.models import ParqueSolar
 import logging
 logger = logging.getLogger('oritec')
+
+@python_2_unicode_compatible
+class Observador(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    def __str__(self):
+        return '%s' % (self.nombre)
 
 @python_2_unicode_compatible
 class Componente(models.Model):
@@ -142,6 +149,8 @@ class Observacion(models.Model):
     tipo = models.ForeignKey('Tipo', on_delete=models.SET_NULL, null=True)
     punchlist = models.BooleanField(default=False)
     estado = models.ForeignKey('EstadoRevision', on_delete=models.SET_NULL, null=True, default=1)
+    #created_by = models.ForeignKey(User)
+    #reported_by = models.ForeignKey(Observador)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -155,6 +164,8 @@ class Revision(models.Model):
     severidad = models.ForeignKey('Severidad', on_delete=models.SET_NULL, null=True)
     descripcion = models.CharField(max_length=500)
     estado = models.ForeignKey('EstadoRevision', on_delete=models.SET_NULL, null=True, default =1)
+    #created_by = models.ForeignKey(User)
+    #reported_by = models.ForeignKey(Observador)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
