@@ -21,12 +21,14 @@
             <div class="portlet box blue" style="margin-left:30px;margin-right:30px;">
                 <div class="portlet-title">
                     <div class="caption">
-                        <i class="fa fa-search"></i> Ingresar Observaci&oacute;n
+                        <i class="fa fa-search"></i> Informaci&oacute;n de Observaci&oacute;n
                     </div>
                 </div>
                 <div class="portlet-body form">
                     <!-- BEGIN FORM-->
-                    {% if request.GET.aerogenerador %}
+                    {% if edit_observacion %}
+                        <form action="{% url 'ncr:observaciones-editar' parque.slug edit_observacion.id %}" class="form-horizontal form-bordered" id="form_observacion" method="post">
+                    {% elif request.GET.aerogenerador %}
                         <form action="{% url 'ncr:observaciones-agregar' parque.slug %}?aerogenerador={{ request.GET.aerogenerador }}" class="form-horizontal form-bordered" id="form_observacion" method="post">
                     {% else %}
                          <form action="{% url 'ncr:observaciones-agregar' parque.slug %}" class="form-horizontal form-bordered" id="form_observacion" method="post">

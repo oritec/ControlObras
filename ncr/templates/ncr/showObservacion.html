@@ -44,7 +44,11 @@
                 </div>
                 {% if forloop.first %}
                     <div class="col-md-9">
-                        <h4 class="block">Revisi&oacute;n {{ forloop.counter }} - Fecha: {{ revision.fecha_revision }}</h4>
+                        <h4 class="block">Revisi&oacute;n {{ forloop.counter }} - Fecha: {{ revision.fecha_revision }}
+                        <a href="{% url 'ncr:observaciones-editar' parque.slug observacion.id %}" class="btn btn-circle btn-xs blue" style="margin-left: 10px"> Editar
+                            <i class="fa fa-edit"></i>
+                        </a>
+                        </h4>
                         <ul>
                             <li> <b>Componente:</b> {{ observacion.componente }}</li>
                             <li> <b>Sub-Componente:</b> {{ observacion.sub_componente }}</li>
@@ -59,14 +63,18 @@
                     </div>
                 {% else %}
                     <div class="col-md-9">
-                        <h4 class="block">Revisi&oacute;n {{ forloop.counter }} - Fecha: {{ revision.fecha_revision }}</h4>
+                        <h4 class="block">Revisi&oacute;n {{ forloop.counter }} - Fecha: {{ revision.fecha_revision }}
+                        <a href="{% url 'ncr:revisiones-editar' parque.slug observacion.id revision.id %}" class="btn btn-circle btn-xs blue" style="margin-left: 10px"> Editar
+                            <i class="fa fa-edit"></i>
+                        </a>
+                        </h4>
                         <ul>
                             <li> <b>Estado:</b> {{ revision.estado }}</li>
                             <li> <b>Severidad:</b> {{ revision.severidad }}</li>
                             <li> <b>Nombre:</b> {{ observacion.nombre }}</li>
                             <li> <b>Descripci&oacute;n:</b> {{ revision.descripcion }}</li>
-                            <li> <b>Reportado por:</b> {{ observacion.reported_by }} </li>
-                            <li> <b>Creado por:</b> {{ observacion.created_by }} </li>
+                            <li> <b>Reportado por:</b> {{ revision.reported_by }} </li>
+                            <li> <b>Creado por:</b> {{ revision.created_by }} </li>
                         </ul>
                     </div>
                 {% endif %}

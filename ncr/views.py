@@ -76,49 +76,73 @@ def observaciones(request,slug,ag_id):
         })
 
 @login_required(login_url='ingresar')
-def add_observacion(request,slug):
+def add_observacion(request,slug,observacion_id=0):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    edit_observacion = None
+    if observacion_id != 0:
+        edit_observacion = get_object_or_404(Observacion,id=observacion_id)
     contenido=ContenidoContainer()
     contenido.user=request.user
-    contenido.titulo=u'Agregar Observacion'
     contenido.subtitulo=parque.nombre
     if 'aerogenerador' in request.GET:
+        contenido.titulo = u'Agregar Observacion'
         contenido.menu = ['menu-ncr', 'menu2-observaciones-'+str(request.GET['aerogenerador'])]
         ag_readonly = True
         back_url = reverse('ncr:observaciones', args=[parque.slug,request.GET['aerogenerador']])
+    elif edit_observacion is not None:
+        contenido.titulo = u'Editar Observacion'
+        contenido.menu = ['menu-ncr', 'menu2-observaciones-' + str(edit_observacion.aerogenerador.idx)]
+        ag_readonly = False
+        back_url = reverse('ncr:observaciones-show', args=[parque.slug, str(edit_observacion.id)])
     else:
+        contenido.titulo = u'Agregar Observacion'
         contenido.menu = ['menu-ncr', 'menu2-observaciones-resumen']
         ag_readonly = False
         back_url = reverse('ncr:observaciones-resumen', args=[parque.slug])
+
     observacionForm = None
 
     #logger.debug(request.GET['aerogenerador'])
 
     if request.method == 'POST':
-        observacionForm = ObservacionForm(request.POST,initial={"parque":parque})
-        revisionForm = RevisionForm(request.POST)
+        if edit_observacion is not None:
+            observacionForm = ObservacionForm(request.POST,instance=edit_observacion)
+            rev = edit_observacion.revision_set.order_by('id')[0]
+            revisionForm = RevisionForm(request.POST,instance=rev)
+        else:
+            observacionForm = ObservacionForm(request.POST,initial={"parque":parque})
+            revisionForm = RevisionForm(request.POST)
         if observacionForm.is_valid() and revisionForm.is_valid():
-            #logger.debug('Formularios válidos.')
-            observacion = observacionForm.save(commit=False)
-            observacion.created_by = request.user
-            observacion.save()
-            revision = revisionForm.save(commit=False)
-            revision.observacion = observacion
-            revision.created_by = request.user
-            revision.reported_by = observacion.reported_by
-            revision.save()
+            if edit_observacion is not None:
+                observacion = observacionForm.save()
+                revision = revisionForm.save()
+            else:
+                observacion = observacionForm.save(commit=False)
+                observacion.created_by = request.user
+                observacion.save()
+                revision = revisionForm.save(commit=False)
+                revision.observacion = observacion
+                revision.created_by = request.user
+                revision.reported_by = observacion.reported_by
+                revision.save()
             return HttpResponseRedirect(reverse('ncr:observaciones-show', args=[parque.slug,observacion.id]))
         else:
             logger.debug('Formulario no es válido...')
 
+
     if observacionForm is None:
-        if 'aerogenerador' in request.GET:
-            ag = get_object_or_404(Aerogenerador, idx=int(request.GET['aerogenerador']), parque=parque)
-            observacionForm = ObservacionForm(initial={"parque":parque,"aerogenerador":ag.id})
+        if edit_observacion is not None:
+            observacionForm = ObservacionForm(instance=edit_observacion)
+            rev = edit_observacion.revision_set.order_by('id')[0]
+            revisionForm = RevisionForm(instance=rev)
         else:
-            observacionForm = ObservacionForm(initial={"parque": parque})
-        revisionForm = RevisionForm()
+            if 'aerogenerador' in request.GET:
+                ag = get_object_or_404(Aerogenerador, idx=int(request.GET['aerogenerador']), parque=parque)
+                observacionForm = ObservacionForm(initial={"parque":parque,"aerogenerador":ag.id})
+            else:
+                observacionForm = ObservacionForm(initial={"parque": parque})
+            revisionForm = RevisionForm()
 
     return render(request, 'ncr/agregarObservacion.html',
         {'cont': contenido,
@@ -128,6 +152,7 @@ def add_observacion(request,slug):
          'ag_readonly': ag_readonly,
          'back_url': back_url,
          'aerogeneradores':aerogeneradores,
+         'edit_observacion': edit_observacion,
         })
 
 @login_required(login_url='ingresar')
@@ -262,12 +287,18 @@ def primary_image(request,slug):
         return HttpResponse(foto.thumbnail.url)
 
 @login_required(login_url='ingresar')
-def add_revision(request,slug,observacion_id):
+def add_revision(request,slug,observacion_id, revision_id = 0):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    edit_revision = None
+    if revision_id != 0:
+        edit_revision = get_object_or_404(Revision, id=revision_id)
     contenido=ContenidoContainer()
     contenido.user=request.user
-    contenido.titulo=u'Agregar Revisión'
+    if edit_revision is not None:
+        contenido.titulo = u'Editar Revisión'
+    else:
+        contenido.titulo=u'Agregar Revisión'
     contenido.subtitulo=parque.nombre
     observacion = get_object_or_404(Observacion, id=observacion_id)
     contenido.menu = ['menu-ncr', 'menu2-observaciones-' + str(observacion.aerogenerador.idx)]
@@ -275,18 +306,27 @@ def add_revision(request,slug,observacion_id):
     revisionForm = None
 
     if request.method == 'POST':
-        revisionForm = RevisionFormFull(request.POST)
+        if edit_revision is not None:
+            revisionForm = RevisionFormFull(request.POST, instance=edit_revision)
+        else:
+            revisionForm = RevisionFormFull(request.POST)
         if revisionForm.is_valid():
             logger.debug('Formulario válido.')
-            revision = revisionForm.save(commit=False)
-            revision.created_by = request.user
-            revision.save()
+            if edit_revision is not None:
+                revision = revisionForm.save()
+            else:
+                revision = revisionForm.save(commit=False)
+                revision.created_by = request.user
+                revision.save()
             return HttpResponseRedirect(reverse('ncr:observaciones-show', args=[parque.slug,observacion.id]))
         else:
             logger.debug('Formulario no es válido...')
 
     if revisionForm is None:
-        revisionForm = RevisionFormFull(initial={"observacion":observacion})
+        if edit_revision is not None:
+            revisionForm = RevisionFormFull(instance=edit_revision)
+        else:
+            revisionForm = RevisionFormFull(initial={"observacion":observacion})
 
     return render(request, 'ncr/agregarRevision.html',
         {'cont': contenido,
@@ -294,6 +334,7 @@ def add_revision(request,slug,observacion_id):
          'observacion': observacion,
          'revisionForm': revisionForm,
          'aerogeneradores':aerogeneradores,
+         'edit_revision': edit_revision,
         })
 
 @login_required(login_url='ingresar')
