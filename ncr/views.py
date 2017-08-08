@@ -425,35 +425,3 @@ def observadores(request,slug):
          'observadores': observadores,
          'aerogeneradores':aerogeneradores,
         })
-
-@login_required(login_url='ingresar')
-def aerogeneradores(request,slug):
-    parque = get_object_or_404(ParqueSolar, slug=slug)
-    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
-    contenido=ContenidoContainer()
-    contenido.user=request.user
-    contenido.titulo=u'Listado de Aerogeneradores'
-    contenido.subtitulo='Parque '+ parque.nombre
-    contenido.menu = ['menu-principal', 'menu2-aerogeneradores']
-    observadores = Observador.objects.all().order_by('id')
-    response_data = {}
-
-    # Me decido por interfaz RESTful. POST: Crear Nuevo, DELETE: Eliminar, PUT: Editar
-    if request.method == 'POST':
-        logger.debug('POST')
-        editar = Observador.objects.get(id=int(request.POST['id']))
-        editar.nombre = request.POST['nombre']
-        editar.save()
-        response_data['id'] = str(editar.id)
-        response = json.dumps(response_data)
-        return HttpResponse(
-            response,
-            content_type="application/json"
-        )
-
-    return render(request, 'ncr/agregarAerogenerador.html',
-        {'cont': contenido,
-         'parque': parque,
-         'observadores': observadores,
-         'aerogeneradores':aerogeneradores,
-        })

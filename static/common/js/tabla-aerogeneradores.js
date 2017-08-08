@@ -205,12 +205,19 @@ var TableDatatablesEditable = function () {
                         'nombre': jqInputs[1].value
                     }
                 }).done(function (result) {
-                    //console.log(result);
+                    //console.log("Done");
                     //console.log(result.id);
                     $(jqInputs[0]).val(result.id);
                     //jqInputs[0].value = result.id;
                     saveRow(oTable, nEditing);
                     nEditing = null;
+                }).error(function (result) {
+                    //console.log(result.status);
+                    if (result.status == 409){
+                        toastr.error("Nombre Duplicado")
+                    } else{
+                        toastr.error("Error");
+                    }
                 });
 
 

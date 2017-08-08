@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.shortcuts import redirect
 import json
 import logging
+from django.db import IntegrityError
 logger = logging.getLogger('oritec')
 
 @login_required(login_url='ingresar')
@@ -113,10 +114,14 @@ def aerogeneradores(request,slug):
 
     # Me decido por interfaz RESTful. POST: Crear Nuevo, DELETE: Eliminar, PUT: Editar
     if request.method == 'POST':
-        logger.debug('POST')
+        logger.debug('POST Aerogeneradores')
         editar = Aerogenerador.objects.get(idx=int(request.POST['id']),parque=parque)
         editar.nombre = request.POST['nombre']
-        editar.save()
+        try:
+            editar.save()
+        except IntegrityError as e:
+            logger.debug(e)
+            return HttpResponse(status=409)
         response_data['id'] = str(editar.id)
         response = json.dumps(response_data)
         return HttpResponse(
