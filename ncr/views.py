@@ -362,6 +362,9 @@ def informeNCR(request,slug):
             logger.debug("Form Valid")
             resultados = Observacion.objects.filter(aerogenerador__in=form.cleaned_data['aerogenerador'])
             resultados = resultados.filter(estado__in=form.cleaned_data['estado'])
+            resultados = resultados.filter(componente__in=form.cleaned_data['componente'])
+            resultados = resultados.filter(sub_componente__in=form.cleaned_data['subcomponente'])
+            resultados = resultados.filter(tipo__in=form.cleaned_data['tipo'])
             #for key,value in form.cleaned_data.iteritems():
             #    logger.debug(key)
             logger.debug(resultados)
