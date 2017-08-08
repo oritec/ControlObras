@@ -16,4 +16,5 @@ urlpatterns = [
     url(r'^revision/(?P<revision_id>[0-9]+)/imagenes/agregar', views.add_images, name='imagenes-agregar'),
     url(r'^observaciones/informeNCR', views.informeNCR, name='informeNCR'),
     url(r'^observaciones/punchlist', views.punchlist, name='punchlist'),
+    url(r'^observadores', views.observadores, name='observadores')
 ]

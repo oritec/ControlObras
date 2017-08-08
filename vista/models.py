@@ -9,6 +9,16 @@ logger = logging.getLogger('oritec')
 
 
 @python_2_unicode_compatible
+class Aerogenerador(models.Model):
+    idx = models.IntegerField()
+    nombre = models.CharField(max_length=100)
+    parque = models.ForeignKey('ParqueSolar', on_delete=models.CASCADE)
+    class Meta:
+        unique_together = (("parque", "idx"),("parque", "nombre"))
+    def __str__(self):
+        return '%s' % (self.nombre)
+
+@python_2_unicode_compatible
 class ParqueSolar(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
     slug = models.SlugField()
@@ -16,6 +26,7 @@ class ParqueSolar(models.Model):
     suministrador = models.CharField(max_length=100, default='')
     plataforma = models.CharField(max_length=100, default='')
     no_aerogeneradores = models.IntegerField(default=0)
+    prev_no_aerogeneradores = models.IntegerField(default=0)
 
     def __str__(self):
         return '%s' % (self.nombre)

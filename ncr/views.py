@@ -2,23 +2,25 @@
 from django.shortcuts import render
 from vista.functions import *
 from django.contrib.auth.decorators import login_required, permission_required
-from vista.models import ParqueSolar
+from vista.models import ParqueSolar,Aerogenerador
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.shortcuts import redirect
 from forms import ObservacionForm, RevisionForm, RevisionFormFull
-from ncr.models import Observacion, Revision, Fotos
+from ncr.models import Observacion, Revision, Fotos, Observador
 from django.core import serializers
 import json
 import logging
 import os
+import urlparse
 logger = logging.getLogger('oritec')
 
 @login_required(login_url='ingresar')
 def home(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'Parque Eólico-NCR'
@@ -28,11 +30,13 @@ def home(request,slug):
     return render(request, 'vista/home.html',
         {'cont': contenido,
          'parque': parque,
+         'aerogeneradores':aerogeneradores,
         })
 
 @login_required(login_url='ingresar')
 def observaciones_resumen(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'Resumen de Observaciones'
@@ -47,11 +51,13 @@ def observaciones_resumen(request,slug):
                    'observaciones': observaciones,
                    'url_append':url_append,
                    'table_show_ag': table_show_ag,
+                   'aerogeneradores':aerogeneradores,
                    })
 
 @login_required(login_url='ingresar')
 def observaciones(request,slug,ag_id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'NCR Aerogenerador WTG'+str(ag_id).zfill(2)
@@ -65,11 +71,13 @@ def observaciones(request,slug,ag_id):
          'parque': parque,
          'observaciones': observaciones,
          'url_append': url_append,
+         'aerogeneradores':aerogeneradores,
         })
 
 @login_required(login_url='ingresar')
 def add_observacion(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'Agregar Observacion'
@@ -117,12 +125,14 @@ def add_observacion(request,slug):
          'revisionForm': revisionForm,
          'ag_readonly': ag_readonly,
          'back_url': back_url,
+         'aerogeneradores':aerogeneradores,
         })
 
 @login_required(login_url='ingresar')
 def show_observacion(request,slug,observacion_id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     observacion=get_object_or_404(Observacion, id=observacion_id)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'Observación '
@@ -146,6 +156,7 @@ def show_observacion(request,slug,observacion_id):
          'observacion': observacion,
          'main_fotos': main_fotos,
          'fotos': fotos,
+         'aerogeneradores':aerogeneradores
         })
 
 @login_required(login_url='ingresar')
@@ -251,6 +262,7 @@ def primary_image(request,slug):
 @login_required(login_url='ingresar')
 def add_revision(request,slug,observacion_id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'Agregar Revisión'
@@ -279,11 +291,13 @@ def add_revision(request,slug,observacion_id):
          'parque': parque,
          'observacion': observacion,
          'revisionForm': revisionForm,
+         'aerogeneradores':aerogeneradores,
         })
 
 @login_required(login_url='ingresar')
 def informeNCR(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'Informe NCR'
@@ -294,19 +308,104 @@ def informeNCR(request,slug):
     return render(request, 'ncr/informeNCR.html',
         {'cont': contenido,
          'parque': parque,
+         'aerogeneradores':aerogeneradores,
         })
 
 @login_required(login_url='ingresar')
 def punchlist(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'Punchlist'
     contenido.subtitulo='Parque '+ parque.nombre
     contenido.menu = ['menu-ncr', 'menu2-punchlist']
 
-
     return render(request, 'ncr/punchlist.html',
         {'cont': contenido,
          'parque': parque,
+         'aerogeneradores':aerogeneradores,
+        })
+
+@login_required(login_url='ingresar')
+def observadores(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    contenido=ContenidoContainer()
+    contenido.user=request.user
+    contenido.titulo=u'Listado de observadores'
+    contenido.subtitulo='Parque '+ parque.nombre
+    contenido.menu = ['menu-principal', 'menu2-observadores']
+    observadores = Observador.objects.all().order_by('id')
+    response_data = {}
+
+    # Me decido por interfaz RESTful. POST: Crear Nuevo, DELETE: Eliminar, PUT: Editar
+    if request.method == 'POST':
+        logger.debug('POST')
+        editar = Observador.objects.get(id=int(request.POST['id']))
+        editar.nombre = request.POST['nombre']
+        editar.save()
+        response_data['id'] = str(editar.id)
+        response = json.dumps(response_data)
+        return HttpResponse(
+            response,
+            content_type="application/json"
+        )
+    elif request.method == 'DELETE':
+        #logger.debug('DELETE')
+        data = dict(urlparse.parse_qsl(request.body))
+        borrar = Observador.objects.get(id=data['id'])
+        logger.debug("Borrando nombre=" +borrar.nombre)
+        borrar.delete()
+        return HttpResponse(
+            '',
+            content_type="application/json"
+        )
+    elif request.method == 'PUT':
+        data=dict(urlparse.parse_qsl(request.body))
+        nuevo = Observador(nombre = data['nombre'])
+        nuevo.save()
+        response_data['id'] = str(nuevo.id)
+        response = json.dumps(response_data)
+        return HttpResponse(
+            response,
+            content_type="application/json"
+        )
+    return render(request, 'ncr/agregarObservador.html',
+        {'cont': contenido,
+         'parque': parque,
+         'observadores': observadores,
+         'aerogeneradores':aerogeneradores,
+        })
+
+@login_required(login_url='ingresar')
+def aerogeneradores(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    contenido=ContenidoContainer()
+    contenido.user=request.user
+    contenido.titulo=u'Listado de Aerogeneradores'
+    contenido.subtitulo='Parque '+ parque.nombre
+    contenido.menu = ['menu-principal', 'menu2-aerogeneradores']
+    observadores = Observador.objects.all().order_by('id')
+    response_data = {}
+
+    # Me decido por interfaz RESTful. POST: Crear Nuevo, DELETE: Eliminar, PUT: Editar
+    if request.method == 'POST':
+        logger.debug('POST')
+        editar = Observador.objects.get(id=int(request.POST['id']))
+        editar.nombre = request.POST['nombre']
+        editar.save()
+        response_data['id'] = str(editar.id)
+        response = json.dumps(response_data)
+        return HttpResponse(
+            response,
+            content_type="application/json"
+        )
+
+    return render(request, 'ncr/agregarAerogenerador.html',
+        {'cont': contenido,
+         'parque': parque,
+         'observadores': observadores,
+         'aerogeneradores':aerogeneradores,
         })
