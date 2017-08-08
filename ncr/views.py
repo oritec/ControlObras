@@ -6,7 +6,7 @@ from vista.models import ParqueSolar,Aerogenerador
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
-from forms import ObservacionForm, RevisionForm, RevisionFormFull
+from forms import ObservacionForm, RevisionForm, RevisionFormFull,NCR
 from ncr.models import Observacion, Revision, Fotos, Observador
 import json
 import logging
@@ -352,11 +352,27 @@ def informeNCR(request,slug):
     contenido.subtitulo='Parque '+ parque.nombre
     contenido.menu = ['menu-ncr', 'menu2-informeNCR']
 
+    form = NCR(parque=parque)
+    resultados = None
+
+    if request.method == 'POST':
+        logger.debug('informeNCR Post')
+        form = NCR(request.POST,parque=parque)
+        if form.is_valid():
+            logger.debug("Form Valid")
+            resultados = Observacion.objects.filter(aerogenerador__in=form.cleaned_data['aerogenerador'])
+            resultados = resultados.filter(estado__in=form.cleaned_data['estado'])
+            #for key,value in form.cleaned_data.iteritems():
+            #    logger.debug(key)
+            logger.debug(resultados)
+
 
     return render(request, 'ncr/informeNCR.html',
         {'cont': contenido,
          'parque': parque,
          'aerogeneradores':aerogeneradores,
+         'form':form,
+         'resultados':resultados,
         })
 
 @login_required(login_url='ingresar')

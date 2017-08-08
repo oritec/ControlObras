@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django import forms
-from models import Observacion, Revision,EstadoRevision
+from ncr.models import Observacion, Revision,EstadoRevision,Severidad,Componente,Subcomponente,Tipo
+from vista.models import ParqueSolar,Aerogenerador
 import logging
 logger = logging.getLogger('oritec')
 
@@ -95,9 +96,15 @@ class RevisionFormFull(forms.ModelForm):
         self.fields['reported_by'].widget.attrs['data-size'] = '8'
 
 class NCR(forms.Form):
-    aerogenerador = forms.ChoiceField(choices=[])
-    parque = forms.ModelChoiceField(queryset=EstadoRevision.objects.all(), empty_label=None)
+    aerogenerador = forms.ModelMultipleChoiceField(queryset=Aerogenerador.objects.all(),required=False)
+    estado = forms.ModelMultipleChoiceField(queryset=EstadoRevision.objects.all(),required=False)
+    severidad = forms.ModelMultipleChoiceField(queryset=Severidad.objects.all(),required=False)
+    componente = forms.ModelMultipleChoiceField(queryset=Componente.objects.all(),required=False)
+    subcomponente = forms.ModelMultipleChoiceField(queryset=Subcomponente.objects.all(),required=False)
+    tipo = forms.ModelMultipleChoiceField(queryset=Tipo.objects.all(),required=False)
     def __init__(self, *args, **kwargs):
+        parque = kwargs.pop('parque')
         super(NCR, self).__init__(*args, **kwargs)
+        self.fields['aerogenerador'].queryset = Aerogenerador.objects.filter(parque=parque)
 
-        self.fields['parque'].widget.attrs['class'] = 'selectpicker form-control'
+#        self.fields['aerogenerador'].widget.attrs['class'] = 'form-control'
