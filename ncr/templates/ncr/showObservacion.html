@@ -81,6 +81,7 @@
             </div>
         </div>
         {% if forloop.last %}
+            {% if observacion.estado.nombre != "Reparado" %}
             <div class="row">
                 <div class="col-md-12">
                     <a href="{% url 'ncr:revisiones-add' parque.slug observacion.id %}" class="btn btn-sm blue" style="margin-left:10px;margin-right:10px;">
@@ -88,6 +89,7 @@
                     </a>
                 </div>
             </div>
+            {% endif %}
         {% endif %}
         {% endfor %}
     {% endif %}

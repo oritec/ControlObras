@@ -1,16 +1,13 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render
 from vista.functions import *
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required
 from vista.models import ParqueSolar,Aerogenerador
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
-from django.contrib import messages
-from django.shortcuts import redirect
 from forms import ObservacionForm, RevisionForm, RevisionFormFull
 from ncr.models import Observacion, Revision, Fotos, Observador
-from django.core import serializers
 import json
 import logging
 import os
@@ -318,6 +315,14 @@ def add_revision(request,slug,observacion_id, revision_id = 0):
                 revision = revisionForm.save(commit=False)
                 revision.created_by = request.user
                 revision.save()
+            aux = observacion.revision_set.filter(estado__nombre="Reparado")
+            if aux.count() > 0:
+                observacion.estado = aux[0].estado
+                observacion.save()
+            else:
+                aux2 = observacion.revision_set.order_by('-id')[0]
+                observacion.estado = aux2.estado
+                observacion.save()
             return HttpResponseRedirect(reverse('ncr:observaciones-show', args=[parque.slug,observacion.id]))
         else:
             logger.debug('Formulario no es válido...')
