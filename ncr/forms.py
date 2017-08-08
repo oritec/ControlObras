@@ -17,15 +17,14 @@ class ObservacionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ObservacionForm, self).__init__(*args, **kwargs)
 
-        parque = kwargs['initial']['parque']
-
-        opciones = []
-        for ag in range(1,parque.no_aerogeneradores+1):
+        #parque = kwargs['initial']['parque']
+        #opciones = []
+        #for ag in range(1,parque.no_aerogeneradores+1):
             #logger.debug(ag)
-            opciones.append((ag,'WTG'+str(ag).zfill(2)))
-        self.fields['aerogenerador'] = forms.ChoiceField(
-            choices=opciones
-        )
+        #    opciones.append((ag,'WTG'+str(ag).zfill(2)))
+        #self.fields['aerogenerador'] = forms.ChoiceField(
+        #    choices=opciones
+        #)
         self.fields['parque'].widget = forms.HiddenInput()
         self.fields['aerogenerador'].widget.attrs['class'] = 'bs-select form-control'
         self.fields['aerogenerador'].widget.attrs['data-live-search'] = 'true'

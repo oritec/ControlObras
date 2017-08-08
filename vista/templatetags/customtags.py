@@ -163,3 +163,19 @@ def multiply(value, arg):
 @register.filter
 def divide(value, arg):
     return value/arg
+
+@register.filter()
+def filter_ag_id(value,arg):
+    f=value.filter(id=int(arg))
+    if f.count() > 0:
+        return f[0].nombre
+    else:
+        return ''
+
+@register.filter()
+def filter_ag_idx(value,arg):
+    f=value.filter(idx=int(arg))
+    if f.count() > 0:
+        return f[0].nombre
+    else:
+        return ''

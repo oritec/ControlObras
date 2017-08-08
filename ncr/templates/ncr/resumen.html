@@ -35,7 +35,7 @@
                                         <th> # </th>
                                         {% if table_show_ag %} <th> Aerogenerador</th>{% endif %}
                                         <th> Componente </th>
-                                        <th> Descripción </th>
+                                        <th> Descripci&oacute;n </th>
                                         <th> Acci&oacute;n </th>
                                     </tr>
                                 </thead>
@@ -43,7 +43,7 @@
                                 {% for observacion in observaciones %}
                                     <tr>
                                         <td> {{ forloop.counter }}</td>
-                                        {% if table_show_ag %} <td> WTG{{ observacion.aerogenerador|stringformat:"02d" }}</td>{% endif %}
+                                        {% if table_show_ag %} <td> {{ observacion.aerogenerador.nombre }}</td>{% endif %}
                                         <td> {{ observacion.componente.nombre }} </td>
                                         <td> {{ observacion.nombre }} </td>
                                         <td>

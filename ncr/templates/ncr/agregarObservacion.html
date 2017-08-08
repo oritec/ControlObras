@@ -42,7 +42,7 @@
                                 <label class="control-label col-md-3">{{ observacionForm.aerogenerador.label }}</label>
                                 <div class="col-md-9" style="padding-top:20px">
                                     {% if request.GET.aerogenerador %}
-                                    WTG{{ observacionForm.aerogenerador.value|stringformat:"02d" }}
+                                        {{ aerogeneradores|filter_ag_id:observacionForm.aerogenerador.value }}
                                     {% else %}
                                         {{ observacionForm.aerogenerador }}
                                     {% endif %}

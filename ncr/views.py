@@ -58,14 +58,15 @@ def observaciones_resumen(request,slug):
 def observaciones(request,slug,ag_id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    aerogenerador = get_object_or_404(Aerogenerador,parque=parque,idx=ag_id)
     contenido=ContenidoContainer()
     contenido.user=request.user
-    contenido.titulo=u'NCR Aerogenerador WTG'+str(ag_id).zfill(2)
+    contenido.titulo=u'NCR Aerogenerador '+ aerogenerador.nombre
     contenido.subtitulo='Parque '+ parque.nombre
     contenido.menu = ['menu-ncr', 'menu2-observaciones-'+str(ag_id)]
     url_append='?aerogenerador='+str(ag_id)
 
-    observaciones = Observacion.objects.filter(aerogenerador__exact=ag_id, parque= parque)
+    observaciones = Observacion.objects.filter(aerogenerador__idx__exact=ag_id, parque= parque)
     return render(request, 'ncr/resumen.html',
         {'cont': contenido,
          'parque': parque,
@@ -98,7 +99,7 @@ def add_observacion(request,slug):
         observacionForm = ObservacionForm(request.POST,initial={"parque":parque})
         revisionForm = RevisionForm(request.POST)
         if observacionForm.is_valid() and revisionForm.is_valid():
-            logger.debug('Formularios válidos.')
+            #logger.debug('Formularios válidos.')
             observacion = observacionForm.save(commit=False)
             observacion.created_by = request.user
             observacion.save()
@@ -113,7 +114,8 @@ def add_observacion(request,slug):
 
     if observacionForm is None:
         if 'aerogenerador' in request.GET:
-            observacionForm = ObservacionForm(initial={"parque":parque,"aerogenerador":int(request.GET['aerogenerador'])})
+            ag = get_object_or_404(Aerogenerador, idx=int(request.GET['aerogenerador']), parque=parque)
+            observacionForm = ObservacionForm(initial={"parque":parque,"aerogenerador":ag.id})
         else:
             observacionForm = ObservacionForm(initial={"parque": parque})
         revisionForm = RevisionForm()
@@ -137,7 +139,7 @@ def show_observacion(request,slug,observacion_id):
     contenido.user=request.user
     contenido.titulo=u'Observación '
     contenido.subtitulo=parque.nombre
-    contenido.menu = ['menu-ncr', 'menu2-observaciones-'+str(observacion.aerogenerador)]
+    contenido.menu = ['menu-ncr', 'menu2-observaciones-'+str(observacion.aerogenerador.idx)]
     main_fotos = {}
     fotos = {}
     for r in observacion.revision_set.all():
@@ -268,7 +270,7 @@ def add_revision(request,slug,observacion_id):
     contenido.titulo=u'Agregar Revisión'
     contenido.subtitulo=parque.nombre
     observacion = get_object_or_404(Observacion, id=observacion_id)
-    contenido.menu = ['menu-ncr', 'menu2-observaciones-' + str(observacion.aerogenerador)]
+    contenido.menu = ['menu-ncr', 'menu2-observaciones-' + str(observacion.aerogenerador.idx)]
 
     revisionForm = None
 

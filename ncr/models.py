@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
+from vista.models import Aerogenerador
 from django.template import defaultfilters
 #from vista.models import ParqueSolar
 import logging
@@ -142,7 +143,7 @@ class Fotos(models.Model):
 class Observacion(models.Model):
     parque = models.ForeignKey('vista.ParqueSolar', on_delete=models.CASCADE)
     nombre = models.CharField(max_length=100, unique=True)
-    aerogenerador = models.IntegerField()
+    aerogenerador = models.ForeignKey('vista.Aerogenerador', on_delete=models.SET_NULL,null=True)
     fecha_observacion = models.DateField(blank=False,null=False)
     componente = models.ForeignKey('Componente', on_delete=models.SET_NULL, null=True)
     sub_componente = models.ForeignKey('Subcomponente', on_delete=models.SET_NULL, null=True)
