@@ -50,8 +50,10 @@
                         </a>
                         </h4>
                         <ul>
+                            <li> <b>Clase:</b> {% if observacion.clase %} NCR {% else %} Incidencia {% endif %} </li>
                             <li> <b>Componente:</b> {{ observacion.componente }}</li>
                             <li> <b>Sub-Componente:</b> {{ observacion.sub_componente }}</li>
+                            <li> <b>N&uacute;mero de Serie:</b> {% if observacion.no_serie == '' %} - {% else %}{{ observacion.no_serie }} {% endif %}</li>
                             <li> <b>Tipo:</b> {{ observacion.tipo }}</li>
                             <li> <b>Severidad:</b> {{ revision.severidad }}</li>
                             <li> <b>Nombre:</b> {{ observacion.nombre }}</li>

@@ -150,6 +150,8 @@ class Observacion(models.Model):
     tipo = models.ForeignKey('Tipo', on_delete=models.SET_NULL, null=True)
     punchlist = models.BooleanField(default=False)
     estado = models.ForeignKey('EstadoRevision', on_delete=models.SET_NULL, null=True, default=1)
+    clase = models.BooleanField(default=True) # True: NCR, False:Incidencia
+    no_serie = models.CharField(max_length=100, unique=False,null=True,blank=True,default='')
     created_by = models.ForeignKey(User)
     reported_by = models.ForeignKey(Observador)
     created_at = models.DateTimeField(auto_now_add=True)

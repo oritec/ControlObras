@@ -76,6 +76,14 @@
                             </div>
 
                             <div class="form-group">
+                                <label class="control-label col-md-3">{{ observacionForm.clase.label }}:</label>
+                                <div class="col-md-9">
+                                    {{ observacionForm.clase }}
+                                    <span class="help-block"> {{ observacionForm.clase.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
                                 <label class="control-label col-md-3">{{ observacionForm.componente.label }}</label>
                                 <div class="col-md-9">
                                     {{ observacionForm.componente }}
@@ -88,6 +96,14 @@
                                 <div class="col-md-9">
                                     {{ observacionForm.sub_componente }}
                                     <span class="help-block"> {{ observacionForm.sub_componente.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ observacionForm.no_serie.label }}</label>
+                                <div class="col-md-9">
+                                    {{ observacionForm.no_serie }}
+                                    <span class="help-block"> {{ observacionForm.no_serie.errors }} </span>
                                 </div>
                             </div>
 

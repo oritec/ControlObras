@@ -10,10 +10,12 @@ class ObservacionForm(forms.ModelForm):
                                  input_formats=('%d-%m-%Y',))
     class Meta:
         model = Observacion
-        fields = ['parque','nombre','aerogenerador','fecha_observacion','componente','sub_componente','tipo','punchlist','reported_by']
+        fields = ['parque','nombre','aerogenerador','fecha_observacion','componente','sub_componente','tipo',
+                  'punchlist','reported_by','clase','no_serie']
         labels = {
             'nombre': 'Descripción',
-            'reported_by': 'Reportado por'
+            'reported_by': 'Reportado por',
+            'no_serie': 'Número de Serie'
         }
     def __init__(self, *args, **kwargs):
         super(ObservacionForm, self).__init__(*args, **kwargs)
@@ -45,6 +47,7 @@ class ObservacionForm(forms.ModelForm):
         self.fields['sub_componente'].widget.attrs['class'] = 'bs-select form-control'
         self.fields['sub_componente'].widget.attrs['data-live-search'] = 'true'
         self.fields['sub_componente'].widget.attrs['data-size'] = '8'
+        self.fields['no_serie'].widget.attrs['class'] = 'form-control'
         self.fields['tipo'].widget.attrs['class'] = 'bs-select form-control'
         self.fields['tipo'].widget.attrs['data-live-search'] = 'true'
         self.fields['tipo'].widget.attrs['data-size'] = '8'
@@ -52,6 +55,10 @@ class ObservacionForm(forms.ModelForm):
         self.fields['punchlist'].widget.attrs['data-size'] = 'small'
         self.fields['punchlist'].widget.attrs['data-on-text'] = 'Si'
         self.fields['punchlist'].widget.attrs['data-off-text'] = 'No'
+        self.fields['clase'].widget.attrs['class'] = 'make-switch'
+        self.fields['clase'].widget.attrs['data-size'] = 'small'
+        self.fields['clase'].widget.attrs['data-on-text'] = 'NCR'
+        self.fields['clase'].widget.attrs['data-off-text'] = 'Incidencia'
         self.fields['reported_by'].widget.attrs['class'] = 'bs-select form-control'
         self.fields['reported_by'].widget.attrs['data-live-search'] = 'true'
         self.fields['reported_by'].widget.attrs['data-size'] = '8'
