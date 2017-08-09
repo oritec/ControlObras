@@ -17,7 +17,12 @@ class ObservacionForm(forms.ModelForm):
         }
     def __init__(self, *args, **kwargs):
         super(ObservacionForm, self).__init__(*args, **kwargs)
-
+        if 'initial' in kwargs:
+            parque = kwargs['initial']['parque']
+            self.fields['aerogenerador'].queryset = Aerogenerador.objects.filter(parque=parque)
+        elif 'instance' in kwargs:
+            parque = kwargs['instance'].parque
+            self.fields['aerogenerador'].queryset = Aerogenerador.objects.filter(parque=parque)
         #parque = kwargs['initial']['parque']
         #opciones = []
         #for ag in range(1,parque.no_aerogeneradores+1):
