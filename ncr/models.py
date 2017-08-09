@@ -142,7 +142,7 @@ class Fotos(models.Model):
 @python_2_unicode_compatible
 class Observacion(models.Model):
     parque = models.ForeignKey('vista.ParqueSolar', on_delete=models.CASCADE)
-    nombre = models.CharField(max_length=100, unique=True)
+    nombre = models.CharField(max_length=100, unique=False)
     aerogenerador = models.ForeignKey('vista.Aerogenerador', on_delete=models.SET_NULL,null=True)
     fecha_observacion = models.DateField(blank=False,null=False)
     componente = models.ForeignKey('Componente', on_delete=models.SET_NULL, null=True)
