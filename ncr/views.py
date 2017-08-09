@@ -315,14 +315,7 @@ def add_revision(request,slug,observacion_id, revision_id = 0):
                 revision = revisionForm.save(commit=False)
                 revision.created_by = request.user
                 revision.save()
-            aux = observacion.revision_set.filter(estado__nombre="Reparado")
-            if aux.count() > 0:
-                observacion.estado = aux[0].estado
-                observacion.save()
-            else:
-                aux2 = observacion.revision_set.order_by('-id')[0]
-                observacion.estado = aux2.estado
-                observacion.save()
+            revision.observacion.save() # Necesario para actualizar campos
             return HttpResponseRedirect(reverse('ncr:observaciones-show', args=[parque.slug,observacion.id]))
         else:
             logger.debug('Formulario no es válido...')
@@ -444,3 +437,40 @@ def observadores(request,slug):
          'observadores': observadores,
          'aerogeneradores':aerogeneradores,
         })
+
+@login_required(login_url='ingresar')
+def del_observacion(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    contenido=ContenidoContainer()
+    contenido.user=request.user
+    contenido.titulo=u'Listado de observadores'
+    contenido.subtitulo='Parque '+ parque.nombre
+    contenido.menu = ['menu-principal', 'menu2-observadores']
+    observadores = Observador.objects.all().order_by('id')
+    response_data = {}
+
+    if request.method == 'POST':
+        logger.debug('POST del_observacion')
+        Observacion.objects.get(id=int(request.POST['del_id'])).delete()
+        return HttpResponseRedirect(request.POST['back_url'])
+
+@login_required(login_url='ingresar')
+def del_revision(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    contenido=ContenidoContainer()
+    contenido.user=request.user
+    contenido.titulo=u'Listado de observadores'
+    contenido.subtitulo='Parque '+ parque.nombre
+    contenido.menu = ['menu-principal', 'menu2-observadores']
+    observadores = Observador.objects.all().order_by('id')
+    response_data = {}
+
+    if request.method == 'POST':
+        logger.debug('POST del_observacion')
+        revision=Revision.objects.get(id=int(request.POST['del_id']))
+        observacion = revision.observacion
+        revision.delete()
+        observacion.save()  # Necesario para actualizar campos
+        return HttpResponseRedirect(request.POST['back_url'])

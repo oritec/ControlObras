@@ -50,6 +50,8 @@
                                             <a href="{% url 'ncr:observaciones-show' parque.slug observacion.id %}" class="btn btn-circle btn-xs grey-cascade">
                                                 Ver <i class="fa fa-search"></i>
                                             </a>
+                                            <input type="button" id="del_observacion{{ observacion.id }}" data-target="#basic" data-toggle="modal" class="btn btn-xs btn-circle red" value="Borrar" onclick="$('#del_id').val({{ observacion.id }})"/>
+
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -72,7 +74,36 @@
         </div>
     {% endif %}
 
+<div class="modal fade" id="basic" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">
+                    <span class="glyphicon glyphicon-exclamation-sign" style="color:rgba(255, 63, 0, 0.89);font-size:20px"></span>
+                     <b>Advertencia</b> </h4>
+            </div>
+            <div class="modal-body">
+                 <h5><b>&iquest;Desea borrar el elemento? Esto eliminará todas las revisiones e imágenes.</b> </h5>
+            </div>
+            <div class="modal-footer">
 
+                <form action="{% url 'ncr:observaciones-eliminar' parque.slug %}" method="post" id="formModal">
+                    {% csrf_token %}
+                    <input type="hidden" name="del_id" id="del_id" value="">
+                    <input type="hidden" name="back_url" id="back_url" value="">
+                    <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" id='enviarmodal' class="btn red" name="FromList">Borrar</button>
+                    <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                </form>
+                <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
+
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
 
 {% endblock %}
 
@@ -84,5 +115,6 @@
 
 {% block jquery %}
 
+    $("#back_url").val(window.location.href);
 
 {% endblock %}

@@ -45,9 +45,10 @@
                 {% if forloop.first %}
                     <div class="col-md-9">
                         <h4 class="block">Revisi&oacute;n {{ forloop.counter }} - Fecha: {{ revision.fecha_revision }}
-                        <a href="{% url 'ncr:observaciones-editar' parque.slug observacion.id %}" class="btn btn-circle btn-xs blue" style="margin-left: 10px"> Editar
-                            <i class="fa fa-edit"></i>
-                        </a>
+                            <a href="{% url 'ncr:observaciones-editar' parque.slug observacion.id %}" class="btn btn-circle btn-xs blue" style="margin-left: 10px"> Editar
+                                <i class="fa fa-edit"></i>
+                            </a>
+                            <input type="button" id="del_observacion{{ observacion.id }}" data-target="#basic1" data-toggle="modal" class="btn btn-xs btn-circle red" value="Borrar" onclick="$('#del_id').val({{ observacion.id }})"/>
                         </h4>
                         <ul>
                             <li> <b>Clase:</b> {% if observacion.clase %} NCR {% else %} Incidencia {% endif %} </li>
@@ -56,8 +57,8 @@
                             <li> <b>N&uacute;mero de Serie:</b> {% if observacion.no_serie == '' %} - {% else %}{{ observacion.no_serie }} {% endif %}</li>
                             <li> <b>Tipo:</b> {{ observacion.tipo }}</li>
                             <li> <b>Severidad:</b> {{ revision.severidad }}</li>
-                            <li> <b>Nombre:</b> {{ observacion.nombre }}</li>
-                            <li> <b>Descripci&oacute;n:</b> {{ revision.descripcion }}</li>
+                            <li> <b>Descipci&oacute;n:</b> {{ observacion.nombre }}</li>
+                            <li> <b>Detalle:</b> {{ revision.descripcion }}</li>
                             <li> <b>Punchlist:</b> {% if observacion.punchlist %} S&iacute; {% else %} No {% endif %}</li>
                             <li> <b>Reportado por:</b> {{ observacion.reported_by }} </li>
                             <li> <b>Creado por:</b> {{ observacion.created_by }} </li>
@@ -69,12 +70,13 @@
                         <a href="{% url 'ncr:revisiones-editar' parque.slug observacion.id revision.id %}" class="btn btn-circle btn-xs blue" style="margin-left: 10px"> Editar
                             <i class="fa fa-edit"></i>
                         </a>
+                        <input type="button" id="del_revision{{ revision.id }}" data-target="#basic2" data-toggle="modal" class="btn btn-xs btn-circle red" value="Borrar" onclick="$('#del_id_rev').val({{ revision.id }})"/>
                         </h4>
                         <ul>
                             <li> <b>Estado:</b> {{ revision.estado }}</li>
                             <li> <b>Severidad:</b> {{ revision.severidad }}</li>
-                            <li> <b>Nombre:</b> {{ observacion.nombre }}</li>
-                            <li> <b>Descripci&oacute;n:</b> {{ revision.descripcion }}</li>
+                            <li> <b>Descripci&oacute;n:</b> {{ observacion.nombre }}</li>
+                            <li> <b>Detalle:</b> {{ revision.descripcion }}</li>
                             <li> <b>Reportado por:</b> {{ revision.reported_by }} </li>
                             <li> <b>Creado por:</b> {{ revision.created_by }} </li>
                         </ul>
@@ -151,6 +153,69 @@
     </div>
 </div>
 
+
+<div class="modal fade" id="basic1" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">
+                    <span class="glyphicon glyphicon-exclamation-sign" style="color:rgba(255, 63, 0, 0.89);font-size:20px"></span>
+                     <b>Advertencia</b> </h4>
+            </div>
+            <div class="modal-body">
+                 <h5><b>&iquest;Desea borrar la observación? Esto eliminará todas las revisiones e imágenes.</b> </h5>
+            </div>
+            <div class="modal-footer">
+
+                <form action="{% url 'ncr:observaciones-eliminar' parque.slug %}" method="post" id="formDelObservacion">
+                    {% csrf_token %}
+                    <input type="hidden" name="del_id" id="del_id" value="">
+                    <input type="hidden" name="back_url" id="back_url" value="">
+                    <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" id='enviarmodal' class="btn red" name="FromList">Borrar</button>
+                    <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                </form>
+                <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
+
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+
+<div class="modal fade" id="basic2" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">
+                    <span class="glyphicon glyphicon-exclamation-sign" style="color:rgba(255, 63, 0, 0.89);font-size:20px"></span>
+                     <b>Advertencia</b> </h4>
+            </div>
+            <div class="modal-body">
+                 <h5><b>&iquest;Desea borrar la revisión? Esto eliminará todas las imágenes.</b> </h5>
+            </div>
+            <div class="modal-footer">
+
+                <form action="{% url 'ncr:revision-eliminar' parque.slug %}" method="post" id="formDelRevision">
+                    {% csrf_token %}
+                    <input type="hidden" name="del_id" id="del_id_rev" value="">
+                    <input type="hidden" name="back_url" id="back_url" value="">
+                    <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" id='enviarmodal' class="btn red" name="FromList">Borrar</button>
+                    <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                </form>
+                <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
+
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
 {% endblock %}
 
 {% block javascript %}
@@ -384,7 +449,6 @@
         });
     });
 
-
     $("[name='addPhoto']").each(function( index ) {
         $(this).click(function( index ) {
             var id=$(this).attr('id');
@@ -490,4 +554,6 @@
         $("table tbody.files").empty();
     })
 
+    $("#formDelObservacion > #back_url").val("{% url 'ncr:observaciones' parque.slug observacion.aerogenerador.id %}");
+    $("#formDelRevision > #back_url").val(window.location.href);
 {% endblock %}

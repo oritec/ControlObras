@@ -152,6 +152,7 @@ class Observacion(models.Model):
     estado = models.ForeignKey('EstadoRevision', on_delete=models.SET_NULL, null=True, default=1)
     clase = models.BooleanField(default=True) # True: NCR, False:Incidencia
     no_serie = models.CharField(max_length=100, unique=False,null=True,blank=True,default='')
+    severidad = models.ForeignKey('Severidad', on_delete=models.SET_NULL, null=True)
     created_by = models.ForeignKey(User)
     reported_by = models.ForeignKey(Observador)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -159,6 +160,16 @@ class Observacion(models.Model):
 
     def __str__(self):
         return '%s' % (self.nombre)
+
+    def save(self, *args, **kwargs):
+        aux = self.revision_set.filter(estado__nombre="Reparado")
+        aux2 = self.revision_set.order_by('-id')[0]
+        if aux.count() > 0:
+            self.estado = aux[0].estado
+        else:
+            self.estado = aux2.estado
+        self.severidad = aux2.severidad
+        super(Observacion, self).save(*args, **kwargs)  # Call the "real" save() method.
 
 @python_2_unicode_compatible
 class Revision(models.Model):
