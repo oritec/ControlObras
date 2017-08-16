@@ -130,7 +130,7 @@ class Fotos(models.Model):
         import os
 
         # Set our max thumbnail size in a tuple (max width, max height)
-        THUMBNAIL_SIZE = (650, 750)
+        THUMBNAIL_SIZE = (650, 650)
 
         try:
             DJANGO_TYPE = self.imagen.file.content_type
@@ -149,7 +149,8 @@ class Fotos(models.Model):
 
         # Open original photo which we want to thumbnail using PIL's Image
         image = Image.open(StringIO(self.imagen.read()))
-
+        if image.width < image.height:
+            image = image.rotate(90)
         # We use our PIL Image object to create the thumbnail, which already
         # has a thumbnail() convenience method that contrains proportions.
         # Additionally, we use Image.ANTIALIAS to make the image look better.
