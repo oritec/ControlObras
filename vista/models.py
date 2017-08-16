@@ -27,7 +27,7 @@ class ParqueSolar(models.Model):
     plataforma = models.CharField(max_length=100, default='')
     no_aerogeneradores = models.IntegerField(default=0)
     prev_no_aerogeneradores = models.IntegerField(default=0)
-
+    codigo = models.CharField(max_length=50,default='')
     def __str__(self):
         return '%s' % (self.nombre)
 
