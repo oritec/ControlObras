@@ -27,9 +27,9 @@
                 <div class="col-md-3">
                     <a href="javascript:;" class="thumbnail">
                         {% if fotos|get_item:revision.id %}
-                            <img src="{{ main_fotos|get_item:revision.id  }}" alt="foto" id="thumbnail-{{ revision.id }}"/>
+                            <img src="{{ main_fotos|get_item:revision.id  }}" alt="foto" name="galeria" id="thumbnail-{{ revision.id }}"/>
                         {% else %}
-                            <img src="{% static 'common/images/photo_add6.png' %}" alt="foto" id="thumbnail-{{ revision.id }}"/>
+                            <img src="{% static 'common/images/photo_add6.png' %}" alt="foto" name="galeria" id="thumbnail-{{ revision.id }}"/>
                         {% endif %}
                     </a>
                     <row>
