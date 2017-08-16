@@ -91,9 +91,15 @@
                         <a href="{% url 'ncr:revisiones-add' parque.slug observacion.id %}" class="btn btn-sm blue" style="margin-left:10px;">
                             Agregar Revisi&oacute;n <i class="fa fa-plus"></i>
                         </a>
+                        {% if observacion.estado.nombre == 'Solucionado' %}
+                        <a href="" id="closeSafe" class="btn btn-sm grey-mint" style="margin-left:10px;margin-right:10px;">
+                            Cerrar Observaci&oacute;n <i class="fa fa-check-square-o"></i>
+                        </a>
+                        {% else %}
                         <a href="" id="close_{{ observacion.id }}" data-target="#basic3" data-toggle="modal" class="btn btn-sm grey-mint" style="margin-left:10px;margin-right:10px;" onclick="$('#del_id_obs').val({{ observacion.id }});$('#cierre_msg').val('');">
                             Cerrar Observaci&oacute;n <i class="fa fa-check-square-o"></i>
                         </a>
+                        {% endif %}
                     </div>
                 </div>
             {% else %}
@@ -628,4 +634,11 @@
     $("#formDelRevision > #back_url").val(window.location.href);
     $("#formCloseObs > #back_url").val(window.location.href);
     $("#formOpenObs > #back_url").val(window.location.href);
+
+    $("#closeSafe").click(function(){
+        $('#del_id_obs').val({{ observacion.id }});
+        $('#cierre_msg').val('');
+        $('#formCloseObs').submit();
+    });
+
 {% endblock %}
