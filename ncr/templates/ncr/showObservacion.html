@@ -85,21 +85,31 @@
             </div>
         </div>
         {% if forloop.last %}
-            {% if observacion.estado.nombre != "Reparado" %}
-            <div class="row">
-                <div class="col-md-12">
-                    <a href="{% url 'ncr:revisiones-add' parque.slug observacion.id %}" class="btn btn-sm blue" style="margin-left:10px;margin-right:10px;">
-                        Agregar Revisi&oacute;n <i class="fa fa-plus"></i>
-                    </a>
+            {% if not observacion.cerrado %}
+                <div class="row">
+                    <div class="col-md-12">
+                        <a href="{% url 'ncr:revisiones-add' parque.slug observacion.id %}" class="btn btn-sm blue" style="margin-left:10px;">
+                            Agregar Revisi&oacute;n <i class="fa fa-plus"></i>
+                        </a>
+                        <a href="" id="close_{{ observacion.id }}" data-target="#basic3" data-toggle="modal" class="btn btn-sm grey-mint" style="margin-left:10px;margin-right:10px;" onclick="$('#del_id_obs').val({{ observacion.id }});$('#cierre_msg').val('');">
+                            Cerrar Observaci&oacute;n <i class="fa fa-check-square-o"></i>
+                        </a>
+                    </div>
                 </div>
-            </div>
+            {% else %}
+                <div class="row">
+                    <div class="col-md-12">
+                        <a href="" id="close_{{ observacion.id }}" data-target="#basic4" data-toggle="modal" class="btn btn-sm grey-mint" style="margin-left:10px;margin-right:10px;" onclick="$('#del_id_obs2').val({{ observacion.id }})">
+                            Abrir Observaci&oacute;n <i class="fa fa-check-square-o"></i>
+                        </a>
+                    </div>
+                </div>
             {% endif %}
         {% endif %}
         {% endfor %}
     {% endif %}
 
 </div>
-
 
 <div id="long" class="modal fade bs-modal-lg modal-scroll" tabindex="-1" data-replace="true">
     <div class="modal-dialog modal-lg">
@@ -153,7 +163,6 @@
     </div>
 </div>
 
-
 <div class="modal fade" id="basic1" tabindex="-1" role="basic" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -185,7 +194,6 @@
     <!-- /.modal-dialog -->
 </div>
 
-
 <div class="modal fade" id="basic2" tabindex="-1" role="basic" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -211,6 +219,68 @@
                 <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
 
             </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="basic3" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{% url 'ncr:observaciones-cerrar' parque.slug %}" method="post" id="formCloseObs">
+                {% csrf_token %}
+                <input type="hidden" name="back_url" id="back_url" value="">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">
+                        <span class="glyphicon glyphicon-exclamation-sign" style="color:rgba(255, 63, 0, 0.89);font-size:20px"></span>
+                         <b>Advertencia</b> </h4>
+                </div>
+                <div class="modal-body">
+                     <h5><b>Observación no solucionada. Indica por qué quieres cerrarla.</b> </h5>
+                    <textarea id="cierre_msg" name="cierre_msg" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+
+                        <input type="hidden" name="del_id" id="del_id_obs" value="">
+                        <input type="hidden" name="cerrar" id="cerrar" value="1">
+                        <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" id='enviarmodal' class="btn red" name="FromList">Cerrar Observaci&oacute;n</button>
+                        <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                </div>
+            </form>
+                <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="basic4" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{% url 'ncr:observaciones-cerrar' parque.slug %}" method="post" id="formOpenObs">
+                {% csrf_token %}
+                <input type="hidden" name="back_url" id="back_url" value="">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">
+                        <span class="glyphicon glyphicon-exclamation-sign" style="color:rgba(255, 63, 0, 0.89);font-size:20px"></span>
+                         <b>Advertencia</b> </h4>
+                </div>
+                <div class="modal-body">
+                     <h5><b>¿Seguro que quieres volver a abrir la observaci&oacute;n</b> </h5>
+                </div>
+                <div class="modal-footer">
+                        <input type="hidden" name="del_id" id="del_id_obs2" value="">
+                        <input type="hidden" name="cerrar" id="cerrar" value="0">
+                        <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" id='enviarmodal' class="btn red" name="FromList">Abrir</button>
+                        <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                </div>
+            </form>
+                <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
         </div>
         <!-- /.modal-content -->
     </div>
@@ -556,4 +626,6 @@
 
     $("#formDelObservacion > #back_url").val("{% url 'ncr:observaciones' parque.slug observacion.aerogenerador.id %}");
     $("#formDelRevision > #back_url").val(window.location.href);
+    $("#formCloseObs > #back_url").val(window.location.href);
+    $("#formOpenObs > #back_url").val(window.location.href);
 {% endblock %}

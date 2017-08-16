@@ -380,21 +380,21 @@
         "model": "ncr.estadorevision",
         "pk": 1,
         "fields": {
-            "nombre": "No Reparado"
+            "nombre": "No Solucionado"
         }
     },
     {
         "model": "ncr.estadorevision",
         "pk": 2,
         "fields": {
-            "nombre": "Parcialmente Reparado"
+            "nombre": "Parcialmente Solucionado"
         }
     },
     {
         "model": "ncr.estadorevision",
         "pk": 3,
         "fields": {
-            "nombre": "Reparado"
+            "nombre": "Solucionado"
         }
     },
     {

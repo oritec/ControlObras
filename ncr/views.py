@@ -474,3 +474,27 @@ def del_revision(request,slug):
         revision.delete()
         observacion.save()  # Necesario para actualizar campos
         return HttpResponseRedirect(request.POST['back_url'])
+
+@login_required(login_url='ingresar')
+def close_observacion(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    contenido=ContenidoContainer()
+    contenido.user=request.user
+    contenido.titulo=u'Listado de observadores'
+    contenido.subtitulo='Parque '+ parque.nombre
+    contenido.menu = ['menu-principal', 'menu2-observadores']
+    observadores = Observador.objects.all().order_by('id')
+    response_data = {}
+
+    if request.method == 'POST':
+        logger.debug('POST del_observacion')
+        observacion=Observacion.objects.get(id=int(request.POST['del_id']))
+        if request.POST['cerrar'] == '1':
+            observacion.msg_cerrado = request.POST['cierre_msg']
+            observacion.cerrado = True
+        else:
+            observacion.msg_cerrado = ''
+            observacion.cerrado = False
+        observacion.save()
+        return HttpResponseRedirect(request.POST['back_url'])

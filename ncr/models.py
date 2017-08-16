@@ -150,6 +150,8 @@ class Observacion(models.Model):
     tipo = models.ForeignKey('Tipo', on_delete=models.SET_NULL, null=True)
     punchlist = models.BooleanField(default=False)
     estado = models.ForeignKey('EstadoRevision', on_delete=models.SET_NULL, null=True, default=1)
+    cerrado = models.BooleanField(default=False)  # False: No Cerrado, True:Cerrado
+    msg_cerrado = models.CharField(max_length=500, blank = True, null= True, default='')
     clase = models.BooleanField(default=True) # True: NCR, False:Incidencia
     no_serie = models.CharField(max_length=100, unique=False,null=True,blank=True,default='')
     severidad = models.ForeignKey('Severidad', on_delete=models.SET_NULL, null=True)
@@ -162,7 +164,7 @@ class Observacion(models.Model):
         return '%s' % (self.nombre)
 
     def save(self, *args, **kwargs):
-        aux = self.revision_set.filter(estado__nombre="Reparado")
+        aux = self.revision_set.filter(estado__nombre="Solucionado")
         aux2 = self.revision_set.order_by('-id')[0]
         if aux.count() > 0:
             self.estado = aux[0].estado

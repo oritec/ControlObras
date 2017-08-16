@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'^observaciones/(?P<ag_id>[0-9]+)', views.observaciones, name='observaciones'),
     url(r'^observaciones/agregar', views.add_observacion, name='observaciones-agregar'),
     url(r'^observaciones/eliminar', views.del_observacion, name='observaciones-eliminar'),
+    url(r'^observaciones/cerrar', views.close_observacion, name='observaciones-cerrar'),
     url(r'^observaciones/imagenes/set_primary', views.primary_image, name='imagenes-primary'),
     url(r'^observaciones/imagenes/(?P<image_id>[0-9]+)/borrar', views.del_image, name='imagenes-delete'),
     url(r'^revision/(?P<revision_id>[0-9]+)/imagenes/agregar', views.add_images, name='imagenes-agregar'),
