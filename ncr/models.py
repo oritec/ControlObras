@@ -58,6 +58,7 @@ class Fotos(models.Model):
     revision = models.ForeignKey('Revision', on_delete=models.CASCADE)
     imagen = models.ImageField(upload_to=rev_directory_path)
     thumbnail = models.ImageField(upload_to=thumbnails_directory_path,max_length=500, null=True, blank=True)
+    reporte_img = models.ImageField(upload_to=thumbnails_directory_path, null=True, blank=True)
     principal = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -112,6 +113,65 @@ class Fotos(models.Model):
             suf,
             save=False
         )
+        self.imagen.seek(0)
+
+    def create_reporte_img(self):
+        # original code for this method came from
+        # http://snipt.net/danfreak/generate-thumbnails-in-django-with-pil/
+
+        # If there is no image associated with this.
+        # do not create thumbnail
+        if not self.imagen:
+            return
+
+        from PIL import Image
+        from cStringIO import StringIO
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        import os
+
+        # Set our max thumbnail size in a tuple (max width, max height)
+        THUMBNAIL_SIZE = (650, 750)
+
+        try:
+            DJANGO_TYPE = self.imagen.file.content_type
+        except Exception as e:
+            if self.imagen.name.lower().endswith(".jpg"):
+                DJANGO_TYPE = 'image/jpeg'
+            elif self.imagen.name.lower().endswith(".png"):
+                DJANGO_TYPE = 'image/png'
+
+        if DJANGO_TYPE == 'image/jpeg':
+            PIL_TYPE = 'jpeg'
+            FILE_EXTENSION = 'jpg'
+        elif DJANGO_TYPE == 'image/png':
+            PIL_TYPE = 'png'
+            FILE_EXTENSION = 'png'
+
+        # Open original photo which we want to thumbnail using PIL's Image
+        image = Image.open(StringIO(self.imagen.read()))
+
+        # We use our PIL Image object to create the thumbnail, which already
+        # has a thumbnail() convenience method that contrains proportions.
+        # Additionally, we use Image.ANTIALIAS to make the image look better.
+        # Without antialiasing the image pattern artifacts may result.
+        image.thumbnail(THUMBNAIL_SIZE, Image.ANTIALIAS)
+
+        # Save the thumbnail
+        temp_handle = StringIO()
+        image.save(temp_handle, PIL_TYPE)
+        temp_handle.seek(0)
+
+        # Save image to a SimpleUploadedFile which can be saved into
+        # ImageField
+        suf = SimpleUploadedFile(os.path.split(self.imagen.name)[-1],
+                                 temp_handle.read(), content_type=DJANGO_TYPE)
+        # Save SimpleUploadedFile into image field
+        self.reporte_img.save(
+            '%s_reporte.%s' % (os.path.splitext(suf.name)[0], FILE_EXTENSION),
+            suf,
+            save=False
+        )
+        self.imagen.seek(0)
 
     def save(self, *args, **kwargs):
         #logger.debug("Saving Image")
@@ -124,12 +184,13 @@ class Fotos(models.Model):
         if updateThumbnail:
             try:
                 self.create_thumbnail()
+                self.create_reporte_img()
             except Exception as e:
                 logger.debug(e.__doc__)
                 logger.debug(e.message)
 
         force_update = False
-
+        #self.create_reporte_img()
         # If the instance already has been saved, it has an id and we set
         # force_update to True
         if self.id:
@@ -173,12 +234,14 @@ class Observacion(models.Model):
                 self.observacion_id = 1
 
         aux = self.revision_set.filter(estado__nombre="Solucionado")
-        aux2 = self.revision_set.order_by('-id')[0]
+        res = self.revision_set.order_by('-id')
+
         if aux.count() > 0:
             self.estado = aux[0].estado
-        else:
+        elif res.count()>0:
+            aux2 = res[0]
             self.estado = aux2.estado
-        self.severidad = aux2.severidad
+            self.severidad = aux2.severidad
         super(Observacion, self).save(*args, **kwargs)  # Call the "real" save() method.
 
 @python_2_unicode_compatible

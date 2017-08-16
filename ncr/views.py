@@ -6,8 +6,9 @@ from vista.models import ParqueSolar,Aerogenerador
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
-from forms import ObservacionForm, RevisionForm, RevisionFormFull,NCR
+from forms import ObservacionForm, RevisionForm, RevisionFormFull, NCR, Punchlist
 from ncr.models import Observacion, Revision, Fotos, Observador
+from easy_pdf.rendering import render_to_pdf_response
 import json
 import logging
 import os
@@ -381,10 +382,40 @@ def punchlist(request,slug):
     contenido.subtitulo='Parque '+ parque.nombre
     contenido.menu = ['menu-ncr', 'menu2-punchlist']
 
+    form = Punchlist(parque=parque)
+    resultados = None
+    main_fotos = {}
+
+    if request.method == 'POST':
+        logger.debug('informePunchlist Post')
+        form = Punchlist(request.POST, parque=parque)
+        if form.is_valid():
+            logger.debug("Form Valid")
+            resultados = Observacion.objects.filter(aerogenerador__in=form.cleaned_data['aerogenerador'])
+            # for key,value in form.cleaned_data.iteritems():
+            #    logger.debug(key)
+            for res in resultados:
+                for r in res.revision_set.all().order_by('-id'):
+                    results = Fotos.objects.filter(revision=r, principal=True)
+                    if results.count() > 0:
+                        main_fotos[r.id] = results[0].reporte_img.url
+            logger.debug(resultados)
+            respuesta=render_to_pdf_response(request,'ncr/punchlistPDF.html',
+                                   {'pagesize':'LETTER',
+                                    'title': 'Reporte Punchlist',
+                                     'resultados':resultados,
+                                    'main_fotos': main_fotos,
+                                    'parque':parque
+                                   }, content_type='application/pdf',
+                                      response_class=HttpResponse )
+            #respuesta['Content-Disposition'] = 'attachment; filename="ReportePunchlist.pdf"'
+            return respuesta
     return render(request, 'ncr/punchlist.html',
         {'cont': contenido,
          'parque': parque,
          'aerogeneradores':aerogeneradores,
+         'form': form,
+         'resultados': resultados,
         })
 
 @login_required(login_url='ingresar')

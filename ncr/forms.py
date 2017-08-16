@@ -120,3 +120,21 @@ class NCR(forms.Form):
         self.fields['aerogenerador'].queryset = Aerogenerador.objects.filter(parque=parque)
 
 #        self.fields['aerogenerador'].widget.attrs['class'] = 'form-control'
+
+class Punchlist(forms.Form):
+    aerogenerador = forms.ModelMultipleChoiceField(queryset=Aerogenerador.objects.all(),required=False)
+    fotos = forms.BooleanField(label='¿Incluir fotos?',required=False)
+    reparadas = forms.BooleanField(label='¿Incluir observaciones reparadas?',required=False)
+    def __init__(self, *args, **kwargs):
+        parque = kwargs.pop('parque')
+        super(Punchlist, self).__init__(*args, **kwargs)
+        self.fields['aerogenerador'].queryset = Aerogenerador.objects.filter(parque=parque)
+        self.fields['fotos'].widget.attrs['class'] = 'make-switch'
+        self.fields['fotos'].widget.attrs['data-size'] = 'small'
+        self.fields['fotos'].widget.attrs['data-on-text'] = 'Si'
+        self.fields['fotos'].widget.attrs['data-off-text'] = 'No'
+        self.fields['fotos'].widget.attrs['checked'] = ''
+        self.fields['reparadas'].widget.attrs['class'] = 'make-switch'
+        self.fields['reparadas'].widget.attrs['data-size'] = 'small'
+        self.fields['reparadas'].widget.attrs['data-on-text'] = 'Si'
+        self.fields['reparadas'].widget.attrs['data-off-text'] = 'No'

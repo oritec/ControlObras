@@ -179,3 +179,7 @@ def filter_ag_idx(value,arg):
         return f[0].nombre
     else:
         return ''
+
+@register.filter()
+def field_type(field):
+    return field.field.widget.__class__.__name__

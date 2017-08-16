@@ -1,0 +1,141 @@
+{% load customtags %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title|default:"" }}</title>
+
+    {% block style_base %}
+        {% comment %}
+            See DEFAULT_CSS in https://github.com/chrisglass/xhtml2pdf/blob/master/xhtml2pdf/default.py
+            for base style.
+        {% endcomment %}
+
+        {% block layout_style %}
+            <style type="text/css">
+                @page {
+                    size: {{ pagesize|default:"LETTER" }};
+                    margin-left: 2.5cm;
+                    margin-right: 2.5cm;
+                    margin-top: 2.5cm;
+                    margin-bottom: 2cm;
+
+                    @frame header {
+                        -pdf-frame-content: page-header;
+                        margin-top: 0.7cm;
+                        margin-right: 2mm;
+                        margin-bottom: 0cm;
+                        margin-left: 1.2cm;
+                    }
+
+                    @frame footer {
+                        -pdf-frame-content: page-footer;
+                        bottom: 0cm;
+                        margin-left: 1cm;
+                        margin-right: 1cm;
+                        height: 1cm;
+                    }
+                }
+                .tabla-observaciones table, th, td {
+                    border: 1px solid;
+                    border-color: #ffffec;
+                    vertical-align: middle;
+                }
+                .tabla-observaciones th, td {
+                    padding-top:4px;
+                    padding-left:4px;
+                    margin-bottom:0px;
+                    text-align: left;
+                }
+                .tabla-observaciones th {
+                    font-weight: bold;
+                    color: #ffffff;
+                    background-color: #2465cb;
+                }
+
+                .tabla-fotos table,th,td {
+                    border: 1px solid;
+                    border-color: #000000;
+                    vertical-align: middle;
+                }
+
+                .tabla-fotos th, td {
+                    padding:4px;
+                    margin-bottom:0px;
+                    text-align: center;
+                }
+
+                .no-solucionada {
+                    background-color: #fc0d1b;
+                }
+                .parcial-solucionada {
+                    background-color: #f8fa43;
+                }
+                .solucionada {
+                    background-color: #4ab664;
+                }
+                .row1 {
+                    background-color: #cfd5e9;
+                }
+                .row2 {
+                    background-color: #e9ebf5;
+                }
+
+
+            </style>
+        {%endblock%}
+        {% block extra_style %}{% endblock %}
+    {% endblock %}
+</head>
+<body>
+
+    <div id="page-header">
+        Informe Punchlist  -- {{ parque.nombre }}
+    </div>
+
+    <div id="content">
+        <h1> Listado de observaciones en punchlist </h1>
+        <table class="tabla-observaciones">
+            <thead>
+                <tr>
+                    <th align="center"  style=""> Item </th>
+                    <th> Componente </th>
+                    <th align="left"> Descripci&oacute;n </th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for observacion in resultados %}
+                <tr>
+                    <td align="center" class="{% if observacion.estado.nombre == 'No Solucionado' %}no-solucionada {% elif observacion.estado.nombre == 'Parcialmente Solucionado' %} parcial-solucionada {% else %} solucionada {% endif %}">
+                        OBS_{{ parque.codigo }}-{{ observacion.aerogenerador.nombre }}-{{ observacion.observacion_id }}
+                    </td>
+                    <td class="{% cycle 'row1' 'row2' %}"> {{ observacion.componente }} </td>
+                    <td class="{% cycle 'row1' 'row2' %}"> {{ observacion.nombre }} </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <h1 style="page-break-before: always"> Fotograf&iacute;as </h1>
+
+        <table class="tabla-fotos">
+            <tbody>
+            {% for observacion in resultados %}
+                {%  if forloop.counter0|divisibleby:"2" %} <tr> {% endif %}
+                <td> <img src='{{ main_fotos|get_item:observacion.revision_set.all.0.id }}'/>
+                    <div>OBS_{{ parque.codigo }}-{{ observacion.aerogenerador.nombre }}-{{ observacion.observacion_id }}</div>
+                </td>
+
+                {%  if not forloop.counter0|divisibleby:"2"  %} </tr> {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="page-footer">
+        {%block page_foot%}
+            {% comment %}
+                <pdf:pagenumber />
+            {% endcomment %}
+        {%endblock%}
+    </div>
+</body>
+</html>
