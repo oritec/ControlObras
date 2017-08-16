@@ -142,6 +142,7 @@ class Fotos(models.Model):
 @python_2_unicode_compatible
 class Observacion(models.Model):
     parque = models.ForeignKey('vista.ParqueSolar', on_delete=models.CASCADE)
+    observacion_id = models.IntegerField(default=0)
     nombre = models.CharField(max_length=100, unique=False)
     aerogenerador = models.ForeignKey('vista.Aerogenerador', on_delete=models.SET_NULL,null=True)
     fecha_observacion = models.DateField(blank=False,null=False)
@@ -164,6 +165,13 @@ class Observacion(models.Model):
         return '%s' % (self.nombre)
 
     def save(self, *args, **kwargs):
+        if self.pk is None or self.observacion_id == 0:
+            obs=Observacion.objects.filter(parque=self.parque, aerogenerador=self.aerogenerador).order_by('-observacion_id')
+            if obs.count()>0:
+                self.observacion_id = obs[0].observacion_id + 1
+            else:
+                self.observacion_id = 1
+
         aux = self.revision_set.filter(estado__nombre="Solucionado")
         aux2 = self.revision_set.order_by('-id')[0]
         if aux.count() > 0:

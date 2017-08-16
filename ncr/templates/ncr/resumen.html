@@ -42,7 +42,7 @@
                                 <tbody>
                                 {% for observacion in observaciones %}
                                     <tr>
-                                        <td> {{ forloop.counter }}</td>
+                                        <td> {{ observacion.observacion_id }}</td>
                                         {% if table_show_ag %} <td> {{ observacion.aerogenerador.nombre }}</td>{% endif %}
                                         <td> {{ observacion.componente.nombre }} </td>
                                         <td> {{ observacion.nombre }} </td>
