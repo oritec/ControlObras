@@ -421,7 +421,7 @@ def punchlist(request,slug):
                                     'show_fotos': show_fotos,
                                    }, content_type='application/pdf',
                                       response_class=HttpResponse )
-            #respuesta['Content-Disposition'] = 'attachment; filename="ReportePunchlist.pdf"'
+            respuesta['Content-Disposition'] = 'attachment; filename="ReportePunchlist.pdf"'
             return respuesta
     return render(request, 'ncr/punchlist.html',
         {'cont': contenido,
