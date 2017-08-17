@@ -21,6 +21,15 @@
             <h4>Por favor, ingresar la informaci&oacute;n del parque (Configuraci&oacute;n).</h4>
         </div>
     {%  else %}
+        {% if observacion.cerrado %}
+            <div class="note note-danger" style="margin-left:10px;margin-right:10px;">
+            {% if observacion.msg_cerrado == '' %}
+                <p style="font-weight: bold"> Observaci&oacute;n cerrada sin comentarios. </p>
+            {% else %}
+                <p style="font-weight: bold"> Observaci&oacute;n cerrada. Raz&oacute;n: {{ observacion.msg_cerrado }} </p>
+            {% endif %}
+            </div>
+        {% endif %}
         {% for revision in observacion.revision_set.all %}
         <div class="note note-info" style="margin-left:10px;margin-right:10px;">
             <div class = "row">

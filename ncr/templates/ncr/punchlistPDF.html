@@ -35,6 +35,9 @@
                         height: 1cm;
                     }
                 }
+                h1 {
+                    text-align: center;
+                }
                 .tabla-observaciones table, th, td {
                     border: 1px solid;
                     border-color: #ffffec;
@@ -93,7 +96,7 @@
     </div>
 
     <div id="content">
-        <h1> Listado de observaciones en punchlist </h1>
+        <h1> {{ titulo }} </h1>
         <table class="tabla-observaciones">
             <thead>
                 <tr>
@@ -114,6 +117,8 @@
             {% endfor %}
             </tbody>
         </table>
+
+        {% if show_fotos %}
         <h1 style="page-break-before: always"> Fotograf&iacute;as </h1>
 
         <table class="tabla-fotos">
@@ -128,6 +133,7 @@
             {% endfor %}
             </tbody>
         </table>
+        {% endif %}
     </div>
 
     <div id="page-footer">

@@ -359,6 +359,14 @@ def informeNCR(request,slug):
             resultados = resultados.filter(componente__in=form.cleaned_data['componente'])
             resultados = resultados.filter(sub_componente__in=form.cleaned_data['subcomponente'])
             resultados = resultados.filter(tipo__in=form.cleaned_data['tipo'])
+            if (len(form.cleaned_data['condicion']) == 1):
+                if 'reparadas' in form.cleaned_data['condicion']:
+                    condicion = True
+                else:
+                    condicion = False
+                resultados = resultados.filter(cerrado = condicion)
+            elif (len(form.cleaned_data['condicion']) == 0):
+                resultados = []
             #for key,value in form.cleaned_data.iteritems():
             #    logger.debug(key)
             logger.debug(resultados)
@@ -382,20 +390,23 @@ def punchlist(request,slug):
     contenido.subtitulo='Parque '+ parque.nombre
     contenido.menu = ['menu-ncr', 'menu2-punchlist']
 
-    form = Punchlist(parque=parque)
+    form = Punchlist(parque=parque,initial={'titulo':'Listado de observaciones en punchlist'})
     resultados = None
     main_fotos = {}
-
+    show_fotos = False
     if request.method == 'POST':
         logger.debug('informePunchlist Post')
         form = Punchlist(request.POST, parque=parque)
         if form.is_valid():
             logger.debug("Form Valid")
-            resultados = Observacion.objects.filter(aerogenerador__in=form.cleaned_data['aerogenerador'])
+            resultados = Observacion.objects.filter(parque=parque, aerogenerador__in=form.cleaned_data['aerogenerador'],punchlist=True)
+            show_fotos = form.cleaned_data['fotos']
+            if not form.cleaned_data['reparadas']:
+                resultados=resultados.exclude(estado__nombre__exact='Solucionado').exclude(cerrado=True)
             # for key,value in form.cleaned_data.iteritems():
             #    logger.debug(key)
             for res in resultados:
-                for r in res.revision_set.all().order_by('-id'):
+                for r in res.revision_set.all().order_by('id'):
                     results = Fotos.objects.filter(revision=r, principal=True)
                     if results.count() > 0:
                         main_fotos[r.id] = results[0].reporte_img.url
@@ -405,10 +416,12 @@ def punchlist(request,slug):
                                     'title': 'Reporte Punchlist',
                                      'resultados':resultados,
                                     'main_fotos': main_fotos,
-                                    'parque':parque
+                                    'parque':parque,
+                                    'titulo': request.POST['titulo'],
+                                    'show_fotos': show_fotos,
                                    }, content_type='application/pdf',
                                       response_class=HttpResponse )
-            respuesta['Content-Disposition'] = 'attachment; filename="ReportePunchlist.pdf"'
+            #respuesta['Content-Disposition'] = 'attachment; filename="ReportePunchlist.pdf"'
             return respuesta
     return render(request, 'ncr/punchlist.html',
         {'cont': contenido,

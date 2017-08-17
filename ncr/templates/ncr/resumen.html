@@ -4,6 +4,8 @@
 {% load tz %}
 {% block css %}
     <!-- BEGIN PAGE LEVEL STYLES -->
+    <link href="{% static 'common/assets/global/plugins/datatables/datatables.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css' %}" rel="stylesheet" type="text/css" />
     <!-- END PAGE LEVEL STYLES -->
 {% endblock %}
 
@@ -28,8 +30,8 @@
                     </div>
                     <div class="portlet-body">
                     {% if observaciones|length > 0 %}
-                        <div class="table-scrollable">
-                            <table class="table table-striped table-hover">
+
+                        <table class="table table-striped table-bordered table-hover table-checkable order-column" id="tabla-observaciones">
                                 <thead>
                                     <tr>
                                         <th> # </th>
@@ -57,7 +59,7 @@
                                 {% endfor %}
                                 </tbody>
                             </table>
-                        </div>
+
                     {% else %}
                         No existen observaciones.
                     {% endif %}
@@ -109,6 +111,11 @@
 
 {% block javascript %}
 <!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="{% static 'common/assets/global/scripts/datatable.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/datatables/datatables.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.js' %}" type="text/javascript"></script>
+
+    <script src="{% static 'common/js/tabla-observaciones.js' %}" type="text/javascript"></script>
 
 <!-- END PAGE LEVEL PLUGINS -->
 {% endblock %}

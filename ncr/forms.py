@@ -55,6 +55,7 @@ class ObservacionForm(forms.ModelForm):
         self.fields['punchlist'].widget.attrs['data-size'] = 'small'
         self.fields['punchlist'].widget.attrs['data-on-text'] = 'Si'
         self.fields['punchlist'].widget.attrs['data-off-text'] = 'No'
+        self.fields['punchlist'].widget.attrs['checked'] = ''
         self.fields['clase'].widget.attrs['class'] = 'make-switch'
         self.fields['clase'].widget.attrs['data-size'] = 'small'
         self.fields['clase'].widget.attrs['data-on-text'] = 'NCR'
@@ -109,6 +110,7 @@ class RevisionFormFull(forms.ModelForm):
 
 class NCR(forms.Form):
     aerogenerador = forms.ModelMultipleChoiceField(queryset=Aerogenerador.objects.all(),required=False)
+    condicion = forms.MultipleChoiceField(choices=[('reparadas', 'Reparadas'), ('no reparadas', 'No Reparadas')],required=False,label="Condición")
     estado = forms.ModelMultipleChoiceField(queryset=EstadoRevision.objects.all(),required=False)
     severidad = forms.ModelMultipleChoiceField(queryset=Severidad.objects.all(),required=False)
     componente = forms.ModelMultipleChoiceField(queryset=Componente.objects.all(),required=False)
@@ -125,6 +127,7 @@ class Punchlist(forms.Form):
     aerogenerador = forms.ModelMultipleChoiceField(queryset=Aerogenerador.objects.all(),required=False)
     fotos = forms.BooleanField(label='¿Incluir fotos?',required=False)
     reparadas = forms.BooleanField(label='¿Incluir observaciones reparadas?',required=False)
+    titulo = forms.CharField(max_length=100)
     def __init__(self, *args, **kwargs):
         parque = kwargs.pop('parque')
         super(Punchlist, self).__init__(*args, **kwargs)
@@ -138,3 +141,4 @@ class Punchlist(forms.Form):
         self.fields['reparadas'].widget.attrs['data-size'] = 'small'
         self.fields['reparadas'].widget.attrs['data-on-text'] = 'Si'
         self.fields['reparadas'].widget.attrs['data-off-text'] = 'No'
+        self.fields['titulo'].widget.attrs['class'] = 'form-control'
