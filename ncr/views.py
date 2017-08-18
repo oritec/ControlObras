@@ -8,11 +8,17 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 from forms import ObservacionForm, RevisionForm, RevisionFormFull, NCR, Punchlist
 from ncr.models import Observacion, Revision, Fotos, Observador
-from easy_pdf.rendering import render_to_pdf_response
+from easy_pdf.rendering import render_to_pdf_response, render_to_pdf
+from vista.models import Aerogenerador
 import json
 import logging
 import os
 import urlparse
+import StringIO
+import zipfile
+import base64
+from django.conf import settings
+
 logger = logging.getLogger('oritec')
 
 @login_required(login_url='ingresar')
@@ -380,6 +386,19 @@ def informeNCR(request,slug):
          'resultados':resultados,
         })
 
+def punchlistResults(parque, aerogenerador, reparadas):
+    main_fotos = {}
+    resultados = Observacion.objects.filter(parque=parque, aerogenerador=aerogenerador, punchlist=True)
+    if not reparadas:
+        resultados = resultados.exclude(estado__nombre__exact='Solucionado').exclude(cerrado=True)
+    for res in resultados:
+        r=res.revision_set.all().order_by('-id')[0]
+        results = Fotos.objects.filter(revision=r, principal=True)
+        if results.count() > 0:
+            main_fotos[res.id] = results[0].reporte_img.url
+    titulo = 'LISTADO DE PENDIENTES AEROGENERADOR ' + aerogenerador.nombre
+    return [resultados, main_fotos, titulo]
+
 @login_required(login_url='ingresar')
 def punchlist(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
@@ -392,37 +411,71 @@ def punchlist(request,slug):
 
     form = Punchlist(parque=parque,initial={'titulo':'Listado de observaciones en punchlist'})
     resultados = None
-    main_fotos = {}
+
     show_fotos = False
     if request.method == 'POST':
         logger.debug('informePunchlist Post')
         form = Punchlist(request.POST, parque=parque)
+        with open(os.path.join(settings.BASE_DIR,'static/common/images/check-mark-3-64.gif'), "rb") as image_file:
+            img_solucionado = base64.b64encode(image_file.read())
+        with open(os.path.join(settings.BASE_DIR,'static/common/images/x-mark-64-amarillo.gif'), "rb") as image_file:
+            img_parcialsolucionado = base64.b64encode(image_file.read())
+        with open(os.path.join(settings.BASE_DIR,'static/common/images/x-mark-64.gif'), "rb") as image_file:
+            img_nosolucionado = base64.b64encode(image_file.read())
         if form.is_valid():
             logger.debug("Form Valid")
-            resultados = Observacion.objects.filter(parque=parque, aerogenerador__in=form.cleaned_data['aerogenerador'],punchlist=True)
             show_fotos = form.cleaned_data['fotos']
-            if not form.cleaned_data['reparadas']:
-                resultados=resultados.exclude(estado__nombre__exact='Solucionado').exclude(cerrado=True)
-            # for key,value in form.cleaned_data.iteritems():
-            #    logger.debug(key)
-            for res in resultados:
-                for r in res.revision_set.all().order_by('id'):
-                    results = Fotos.objects.filter(revision=r, principal=True)
-                    if results.count() > 0:
-                        main_fotos[r.id] = results[0].reporte_img.url
-            logger.debug(resultados)
-            respuesta=render_to_pdf_response(request,'ncr/punchlistPDF.html',
-                                   {'pagesize':'LETTER',
-                                    'title': 'Reporte Punchlist',
-                                     'resultados':resultados,
-                                    'main_fotos': main_fotos,
-                                    'parque':parque,
-                                    'titulo': request.POST['titulo'],
-                                    'show_fotos': show_fotos,
-                                   }, content_type='application/pdf',
-                                      response_class=HttpResponse )
-            respuesta['Content-Disposition'] = 'attachment; filename="ReportePunchlist.pdf"'
-            return respuesta
+            if len(form.cleaned_data['aerogenerador']) == 1:
+                ag = form.cleaned_data['aerogenerador'][0]
+                [resultados, main_fotos, titulo] = punchlistResults(parque,ag,form.cleaned_data['reparadas'])
+                logger.debug(resultados)
+
+                respuesta=render_to_pdf_response(request,'ncr/punchlistPDF.html',
+                                       {'pagesize':'LETTER',
+                                        'title': 'Reporte Punchlist',
+                                         'resultados':resultados,
+                                        'main_fotos': main_fotos,
+                                        'parque':parque,
+                                        'titulo': titulo,
+                                        'show_fotos': show_fotos,
+                                        'img_solucionado': img_solucionado,
+                                        'img_parcialsolucionado': img_parcialsolucionado,
+                                        'img_nosolucionado': img_nosolucionado,
+                                       }, content_type='application/pdf',
+                                          response_class=HttpResponse )
+                respuesta['Content-Disposition'] = 'attachment; filename="ReportePunchlist.pdf"'
+                return respuesta
+            elif len(form.cleaned_data['aerogenerador']) > 1:
+                response = HttpResponse(content_type='application/zip')
+                response['Content-Disposition'] = 'filename=punchlist.zip'
+                buff = StringIO.StringIO()
+                archive = zipfile.ZipFile(buff, 'w', zipfile.ZIP_DEFLATED)
+
+                for ag in form.cleaned_data['aerogenerador']:
+                    [resultados, main_fotos, titulo] = punchlistResults(parque, ag, form.cleaned_data['reparadas'])
+
+                    logger.debug(resultados)
+                    pdf = render_to_pdf('ncr/punchlistPDF.html',
+                                       {'pagesize':'LETTER',
+                                        'title': 'Reporte Punchlist',
+                                         'resultados':resultados,
+                                        'main_fotos': main_fotos,
+                                        'parque':parque,
+                                        'titulo': titulo,
+                                        'show_fotos': show_fotos,
+                                       })
+                    archivo = StringIO.StringIO(pdf)
+                    archivo_name = 'ReportePunchlist-'+ ag.nombre +'.pdf'
+                    logger.debug(archivo_name)
+                    archive.writestr(archivo_name, archivo.getvalue())
+                archive.close()
+                buff.flush()
+                ret_zip = buff.getvalue()
+                buff.close()
+                response.write(ret_zip)
+                return response
+
+
     return render(request, 'ncr/punchlist.html',
         {'cont': contenido,
          'parque': parque,

@@ -1,3 +1,4 @@
+{% load staticfiles %}
 {% load customtags %}
 <!DOCTYPE html>
 <html>
@@ -87,7 +88,7 @@
             </style>
         {%endblock%}
         {% block extra_style %}{% endblock %}
-    {% endblock %}
+        {% endblock %}
 </head>
 <body>
 
@@ -97,6 +98,9 @@
 
     <div id="content">
         <h1> {{ titulo }} </h1>
+        {% if resultados|length == 0 %}
+           <p style="text-align: center;">No existen observaciones pendientes.</p>
+        {% else %}
         <table class="tabla-observaciones">
             <thead>
                 <tr>
@@ -125,14 +129,28 @@
             <tbody>
             {% for observacion in resultados %}
                 {%  if forloop.counter0|divisibleby:"2" %} <tr> {% endif %}
-                <td> <img src='{{ main_fotos|get_item:observacion.revision_set.all.0.id }}'/>
-                    <div>OBS_{{ parque.codigo }}-{{ observacion.aerogenerador.nombre }}-{{ observacion.observacion_id }}</div>
+                <td> <img src='{{ main_fotos|get_item:observacion.id }}'/>
+                    <div>
+                        OBS_{{ parque.codigo }}-{{ observacion.aerogenerador.nombre }}-{{ observacion.observacion_id }}
+                        <span style="padding-left:10px">
+                            {% if observacion.estado.nombre == 'Solucionado' %}
+                            <img src='data:image/png;base64,{{ img_solucionado }}' height="20px" width="20px"/>
+                            {% elif observacion.estado.nombre == 'Parcialmente Solucionado' %}
+                            <img src='data:image/png;base64,{{ img_parcialsolucionado }}' height="20px" width="20px"/>
+                            {% elif observacion.estado.nombre == 'No Solucionado' %}
+                            <img src='data:image/png;base64,{{ img_nosolucionado }}' height="20px" width="20px"/>
+                            {% endif %}
+                        </span>
+
+
+                    </div>
                 </td>
 
                 {%  if not forloop.counter0|divisibleby:"2"  %} </tr> {% endif %}
             {% endfor %}
             </tbody>
         </table>
+        {% endif %}
         {% endif %}
     </div>
 
