@@ -463,6 +463,9 @@ def punchlist(request,slug):
                                         'parque':parque,
                                         'titulo': titulo,
                                         'show_fotos': show_fotos,
+                                        'img_solucionado': img_solucionado,
+                                        'img_parcialsolucionado': img_parcialsolucionado,
+                                        'img_nosolucionado': img_nosolucionado,
                                        })
                     archivo = StringIO.StringIO(pdf)
                     archivo_name = 'ReportePunchlist-'+ ag.nombre +'.pdf'
