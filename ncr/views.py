@@ -17,6 +17,9 @@ import urlparse
 import StringIO
 import zipfile
 import base64
+from docx import Document
+from docx.shared import Mm, Inches, Cm
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from django.conf import settings
 
 logger = logging.getLogger('oritec')
@@ -399,6 +402,70 @@ def punchlistResults(parque, aerogenerador, reparadas):
     titulo = 'LISTADO DE PENDIENTES AEROGENERADOR ' + aerogenerador.nombre
     return [resultados, main_fotos, titulo]
 
+def generateWord(parque, aerogenerador,reparadas):
+    [resultados, main_fotos, titulo] = punchlistResults(parque, aerogenerador, reparadas)
+    nombre_archivo = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/ncr/punchlist.docx'
+    f = open(nombre_archivo, 'rb')
+    document = Document(f)
+    document._body.clear_content()
+    section = document.sections[0]
+    section.page_height = Mm(279.4)
+    section.page_width = Mm(215.9)
+    h = document.add_heading(titulo, 2)
+    h.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    document.add_paragraph('')
+    for s in document.styles.latent_styles.element:
+        logger.debug(s.name)
+    table = document.add_table(rows=1, cols=3, style="Punchlist")
+    hdr_cells = table.rows[0].cells
+    hdr_cells[0].text = 'Item'
+    hdr_cells[1].text = 'Componente'
+    hdr_cells[2].text = u'Descripción'
+    # styles = document.styles
+    # table.rows[0].style = "borderColor:red;background-color:blue"
+
+    for r in resultados:
+        row_cells = table.add_row().cells
+        row_cells[0].text = 'OBS_' + parque.codigo + '-' + r.aerogenerador.nombre + '-' + str(r.observacion_id)
+        row_cells[1].text = r.componente.nombre
+        row_cells[2].text = r.nombre
+    document.add_page_break()
+    h = document.add_heading(u'Fotografías', 2)
+    h.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    table = document.add_table(rows=1, cols=2, style="Fotos")
+    first = True
+    idx = 0
+    for r in resultados:
+        if not first:
+            if idx % 2 == 0:
+                row_cells = table.add_row().cells
+                celda = 0
+            else:
+                celda = 1
+        else:
+            row_cells = table.rows[0].cells
+            first = False
+            celda = 0
+        idx = idx + 1
+        logger.debug(main_fotos[r.id])
+        archivo = settings.BASE_DIR + main_fotos[r.id]
+        c = row_cells[celda].paragraphs[0]
+        aux = c.add_run()
+        aux.add_picture(archivo, width=Cm(7.5))
+        p = row_cells[celda].add_paragraph()
+        p.text = 'OBS_' + parque.codigo + '-' + r.aerogenerador.nombre + '-' + str(r.observacion_id) + ' '
+        aux2 = p.add_run()
+        if r.estado.nombre == 'Solucionado':
+            status_img = os.path.join(settings.BASE_DIR, 'static/common/images/check-mark-3-64.gif')
+        elif r.estado.nombre == 'Parcialmente Solucionado':
+            status_img = os.path.join(settings.BASE_DIR, 'static/common/images/x-mark-64-amarillo.gif')
+        elif r.estado.nombre == 'No Solucionado':
+            status_img = os.path.join(settings.BASE_DIR, 'static/common/images/x-mark-64.gif')
+        aux2.add_picture(status_img, width=Cm(0.4))
+    target_stream = StringIO.StringIO()
+    document.save(target_stream)
+    return target_stream
+
 @login_required(login_url='ingresar')
 def punchlist(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
@@ -425,58 +492,88 @@ def punchlist(request,slug):
         if form.is_valid():
             logger.debug("Form Valid")
             show_fotos = form.cleaned_data['fotos']
-            if len(form.cleaned_data['aerogenerador']) == 1:
-                ag = form.cleaned_data['aerogenerador'][0]
-                [resultados, main_fotos, titulo] = punchlistResults(parque,ag,form.cleaned_data['reparadas'])
-                logger.debug(resultados)
+            if 'word' in request.POST:
+                logger.debug('WORD')
+                if len(form.cleaned_data['aerogenerador']) == 1:
+                    ag = form.cleaned_data['aerogenerador'][0]
+                    target_stream = generateWord(parque,ag,form.cleaned_data['reparadas'])
+                    response = HttpResponse(content_type='text/html')
+                    response['Content-Disposition'] = 'attachment; filename="ReportePunchlist-' + ag.nombre + '.docx"'
+                    target_stream.flush()
+                    ret_word = target_stream.getvalue()
+                    target_stream.close()
+                    response.write(ret_word)
+                    return response
+                elif len(form.cleaned_data['aerogenerador']) > 1:
+                    response = HttpResponse(content_type='application/zip')
+                    response['Content-Disposition'] = 'filename=punchlistWord.zip'
+                    buff = StringIO.StringIO()
+                    archive = zipfile.ZipFile(buff, 'w', zipfile.ZIP_DEFLATED)
 
-                respuesta=render_to_pdf_response(request,'ncr/punchlistPDF.html',
-                                       {'pagesize':'LETTER',
-                                        'title': 'Reporte Punchlist',
-                                         'resultados':resultados,
-                                        'main_fotos': main_fotos,
-                                        'parque':parque,
-                                        'titulo': titulo,
-                                        'show_fotos': show_fotos,
-                                        'img_solucionado': img_solucionado,
-                                        'img_parcialsolucionado': img_parcialsolucionado,
-                                        'img_nosolucionado': img_nosolucionado,
-                                       }, content_type='application/pdf',
-                                          response_class=HttpResponse )
-                respuesta['Content-Disposition'] = 'attachment; filename="ReportePunchlist.pdf"'
-                return respuesta
-            elif len(form.cleaned_data['aerogenerador']) > 1:
-                response = HttpResponse(content_type='application/zip')
-                response['Content-Disposition'] = 'filename=punchlist.zip'
-                buff = StringIO.StringIO()
-                archive = zipfile.ZipFile(buff, 'w', zipfile.ZIP_DEFLATED)
-
-                for ag in form.cleaned_data['aerogenerador']:
-                    [resultados, main_fotos, titulo] = punchlistResults(parque, ag, form.cleaned_data['reparadas'])
-
+                    for ag in form.cleaned_data['aerogenerador']:
+                        target_stream = generateWord(parque, ag, form.cleaned_data['reparadas'])
+                        archivo_name = 'ReportePunchlist-' + ag.nombre + '.docx'
+                        logger.debug(archivo_name)
+                        archive.writestr(archivo_name, target_stream.getvalue())
+                    archive.close()
+                    buff.flush()
+                    ret_zip = buff.getvalue()
+                    buff.close()
+                    response.write(ret_zip)
+                    return response
+            else:
+                if len(form.cleaned_data['aerogenerador']) == 1:
+                    ag = form.cleaned_data['aerogenerador'][0]
+                    [resultados, main_fotos, titulo] = punchlistResults(parque,ag,form.cleaned_data['reparadas'])
                     logger.debug(resultados)
-                    pdf = render_to_pdf('ncr/punchlistPDF.html',
-                                       {'pagesize':'LETTER',
-                                        'title': 'Reporte Punchlist',
-                                         'resultados':resultados,
-                                        'main_fotos': main_fotos,
-                                        'parque':parque,
-                                        'titulo': titulo,
-                                        'show_fotos': show_fotos,
-                                        'img_solucionado': img_solucionado,
-                                        'img_parcialsolucionado': img_parcialsolucionado,
-                                        'img_nosolucionado': img_nosolucionado,
-                                       })
-                    archivo = StringIO.StringIO(pdf)
-                    archivo_name = 'ReportePunchlist-'+ ag.nombre +'.pdf'
-                    logger.debug(archivo_name)
-                    archive.writestr(archivo_name, archivo.getvalue())
-                archive.close()
-                buff.flush()
-                ret_zip = buff.getvalue()
-                buff.close()
-                response.write(ret_zip)
-                return response
+
+                    respuesta=render_to_pdf_response(request,'ncr/punchlistPDF.html',
+                                           {'pagesize':'LETTER',
+                                            'title': 'Reporte Punchlist',
+                                             'resultados':resultados,
+                                            'main_fotos': main_fotos,
+                                            'parque':parque,
+                                            'titulo': titulo,
+                                            'show_fotos': show_fotos,
+                                            'img_solucionado': img_solucionado,
+                                            'img_parcialsolucionado': img_parcialsolucionado,
+                                            'img_nosolucionado': img_nosolucionado,
+                                           }, content_type='application/pdf',
+                                              response_class=HttpResponse )
+                    respuesta['Content-Disposition'] = 'attachment; filename="ReportePunchlist-'+ ag.nombre +'.pdf"'
+                    return respuesta
+                elif len(form.cleaned_data['aerogenerador']) > 1:
+                    response = HttpResponse(content_type='application/zip')
+                    response['Content-Disposition'] = 'filename=punchlistPDF.zip'
+                    buff = StringIO.StringIO()
+                    archive = zipfile.ZipFile(buff, 'w', zipfile.ZIP_DEFLATED)
+
+                    for ag in form.cleaned_data['aerogenerador']:
+                        [resultados, main_fotos, titulo] = punchlistResults(parque, ag, form.cleaned_data['reparadas'])
+
+                        logger.debug(resultados)
+                        pdf = render_to_pdf('ncr/punchlistPDF.html',
+                                           {'pagesize':'LETTER',
+                                            'title': 'Reporte Punchlist',
+                                             'resultados':resultados,
+                                            'main_fotos': main_fotos,
+                                            'parque':parque,
+                                            'titulo': titulo,
+                                            'show_fotos': show_fotos,
+                                            'img_solucionado': img_solucionado,
+                                            'img_parcialsolucionado': img_parcialsolucionado,
+                                            'img_nosolucionado': img_nosolucionado,
+                                           })
+                        archivo = StringIO.StringIO(pdf)
+                        archivo_name = 'ReportePunchlist-'+ ag.nombre +'.pdf'
+                        logger.debug(archivo_name)
+                        archive.writestr(archivo_name, archivo.getvalue())
+                    archive.close()
+                    buff.flush()
+                    ret_zip = buff.getvalue()
+                    buff.close()
+                    response.write(ret_zip)
+                    return response
 
 
     return render(request, 'ncr/punchlist.html',
