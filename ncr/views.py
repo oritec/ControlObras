@@ -21,6 +21,9 @@ from docx import Document
 from docx.shared import Mm, Inches, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from django.conf import settings
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.worksheet.table import Table, TableStyleInfo
 
 logger = logging.getLogger('oritec')
 
@@ -345,6 +348,45 @@ def add_revision(request,slug,observacion_id, revision_id = 0):
          'edit_revision': edit_revision,
         })
 
+def generateExcelNCR(resultados):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "ReporteNCR"
+    # Titulos
+    ws['A1'] = 'WTG'
+    ws['B1'] = 'Estado'
+    ws['C1'] = 'Severidad'
+    ws['D1'] = 'Componente'
+    ws['E1'] = 'Subcomponente'
+    ws['F1'] = 'Tipo'
+    ws['G1'] = 'Descripcion'
+    row = 1
+    for r in resultados:
+        row += 1
+        ws.cell(row=row, column=1,value=r.aerogenerador.nombre)
+        ws.cell(row=row, column=2, value=r.estado.nombre)
+        ws.cell(row=row, column=3, value=r.severidad.nombre)
+        ws.cell(row=row, column=4, value=r.componente.nombre)
+        ws.cell(row=row, column=5, value=r.sub_componente.nombre)
+        ws.cell(row=row, column=6, value=r.tipo.nombre)
+        ws.cell(row=row, column=7, value=r.nombre)
+
+    tab = Table(displayName="NCR", ref="A1:G"+str(row))
+    style = TableStyleInfo(name="TableStyleMedium9", showFirstColumn=False,
+                           showLastColumn=False, showRowStripes=True, showColumnStripes=False)
+    tab.tableStyleInfo = style
+    ws.add_table(tab)
+    dims = {}
+    for row in ws.rows:
+        for cell in row:
+            if cell.value:
+                dims[cell.column] = max((dims.get(cell.column, 0), len(cell.value)+4))
+    for col, value in dims.items():
+        ws.column_dimensions[col].width = value
+    target_stream = StringIO.StringIO()
+    wb.save(target_stream)
+    return target_stream
+
 @login_required(login_url='ingresar')
 def informeNCR(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
@@ -379,7 +421,17 @@ def informeNCR(request,slug):
             #for key,value in form.cleaned_data.iteritems():
             #    logger.debug(key)
             logger.debug(resultados)
-
+            if 'excel' in request.POST:
+                logger.debug('Excel')
+                target_stream = generateExcelNCR(resultados)
+                response = HttpResponse(
+                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                response['Content-Disposition'] = 'attachment; filename="ReporteNCR.xlsx"'
+                target_stream.flush()
+                ret_excel = target_stream.getvalue()
+                target_stream.close()
+                response.write(ret_excel)
+                return response
 
     return render(request, 'ncr/informeNCR.html',
         {'cont': contenido,
@@ -476,7 +528,7 @@ def punchlist(request,slug):
     contenido.subtitulo='Parque '+ parque.nombre
     contenido.menu = ['menu-ncr', 'menu2-punchlist']
 
-    form = Punchlist(parque=parque,initial={'titulo':'Listado de observaciones en punchlist'})
+    form = Punchlist(parque=parque)
     resultados = None
 
     show_fotos = False
@@ -497,7 +549,7 @@ def punchlist(request,slug):
                 if len(form.cleaned_data['aerogenerador']) == 1:
                     ag = form.cleaned_data['aerogenerador'][0]
                     target_stream = generateWord(parque,ag,form.cleaned_data['reparadas'])
-                    response = HttpResponse(content_type='text/html')
+                    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
                     response['Content-Disposition'] = 'attachment; filename="ReportePunchlist-' + ag.nombre + '.docx"'
                     target_stream.flush()
                     ret_word = target_stream.getvalue()

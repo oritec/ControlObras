@@ -80,12 +80,13 @@
                     <div class="table-toolbar">
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="btn-group">
-                                    <button id="show" class="btn sbold default">
-                                        <i class="fa fa-angle-double-left"></i>
-                                        Volver a b&uacute;squeda
-                                    </button>
-                                </div>
+                                <button id="show" class="btn sbold default">
+                                    <i class="fa fa-angle-double-left"></i>
+                                    Volver a b&uacute;squeda
+                                </button>
+                                <button id="exportExcel" class="btn green" style="padding-left: 10px">
+                                    <i class="fa fa-file-excel-o"></i> Exportar a Excel
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -194,6 +195,10 @@
         $("#row_form").show();
         $("#row_resultados").hide();
     });
-
+    $("#exportExcel").click(function(){
+        var form = $("#form_ncr");
+        $(form).append('<input type="hidden" name="excel" value="1">');
+        $(form).submit();
+    });
 
 {% endblock %}

@@ -127,7 +127,6 @@ class Punchlist(forms.Form):
     aerogenerador = forms.ModelMultipleChoiceField(queryset=Aerogenerador.objects.all(),required=False)
     fotos = forms.BooleanField(label='¿Incluir fotos?',required=False)
     reparadas = forms.BooleanField(label='¿Incluir observaciones reparadas?',required=False)
-    titulo = forms.CharField(max_length=100)
     def __init__(self, *args, **kwargs):
         parque = kwargs.pop('parque')
         super(Punchlist, self).__init__(*args, **kwargs)
@@ -141,4 +140,3 @@ class Punchlist(forms.Form):
         self.fields['reparadas'].widget.attrs['data-size'] = 'small'
         self.fields['reparadas'].widget.attrs['data-on-text'] = 'Si'
         self.fields['reparadas'].widget.attrs['data-off-text'] = 'No'
-        self.fields['titulo'].widget.attrs['class'] = 'form-control'
