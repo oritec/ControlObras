@@ -194,6 +194,7 @@
     $("#show").click(function(){
         $("#row_form").show();
         $("#row_resultados").hide();
+        $( "[name='excel']" ).remove();
     });
     $("#exportExcel").click(function(){
         var form = $("#form_ncr");
