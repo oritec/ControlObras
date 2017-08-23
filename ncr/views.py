@@ -127,6 +127,8 @@ def add_observacion(request,slug,observacion_id=0):
             if edit_observacion is not None:
                 observacion = observacionForm.save()
                 revision = revisionForm.save()
+                # es necesario para actualizar el estado de la observacion
+                observacion.save()
             else:
                 observacion = observacionForm.save(commit=False)
                 observacion.created_by = request.user
@@ -136,6 +138,8 @@ def add_observacion(request,slug,observacion_id=0):
                 revision.created_by = request.user
                 revision.reported_by = observacion.reported_by
                 revision.save()
+                # es necesario para actualizar el estado de la observacion
+                observacion.save()
             return HttpResponseRedirect(reverse('ncr:observaciones-show', args=[parque.slug,observacion.id]))
         else:
             logger.debug('Formulario no es válido...')

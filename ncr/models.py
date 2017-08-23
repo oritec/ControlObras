@@ -239,10 +239,11 @@ class Observacion(models.Model):
 
         if aux.count() > 0:
             self.estado = aux[0].estado
-        elif res.count()>0:
+        elif res.count() > 0:
             aux2 = res[0]
             self.estado = aux2.estado
             self.severidad = aux2.severidad
+
         super(Observacion, self).save(*args, **kwargs)  # Call the "real" save() method.
 
 @python_2_unicode_compatible

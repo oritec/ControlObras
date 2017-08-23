@@ -101,7 +101,7 @@
                             Agregar Revisi&oacute;n <i class="fa fa-plus"></i>
                         </a>
                         {% if observacion.estado.nombre == 'Solucionado' %}
-                        <a href="" id="closeSafe" class="btn btn-sm grey-mint" style="margin-left:10px;margin-right:10px;">
+                        <a id="closeSafe" class="btn btn-sm grey-mint" style="margin-left:10px;margin-right:10px;">
                             Cerrar Observaci&oacute;n <i class="fa fa-check-square-o"></i>
                         </a>
                         {% else %}
@@ -246,6 +246,8 @@
             <form action="{% url 'ncr:observaciones-cerrar' parque.slug %}" method="post" id="formCloseObs">
                 {% csrf_token %}
                 <input type="hidden" name="back_url" id="back_url" value="">
+                <input type="hidden" name="del_id" id="del_id_obs" value="">
+                <input type="hidden" name="cerrar" id="cerrar" value="1">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
                     <h4 class="modal-title">
@@ -257,11 +259,8 @@
                     <textarea id="cierre_msg" name="cierre_msg" class="form-control" rows="3"></textarea>
                 </div>
                 <div class="modal-footer">
-
-                        <input type="hidden" name="del_id" id="del_id_obs" value="">
-                        <input type="hidden" name="cerrar" id="cerrar" value="1">
-                        <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
-                        <button type="submit" id='enviarmodal' class="btn red" name="FromList">Cerrar Observaci&oacute;n</button>
+                    <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" id='enviarmodal' class="btn red" name="FromList">Cerrar Observaci&oacute;n</button>
                         <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
                 </div>
             </form>
@@ -430,6 +429,7 @@
             }
         }
     });
+
 
     function changeFotoPrincipal(object, revision_id) {
         console.log(object);
@@ -647,7 +647,10 @@
     $("#closeSafe").click(function(){
         $('#del_id_obs').val({{ observacion.id }});
         $('#cierre_msg').val('');
-        $('#formCloseObs').submit();
+        console.log('CloseSave');
+        console.log($("#formCloseObs"));
+        $("#formCloseObs").submit();
     });
+
 
 {% endblock %}
