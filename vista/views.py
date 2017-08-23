@@ -82,7 +82,7 @@ def configuracion(request,slug):
                         nuevo.save()
                 else:
                     ag = Aerogenerador.objects.filter(parque=parque,idx__gt=parque.no_aerogeneradores).delete()
-            ag = Aerogenerador.objects.filter(idx = -1)
+            ag = Aerogenerador.objects.filter(parque=parque, idx = -1)
             if ag.count() == 0:
                 nuevo = Aerogenerador(parque=parque, idx=-2, nombre='General')
                 nuevo.save()
