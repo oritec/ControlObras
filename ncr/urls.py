@@ -11,7 +11,6 @@ urlpatterns = [
     url(r'^observaciones/(?P<observacion_id>[0-9]+)/editar', views.add_observacion, name='observaciones-editar'),
     url(r'^observaciones/(?P<observacion_id>[0-9]+)/revision/agregar', views.add_revision, name='revisiones-add'),
     url(r'^observaciones/(?P<observacion_id>[0-9]+)/revision/(?P<revision_id>[0-9]+)/editar', views.add_revision, name='revisiones-editar'),
-    url(r'^observaciones/(?P<ag_id>[0-9]+)', views.observaciones, name='observaciones'),
     url(r'^observaciones/agregar', views.add_observacion, name='observaciones-agregar'),
     url(r'^observaciones/eliminar', views.del_observacion, name='observaciones-eliminar'),
     url(r'^observaciones/cerrar', views.close_observacion, name='observaciones-cerrar'),
@@ -21,5 +20,6 @@ urlpatterns = [
     url(r'^revision/eliminar', views.del_revision, name='revision-eliminar'),
     url(r'^observaciones/informeNCR', views.informeNCR, name='informeNCR'),
     url(r'^observaciones/punchlist', views.punchlist, name='punchlist'),
+    url(r'^observaciones/(?P<slug_ag>[-\w\d]+)', views.observaciones, name='observaciones'),
     url(r'^observadores', views.observadores, name='observadores')
 ]

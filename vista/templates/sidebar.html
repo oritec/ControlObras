@@ -98,7 +98,7 @@
 						</li>
                     {% for wtg in aerogeneradores %}
 						<li class="nav-item " id="menu2-observaciones-{{ wtg.idx }}">
-							<a href="{% url 'ncr:observaciones' parque.slug wtg.idx %}" class="nav-link ">
+							<a href="{% url 'ncr:observaciones' parque.slug wtg.slug %}" class="nav-link ">
 								<i class="fa fa-caret-right"></i>
 								<span class="title">{{ wtg.nombre }}</span>
 							</a>

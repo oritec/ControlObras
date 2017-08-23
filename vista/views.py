@@ -72,7 +72,7 @@ def configuracion(request,slug):
             if parque.prev_no_aerogeneradores != parque.no_aerogeneradores:
                 logger.debug('Se debe actualizar tabla de Aerogeneradores.')
                 if parque.prev_no_aerogeneradores < parque.no_aerogeneradores:
-                    ag = Aerogenerador.objects.filter(parque=parque).order_by('-idx')
+                    ag = Aerogenerador.objects.filter(parque=parque,idx__gt=0).order_by('-idx')
                     last_idx=0
                     if ag.count()>0:
                         ultimo = ag[0]
@@ -82,7 +82,12 @@ def configuracion(request,slug):
                         nuevo.save()
                 else:
                     ag = Aerogenerador.objects.filter(parque=parque,idx__gt=parque.no_aerogeneradores).delete()
-
+            ag = Aerogenerador.objects.filter(idx = -1)
+            if ag.count() == 0:
+                nuevo = Aerogenerador(parque=parque, idx=-2, nombre='General')
+                nuevo.save()
+                nuevo = Aerogenerador(parque=parque, idx=-1, nombre='Puerto')
+                nuevo.save()
             ParqueSolar.objects.update()
             return response
         else:

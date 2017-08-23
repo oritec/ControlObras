@@ -13,10 +13,14 @@ class Aerogenerador(models.Model):
     idx = models.IntegerField()
     nombre = models.CharField(max_length=100)
     parque = models.ForeignKey('ParqueSolar', on_delete=models.CASCADE)
+    slug = models.SlugField()
     class Meta:
         unique_together = (("parque", "idx"),("parque", "nombre"))
     def __str__(self):
         return '%s' % (self.nombre)
+    def save(self, *args, **kwargs):
+        self.slug = defaultfilters.slugify(self.nombre)
+        super(Aerogenerador, self).save(*args, **kwargs)
 
 @python_2_unicode_compatible
 class ParqueSolar(models.Model):

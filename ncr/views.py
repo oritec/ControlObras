@@ -30,7 +30,7 @@ logger = logging.getLogger('oritec')
 @login_required(login_url='ingresar')
 def home(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
-    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'Parque Eólico-NCR'
@@ -46,7 +46,7 @@ def home(request,slug):
 @login_required(login_url='ingresar')
 def observaciones_resumen(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
-    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'Resumen de Observaciones'
@@ -65,18 +65,18 @@ def observaciones_resumen(request,slug):
                    })
 
 @login_required(login_url='ingresar')
-def observaciones(request,slug,ag_id):
+def observaciones(request,slug,slug_ag):
     parque = get_object_or_404(ParqueSolar, slug=slug)
-    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
-    aerogenerador = get_object_or_404(Aerogenerador,parque=parque,idx=ag_id)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
+    aerogenerador = get_object_or_404(Aerogenerador,parque=parque,slug=slug_ag)
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'NCR Aerogenerador '+ aerogenerador.nombre
     contenido.subtitulo='Parque '+ parque.nombre
-    contenido.menu = ['menu-ncr', 'menu2-observaciones-'+str(ag_id)]
-    url_append='?aerogenerador='+str(ag_id)
+    contenido.menu = ['menu-ncr', 'menu2-observaciones-'+str(aerogenerador.idx)]
+    url_append='?aerogenerador='+str(aerogenerador.idx)
 
-    observaciones = Observacion.objects.filter(aerogenerador__idx__exact=ag_id, parque= parque)
+    observaciones = Observacion.objects.filter(aerogenerador__idx__exact=aerogenerador.idx, parque= parque)
     return render(request, 'ncr/resumen.html',
         {'cont': contenido,
          'parque': parque,
@@ -88,7 +88,7 @@ def observaciones(request,slug,ag_id):
 @login_required(login_url='ingresar')
 def add_observacion(request,slug,observacion_id=0):
     parque = get_object_or_404(ParqueSolar, slug=slug)
-    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     edit_observacion = None
     if observacion_id != 0:
         edit_observacion = get_object_or_404(Observacion,id=observacion_id)
@@ -173,7 +173,7 @@ def add_observacion(request,slug,observacion_id=0):
 def show_observacion(request,slug,observacion_id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     observacion=get_object_or_404(Observacion, id=observacion_id)
-    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'Observación '
@@ -303,7 +303,7 @@ def primary_image(request,slug):
 @login_required(login_url='ingresar')
 def add_revision(request,slug,observacion_id, revision_id = 0):
     parque = get_object_or_404(ParqueSolar, slug=slug)
-    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     edit_revision = None
     if revision_id != 0:
         edit_revision = get_object_or_404(Revision, id=revision_id)
@@ -394,7 +394,7 @@ def generateExcelNCR(resultados):
 @login_required(login_url='ingresar')
 def informeNCR(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
-    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'Informe NCR'
@@ -526,7 +526,7 @@ def generateWord(parque, aerogenerador,reparadas):
 @login_required(login_url='ingresar')
 def punchlist(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
-    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'Punchlist'
@@ -644,7 +644,7 @@ def punchlist(request,slug):
 @login_required(login_url='ingresar')
 def observadores(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
-    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'Listado de observadores'
@@ -695,7 +695,7 @@ def observadores(request,slug):
 @login_required(login_url='ingresar')
 def del_observacion(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
-    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'Listado de observadores'
@@ -712,7 +712,7 @@ def del_observacion(request,slug):
 @login_required(login_url='ingresar')
 def del_revision(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
-    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'Listado de observadores'
@@ -732,7 +732,7 @@ def del_revision(request,slug):
 @login_required(login_url='ingresar')
 def close_observacion(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
-    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
     contenido.user=request.user
     contenido.titulo=u'Listado de observadores'
