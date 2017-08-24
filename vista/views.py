@@ -62,7 +62,7 @@ def configuracion(request,slug):
     contenido.menu = ['menu-principal', 'menu2-configuracion']
     form = None
     if request.method == 'POST':
-        form = ParqueFormFull(request.POST, instance=parque)
+        form = ParqueFormFull(request.POST, request.FILES, instance=parque)
         if form.is_valid():
             logger.debug("Formulario es válido")
             parque = form.save()

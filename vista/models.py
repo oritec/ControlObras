@@ -22,6 +22,14 @@ class Aerogenerador(models.Model):
         self.slug = defaultfilters.slugify(self.nombre)
         super(Aerogenerador, self).save(*args, **kwargs)
 
+def logos_directory_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    return 'logos/{0}'.format(filename)
+
+def word_directory_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    return 'word/{0}'.format(filename)
+
 @python_2_unicode_compatible
 class ParqueSolar(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
@@ -32,6 +40,8 @@ class ParqueSolar(models.Model):
     no_aerogeneradores = models.IntegerField(default=0)
     prev_no_aerogeneradores = models.IntegerField(default=0)
     codigo = models.CharField(max_length=50,unique=True)
+    logo = models.ImageField(upload_to=logos_directory_path, max_length=500, null=True, blank=True)
+    word = models.FileField(upload_to=word_directory_path, max_length=500, null=True, blank=True)
     def __str__(self):
         return '%s' % (self.nombre)
 

@@ -20,6 +20,7 @@ import base64
 from docx import Document
 from docx.shared import Mm, Inches, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.shape import WD_INLINE_SHAPE
 from django.conf import settings
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
@@ -461,10 +462,14 @@ def punchlistResults(parque, aerogenerador, reparadas):
 
 def generateWord(parque, aerogenerador,reparadas):
     [resultados, main_fotos, titulo] = punchlistResults(parque, aerogenerador, reparadas)
-    nombre_archivo = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/ncr/punchlist.docx'
+    if parque.word:
+        nombre_archivo = parque.word.file.name
+    else:
+        nombre_archivo = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/ncr/punchlist.docx'
     f = open(nombre_archivo, 'rb')
     document = Document(f)
     document._body.clear_content()
+
     section = document.sections[0]
     section.page_height = Mm(279.4)
     section.page_width = Mm(215.9)
@@ -546,6 +551,8 @@ def punchlist(request,slug):
             img_parcialsolucionado = base64.b64encode(image_file.read())
         with open(os.path.join(settings.BASE_DIR,'static/common/images/x-mark-64.gif'), "rb") as image_file:
             img_nosolucionado = base64.b64encode(image_file.read())
+        with open(os.path.join(settings.BASE_DIR,'static/common/images/saroenlogo.png'), "rb") as image_file:
+            logo_saroen = base64.b64encode(image_file.read())
         if form.is_valid():
             logger.debug("Form Valid")
             show_fotos = form.cleaned_data['fotos']
@@ -595,6 +602,7 @@ def punchlist(request,slug):
                                             'img_solucionado': img_solucionado,
                                             'img_parcialsolucionado': img_parcialsolucionado,
                                             'img_nosolucionado': img_nosolucionado,
+                                            'logo_saroen': logo_saroen,
                                            }, content_type='application/pdf',
                                               response_class=HttpResponse )
                     respuesta['Content-Disposition'] = 'attachment; filename="ReportePunchlist-'+ ag.nombre +'.pdf"'

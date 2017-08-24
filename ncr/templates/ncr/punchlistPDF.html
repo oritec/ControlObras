@@ -20,12 +20,21 @@
                     margin-top: 2.5cm;
                     margin-bottom: 2cm;
 
-                    @frame header {
-                        -pdf-frame-content: page-header;
+                    @frame header_left {
+                        -pdf-frame-content: page-header-left;
                         margin-top: 0.7cm;
                         margin-right: 2mm;
                         margin-bottom: 0cm;
                         margin-left: 1.2cm;
+                    }
+
+                    @frame header_right {
+                        -pdf-frame-content: page-header-right;
+                        margin-top: 0.8cm;
+                        margin-right: 1mm;
+                        margin-bottom: 0cm;
+                        margin-left: 16cm;
+
                     }
 
                     @frame footer {
@@ -36,6 +45,7 @@
                         height: 1cm;
                     }
                 }
+
                 h1 {
                     text-align: center;
                 }
@@ -92,8 +102,14 @@
 </head>
 <body>
 
-    <div id="page-header">
-        Informe Punchlist  -- {{ parque.nombre }}
+    <div id="page-header-left">
+        {% if parque.logo %}
+            <img src="{{ parque.logo.url }}" height="30" />
+        {% endif %}
+    </div>
+
+    <div id="page-header-right">
+        <img src="data:image/png;base64,{{ logo_saroen }}" height="25" />
     </div>
 
     <div id="content">

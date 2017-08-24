@@ -5,9 +5,10 @@ from models import ParqueSolar
 class ParqueFormFull(forms.ModelForm):
     class Meta:
         model = ParqueSolar
-        fields = ['nombre','cliente','suministrador','plataforma','no_aerogeneradores','codigo']
+        fields = ['nombre','cliente','suministrador','plataforma','no_aerogeneradores','codigo','logo','word']
         labels = {
             'no_aerogeneradores': 'Nº de Aerogeneradores',
+            'word': 'Plantilla Word Informes'
         }
     def __init__(self, *args, **kwargs):
         super(ParqueFormFull, self).__init__(*args, **kwargs)
@@ -17,6 +18,7 @@ class ParqueFormFull(forms.ModelForm):
         self.fields['plataforma'].widget.attrs['class'] = 'form-control'
         self.fields['no_aerogeneradores'].widget.attrs['class'] = 'form-control'
         self.fields['codigo'].widget.attrs['class'] = 'form-control'
+
 
 class ParqueForm(forms.ModelForm):
     class Meta:
