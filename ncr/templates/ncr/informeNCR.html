@@ -87,6 +87,9 @@
                                 <button id="exportExcel" class="btn green" style="padding-left: 10px">
                                     <i class="fa fa-file-excel-o"></i> Exportar a Excel
                                 </button>
+                                <a href="" id="exportPDF" data-target="#basic1" data-toggle="modal" class="btn blue-soft" style="padding-left: 10px">
+                                    <i class="fa fa-file-pdf-o"></i> Exportar a PDF
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -121,6 +124,33 @@
         </div>
     {% endif %}
 
+</div>
+
+
+
+<div class="modal fade" id="basic1" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">
+                    <span class="glyphicon glyphicon-file" style="color:rgba(56,203,44,0.89);font-size:20px"></span>
+                     <b> Generar reporte en PDF </b> </h4>
+            </div>
+            <div class="modal-body">
+                 <h5><b>Ingresa el título del reporte</b> </h5>
+                <input id="titulo" name="titulo" class="form-control"></input>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                <button type="button" id="exportPdf" class="btn blue" name="FromList">Generar PDF</button>
+                    <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+            </div>
+                <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
 </div>
 
 {% endblock %}
@@ -199,6 +229,13 @@
     $("#exportExcel").click(function(){
         var form = $("#form_ncr");
         $(form).append('<input type="hidden" name="excel" value="1">');
+        $(form).submit();
+    });
+    $("#exportPdf").click(function(){
+        var form = $("#form_ncr");
+        $(form).append('<input type="hidden" name="pdf" value="1">');
+        var titulo = $("#titulo").val();
+        $(form).append('<input type="hidden" name="titulo" value="' + titulo + '">');
         $(form).submit();
     });
     window.scrollTo(0, 0);

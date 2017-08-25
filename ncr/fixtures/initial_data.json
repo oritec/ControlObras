@@ -245,6 +245,13 @@
         }
     },
     {
+        "model": "ncr.subcomponente",
+        "pk": 23,
+        "fields": {
+            "nombre": "Vortex"
+        }
+    },
+    {
         "model": "ncr.tipo",
         "pk": 1,
         "fields": {

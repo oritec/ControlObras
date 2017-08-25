@@ -438,6 +438,12 @@ def informeNCR(request,slug):
                 target_stream.close()
                 response.write(ret_excel)
                 return response
+            if 'pdf' in request.POST:
+                logger.debug('PDF')
+                imagenes = listFotos(resultados)
+                respuesta = generatePdf(parque,resultados,imagenes,request.POST['titulo'],request)
+                respuesta['Content-Disposition'] = 'attachment; filename="ReporteNCR.pdf"'
+                return respuesta
 
     return render(request, 'ncr/informeNCR.html',
         {'cont': contenido,
@@ -447,16 +453,63 @@ def informeNCR(request,slug):
          'resultados':resultados,
         })
 
-def punchlistResults(parque, aerogenerador, reparadas):
+
+def generatePdf(parque,resultados,imagenes, titulo,request = None, show_fotos=True):
+    with open(os.path.join(settings.BASE_DIR, 'static/common/images/check-mark-3-64.gif'), "rb") as image_file:
+        img_solucionado = base64.b64encode(image_file.read())
+    with open(os.path.join(settings.BASE_DIR, 'static/common/images/x-mark-64-amarillo.gif'), "rb") as image_file:
+        img_parcialsolucionado = base64.b64encode(image_file.read())
+    with open(os.path.join(settings.BASE_DIR, 'static/common/images/x-mark-64.gif'), "rb") as image_file:
+        img_nosolucionado = base64.b64encode(image_file.read())
+    with open(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo.png'), "rb") as image_file:
+        logo_saroen = base64.b64encode(image_file.read())
+
+    if request is not None:
+        return render_to_pdf_response(request, 'ncr/punchlistPDF.html',
+                                           {'pagesize': 'LETTER',
+                                            'title': 'Reporte Punchlist',
+                                            'resultados': resultados,
+                                            'main_fotos': imagenes,
+                                            'parque': parque,
+                                            'titulo': titulo,
+                                            'show_fotos': show_fotos,
+                                            'img_solucionado': img_solucionado,
+                                            'img_parcialsolucionado': img_parcialsolucionado,
+                                            'img_nosolucionado': img_nosolucionado,
+                                            'logo_saroen': logo_saroen,
+                                            }, content_type='application/pdf',
+                                           response_class=HttpResponse)
+    else:
+        pdf = render_to_pdf('ncr/punchlistPDF.html',
+                            {'pagesize': 'LETTER',
+                             'title': 'Reporte Punchlist',
+                             'resultados': resultados,
+                             'main_fotos': imagenes,
+                             'parque': parque,
+                             'titulo': titulo,
+                             'show_fotos': show_fotos,
+                             'img_solucionado': img_solucionado,
+                             'img_parcialsolucionado': img_parcialsolucionado,
+                             'img_nosolucionado': img_nosolucionado,
+                             'logo_saroen': logo_saroen,
+                             })
+        return StringIO.StringIO(pdf)
+
+def listFotos(resultados):
     main_fotos = {}
-    resultados = Observacion.objects.filter(parque=parque, aerogenerador=aerogenerador, punchlist=True)
-    if not reparadas:
-        resultados = resultados.exclude(estado__nombre__exact='Solucionado').exclude(cerrado=True)
     for res in resultados:
         r=res.revision_set.all().order_by('-id')[0]
         results = Fotos.objects.filter(revision=r, principal=True)
         if results.count() > 0:
             main_fotos[res.id] = results[0].reporte_img.url
+    return main_fotos
+
+def punchlistResults(parque, aerogenerador, reparadas):
+
+    resultados = Observacion.objects.filter(parque=parque, aerogenerador=aerogenerador, punchlist=True)
+    if not reparadas:
+        resultados = resultados.exclude(estado__nombre__exact='Solucionado').exclude(cerrado=True)
+    main_fotos = listFotos(resultados)
     titulo = 'LISTADO DE PENDIENTES AEROGENERADOR ' + aerogenerador.nombre
     return [resultados, main_fotos, titulo]
 
@@ -545,14 +598,7 @@ def punchlist(request,slug):
     if request.method == 'POST':
         logger.debug('informePunchlist Post')
         form = Punchlist(request.POST, parque=parque)
-        with open(os.path.join(settings.BASE_DIR,'static/common/images/check-mark-3-64.gif'), "rb") as image_file:
-            img_solucionado = base64.b64encode(image_file.read())
-        with open(os.path.join(settings.BASE_DIR,'static/common/images/x-mark-64-amarillo.gif'), "rb") as image_file:
-            img_parcialsolucionado = base64.b64encode(image_file.read())
-        with open(os.path.join(settings.BASE_DIR,'static/common/images/x-mark-64.gif'), "rb") as image_file:
-            img_nosolucionado = base64.b64encode(image_file.read())
-        with open(os.path.join(settings.BASE_DIR,'static/common/images/saroenlogo.png'), "rb") as image_file:
-            logo_saroen = base64.b64encode(image_file.read())
+
         if form.is_valid():
             logger.debug("Form Valid")
             show_fotos = form.cleaned_data['fotos']
@@ -590,21 +636,7 @@ def punchlist(request,slug):
                     ag = form.cleaned_data['aerogenerador'][0]
                     [resultados, main_fotos, titulo] = punchlistResults(parque,ag,form.cleaned_data['reparadas'])
                     logger.debug(resultados)
-
-                    respuesta=render_to_pdf_response(request,'ncr/punchlistPDF.html',
-                                           {'pagesize':'LETTER',
-                                            'title': 'Reporte Punchlist',
-                                             'resultados':resultados,
-                                            'main_fotos': main_fotos,
-                                            'parque':parque,
-                                            'titulo': titulo,
-                                            'show_fotos': show_fotos,
-                                            'img_solucionado': img_solucionado,
-                                            'img_parcialsolucionado': img_parcialsolucionado,
-                                            'img_nosolucionado': img_nosolucionado,
-                                            'logo_saroen': logo_saroen,
-                                           }, content_type='application/pdf',
-                                              response_class=HttpResponse )
+                    respuesta = generatePdf(parque,resultados,main_fotos,titulo,request,show_fotos)
                     respuesta['Content-Disposition'] = 'attachment; filename="ReportePunchlist-'+ ag.nombre +'.pdf"'
                     return respuesta
                 elif len(form.cleaned_data['aerogenerador']) > 1:
@@ -615,22 +647,8 @@ def punchlist(request,slug):
 
                     for ag in form.cleaned_data['aerogenerador']:
                         [resultados, main_fotos, titulo] = punchlistResults(parque, ag, form.cleaned_data['reparadas'])
-
                         logger.debug(resultados)
-                        pdf = render_to_pdf('ncr/punchlistPDF.html',
-                                           {'pagesize':'LETTER',
-                                            'title': 'Reporte Punchlist',
-                                             'resultados':resultados,
-                                            'main_fotos': main_fotos,
-                                            'parque':parque,
-                                            'titulo': titulo,
-                                            'show_fotos': show_fotos,
-                                            'img_solucionado': img_solucionado,
-                                            'img_parcialsolucionado': img_parcialsolucionado,
-                                            'img_nosolucionado': img_nosolucionado,
-                                            'logo_saroen': logo_saroen,
-                                           })
-                        archivo = StringIO.StringIO(pdf)
+                        archivo = generatePdf(parque, resultados, main_fotos, titulo, show_fotos=show_fotos)
                         archivo_name = 'ReportePunchlist-'+ ag.nombre +'.pdf'
                         logger.debug(archivo_name)
                         archive.writestr(archivo_name, archivo.getvalue())
