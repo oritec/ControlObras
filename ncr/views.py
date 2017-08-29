@@ -26,6 +26,7 @@ from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from datetime import date
+from datetime import datetime
 
 logger = logging.getLogger('oritec')
 
@@ -456,9 +457,10 @@ def informeNCR(request,slug):
                     colores = True
                 else:
                     colores = False
+                fecha = datetime.strptime(request.POST['fecha'],'%d-%m-%Y').date()
                 respuesta = generatePdf(parque,resultados,imagenes,request.POST['titulo'],request,
                                         colores=colores,
-                                        fecha=request.POST['fecha']
+                                        fecha=fecha
                                         )
                 respuesta['Content-Disposition'] = 'attachment; filename="ReporteNCR.pdf"'
                 return respuesta
