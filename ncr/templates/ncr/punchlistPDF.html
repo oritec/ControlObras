@@ -189,7 +189,7 @@
             <tbody>
             {% for observacion in resultados %}
                 {%  if forloop.counter0|divisibleby:"2" %} <tr> {% endif %}
-                <td> <img src='{{ main_fotos|get_item:observacion.id }}'/>
+                <td style="text-align: center;"> <img src='{{ main_fotos|get_item:observacion.id }}'/>
                     <div>
                         OBS_{{ parque.codigo }}-{{ observacion.aerogenerador.nombre }}-{{ observacion.observacion_id }}
                     {% if colores %}
