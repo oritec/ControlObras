@@ -92,18 +92,18 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="control-label col-md-3">{{ observacionForm.sub_componente.label }}:</label>
-                                <div class="col-md-9">
-                                    {{ observacionForm.sub_componente }}
-                                    <span class="help-block"> {{ observacionForm.sub_componente.errors }} </span>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
                                 <label class="control-label col-md-3">{{ observacionForm.no_serie.label }}</label>
                                 <div class="col-md-9">
                                     {{ observacionForm.no_serie }}
                                     <span class="help-block"> {{ observacionForm.no_serie.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ observacionForm.sub_componente.label }}:</label>
+                                <div class="col-md-9">
+                                    {{ observacionForm.sub_componente }}
+                                    <span class="help-block"> {{ observacionForm.sub_componente.errors }} </span>
                                 </div>
                             </div>
 
@@ -117,9 +117,14 @@
 
                             <div class="form-group">
                                 <label class="control-label col-md-3">{{ revisionForm.severidad.label }}</label>
-                                <div class="col-md-9">
+                                <div class="col-md-8">
                                     {{ revisionForm.severidad }}
                                     <span class="help-block"> {{ revisionForm.severidad.errors }} </span>
+                                </div>
+                                <div class="col-md-1">
+                                    <button type="button" class="btn btn-circle btn-icon-only" data-toggle="tooltip" data-placement="top" title="Tooltip on bottom">
+                                      <i class="fa fa-question"></i>
+                                    </button>
                                 </div>
                             </div>
 
@@ -214,5 +219,6 @@
         $("#id_fecha_revision").val($("#id_fecha_observacion").val());
 
     });
+
 
 {% endblock %}

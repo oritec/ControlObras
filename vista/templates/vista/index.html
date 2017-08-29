@@ -31,7 +31,10 @@
 
     <div id="fullpage">
         <div class="section">
-            <div class="row">
+            <div class="row" style="position:fixed;top:20px;left:40px">
+                <img src="{% static "common/images/saroenfull.png" %}" width="200px">
+            </div>
+            <div class="row" >
                 <h1> Seleccionar Proyecto: </h1>
             </div>
             <div class="row">
@@ -59,7 +62,7 @@
             {% csrf_token %}
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
-                        <h2> Ingresar nombre del parque: </h2>
+                        <h2> Ingresar nombre del proyecto: </h2>
                     </div>
 
                 </div>

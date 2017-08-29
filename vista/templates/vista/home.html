@@ -15,13 +15,27 @@
             <h4>Por favor, ingresar la información del parque (Configuraci&oacute;n).</h4>
         </div>
     {%  else %}
-    <div class="col-md-12">
-        <p><b>Cliente:</b>  {{ parque.cliente }}</p>
-        <p><b>C&oacute;digo:</b> {{ parque.codigo }}</p>
-        <p><b>Suministrador:</b> {{ parque.suministrador }}</p>
-        <p><b>Plataforma:</b> {{ parque.plataforma }}</p>
-        <p><b>Nº de Aerogeneradores:</b> {{ parque.no_aerogeneradores }}</p>
-    </div>
+        {% if parque.logo %}
+
+            <div class="col-md-5">
+                <p><b>Cliente:</b>  {{ parque.cliente }}</p>
+                <p><b>C&oacute;digo:</b> {{ parque.codigo }}</p>
+                <p><b>Suministrador:</b> {{ parque.suministrador }}</p>
+                <p><b>Plataforma:</b> {{ parque.plataforma }}</p>
+                <p><b>Nº de Aerogeneradores:</b> {{ parque.no_aerogeneradores }}</p>
+            </div>
+            <div class="col-md-5">
+                <img src="{{ parque.logo.url }}" width="350px">
+            </div>
+        {% else %}
+            <div class="col-md-12">
+                <p><b>Cliente:</b>  {{ parque.cliente }}</p>
+                <p><b>C&oacute;digo:</b> {{ parque.codigo }}</p>
+                <p><b>Suministrador:</b> {{ parque.suministrador }}</p>
+                <p><b>Plataforma:</b> {{ parque.plataforma }}</p>
+                <p><b>Nº de Aerogeneradores:</b> {{ parque.no_aerogeneradores }}</p>
+            </div>
+        {% endif %}
     {% endif %}
 
 </div>

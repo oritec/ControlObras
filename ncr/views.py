@@ -25,6 +25,7 @@ from django.conf import settings
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.table import Table, TableStyleInfo
+from datetime import date
 
 logger = logging.getLogger('oritec')
 
@@ -97,17 +98,17 @@ def add_observacion(request,slug,observacion_id=0):
     contenido.user=request.user
     contenido.subtitulo=parque.nombre
     if 'aerogenerador' in request.GET:
-        contenido.titulo = u'Agregar Observacion'
+        contenido.titulo = u'Agregar Observación'
         contenido.menu = ['menu-ncr', 'menu2-observaciones-'+str(request.GET['aerogenerador'])]
         ag_readonly = True
         back_url = reverse('ncr:observaciones', args=[parque.slug,request.GET['aerogenerador']])
     elif edit_observacion is not None:
-        contenido.titulo = u'Editar Observacion'
+        contenido.titulo = u'Editar Observación'
         contenido.menu = ['menu-ncr', 'menu2-observaciones-' + str(edit_observacion.aerogenerador.idx)]
         ag_readonly = False
         back_url = reverse('ncr:observaciones-show', args=[parque.slug, str(edit_observacion.id)])
     else:
-        contenido.titulo = u'Agregar Observacion'
+        contenido.titulo = u'Agregar Observación'
         contenido.menu = ['menu-ncr', 'menu2-observaciones-resumen']
         ag_readonly = False
         back_url = reverse('ncr:observaciones-resumen', args=[parque.slug])
@@ -177,7 +178,8 @@ def show_observacion(request,slug,observacion_id):
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
     contenido.user=request.user
-    contenido.titulo=u'Observación '
+    contenido.titulo=u'Observación OBS_' + parque.codigo +\
+                     '-' + observacion.aerogenerador.nombre + '-' + str(observacion.observacion_id)
     contenido.subtitulo=parque.nombre
     contenido.menu = ['menu-ncr', 'menu2-observaciones-'+str(observacion.aerogenerador.idx)]
     main_fotos = {}
@@ -245,18 +247,27 @@ def list_fotos(request,slug):
         revision = Revision.objects.get(pk=request.POST['revision_id'])
         results = Fotos.objects.filter(revision=revision)
         for foto in results:
-            data={'name': os.path.basename(foto.imagen.name),
-                  'size':str(foto.imagen.size),
-                  'url':foto.imagen.url,
-                  'thumbnailUrl':foto.thumbnail.url,
-                  'deleteUrl':reverse('ncr:imagenes-delete',args=[parque.slug,foto.id]),
-                  "deleteType": "DELETE",
-                  "mainPhoto": foto.principal,
-                  "photoId" : str(foto.id)}
-            response_data['files'].append(data)
-            #logger.debug(foto.imagen.url)
-            #logger.debug(foto.principal)
-            #logger.debug(foto.id)
+            if foto.principal:
+                data={'name': os.path.basename(foto.imagen.name),
+                      'size':str(foto.imagen.size),
+                      'url':foto.imagen.url,
+                      'thumbnailUrl':foto.thumbnail.url,
+                      'deleteUrl':reverse('ncr:imagenes-delete',args=[parque.slug,foto.id]),
+                      "deleteType": "DELETE",
+                      "mainPhoto": foto.principal,
+                      "photoId" : str(foto.id)}
+                response_data['files'].append(data)
+        for foto in results:
+            if not foto.principal:
+                data={'name': os.path.basename(foto.imagen.name),
+                      'size':str(foto.imagen.size),
+                      'url':foto.imagen.url,
+                      'thumbnailUrl':foto.thumbnail.url,
+                      'deleteUrl':reverse('ncr:imagenes-delete',args=[parque.slug,foto.id]),
+                      "deleteType": "DELETE",
+                      "mainPhoto": foto.principal,
+                      "photoId" : str(foto.id)}
+                response_data['files'].append(data)
         response=json.dumps(response_data)
 
         return HttpResponse(
@@ -441,7 +452,14 @@ def informeNCR(request,slug):
             if 'pdf' in request.POST:
                 logger.debug('PDF')
                 imagenes = listFotos(resultados)
-                respuesta = generatePdf(parque,resultados,imagenes,request.POST['titulo'],request)
+                if "colores" in request.POST:
+                    colores = True
+                else:
+                    colores = False
+                respuesta = generatePdf(parque,resultados,imagenes,request.POST['titulo'],request,
+                                        colores=colores,
+                                        fecha=request.POST['fecha']
+                                        )
                 respuesta['Content-Disposition'] = 'attachment; filename="ReporteNCR.pdf"'
                 return respuesta
 
@@ -454,7 +472,12 @@ def informeNCR(request,slug):
         })
 
 
-def generatePdf(parque,resultados,imagenes, titulo,request = None, show_fotos=True):
+def generatePdf(parque,resultados,imagenes, titulo,
+                request = None,
+                show_fotos=True,
+                colores = True,
+                fecha = date.today,
+                nombre = ''):
     with open(os.path.join(settings.BASE_DIR, 'static/common/images/check-mark-3-64.gif'), "rb") as image_file:
         img_solucionado = base64.b64encode(image_file.read())
     with open(os.path.join(settings.BASE_DIR, 'static/common/images/x-mark-64-amarillo.gif'), "rb") as image_file:
@@ -477,6 +500,9 @@ def generatePdf(parque,resultados,imagenes, titulo,request = None, show_fotos=Tr
                                             'img_parcialsolucionado': img_parcialsolucionado,
                                             'img_nosolucionado': img_nosolucionado,
                                             'logo_saroen': logo_saroen,
+                                            'colores' : colores,
+                                            'fecha': fecha,
+                                            'nombre': nombre,
                                             }, content_type='application/pdf',
                                            response_class=HttpResponse)
     else:
@@ -492,6 +518,9 @@ def generatePdf(parque,resultados,imagenes, titulo,request = None, show_fotos=Tr
                              'img_parcialsolucionado': img_parcialsolucionado,
                              'img_nosolucionado': img_nosolucionado,
                              'logo_saroen': logo_saroen,
+                             'colores': colores,
+                             'fecha': fecha,
+                             'nombre': nombre,
                              })
         return StringIO.StringIO(pdf)
 
@@ -636,8 +665,15 @@ def punchlist(request,slug):
                     ag = form.cleaned_data['aerogenerador'][0]
                     [resultados, main_fotos, titulo] = punchlistResults(parque,ag,form.cleaned_data['reparadas'])
                     logger.debug(resultados)
-                    respuesta = generatePdf(parque,resultados,main_fotos,titulo,request,show_fotos)
-                    respuesta['Content-Disposition'] = 'attachment; filename="ReportePunchlist-'+ ag.nombre +'.pdf"'
+                    colores = form.cleaned_data['colores']
+                    fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
+                    nombre = 'PL_' + parque.codigo + '-' + ag.nombre + '-' + fecha_str + '.pdf'
+                    respuesta = generatePdf(parque,resultados,main_fotos,titulo,request,
+                                            show_fotos=show_fotos,
+                                            colores=colores,
+                                            fecha=form.cleaned_data['fecha'],
+                                            nombre=nombre)
+                    respuesta['Content-Disposition'] = 'attachment; filename='+nombre
                     return respuesta
                 elif len(form.cleaned_data['aerogenerador']) > 1:
                     response = HttpResponse(content_type='application/zip')
@@ -648,8 +684,15 @@ def punchlist(request,slug):
                     for ag in form.cleaned_data['aerogenerador']:
                         [resultados, main_fotos, titulo] = punchlistResults(parque, ag, form.cleaned_data['reparadas'])
                         logger.debug(resultados)
-                        archivo = generatePdf(parque, resultados, main_fotos, titulo, show_fotos=show_fotos)
-                        archivo_name = 'ReportePunchlist-'+ ag.nombre +'.pdf'
+                        colores = form.cleaned_data['colores']
+                        fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
+                        archivo_name = 'PL_' + parque.codigo + '-' + ag.nombre + '-' + fecha_str + '.pdf'
+                        archivo = generatePdf(parque, resultados, main_fotos, titulo,
+                                              show_fotos=show_fotos,
+                                              colores = colores,
+                                              fecha=form.cleaned_data['fecha'],
+                                              nombre=archivo_name)
+
                         logger.debug(archivo_name)
                         archive.writestr(archivo_name, archivo.getvalue())
                     archive.close()
@@ -674,7 +717,7 @@ def observadores(request,slug):
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
     contenido.user=request.user
-    contenido.titulo=u'Listado de observadores'
+    contenido.titulo=u'Listado de inspectores'
     contenido.subtitulo='Parque '+ parque.nombre
     contenido.menu = ['menu-principal', 'menu2-observadores']
     observadores = Observador.objects.all().order_by('id')

@@ -37,15 +37,23 @@
 
                     }
 
-                    @frame footer {
-                        -pdf-frame-content: page-footer;
+                    @frame footer_left {
+                        -pdf-frame-content: page-footer-left;
                         bottom: 0cm;
                         margin-left: 1cm;
                         margin-right: 1cm;
                         height: 1cm;
                     }
-                }
 
+                    @frame footer_center {
+                        -pdf-frame-content: page-footer-center;
+                        bottom: 0cm;
+                        margin-left: 9.5cm;
+                        margin-right: 1cm;
+                        height: 1cm;
+                    }
+                }
+                body { font-family: "calibri","Regular" }
                 h1 {
                     text-align: center;
                 }
@@ -59,11 +67,13 @@
                     padding-left:4px;
                     margin-bottom:0px;
                     text-align: left;
+
                 }
                 .tabla-observaciones th {
                     font-weight: bold;
                     color: #ffffff;
                     background-color: #2465cb;
+                    text-align: center;
                 }
 
                 .tabla-fotos table,th,td {
@@ -75,7 +85,6 @@
                 .tabla-fotos th, td {
                     padding:4px;
                     margin-bottom:0px;
-                    text-align: center;
                 }
 
                 .no-solucionada {
@@ -93,7 +102,17 @@
                 .row2 {
                     background-color: #e9ebf5;
                 }
-
+                .leyenda table {
+                    border: 1px;
+                    padding-top:10px;
+                    margin-top:10px;
+                    vertical-align: middle;
+                    table-layout: fixed;
+                }
+                .noborder {
+                    padding:0px;
+                    margin:0px;
+                }
 
             </style>
         {%endblock%}
@@ -113,30 +132,55 @@
     </div>
 
     <div id="content">
-        <h1> {{ titulo }} </h1>
+        <h1 style="padding-bottom:0px;margin-bottom: 0px"> {{ titulo }} </h1>
+        <h3 style="text-align:center;font-size:90%;padding-top:0px;margin-top:0px"> {{ fecha }} </h3>
         {% if resultados|length == 0 %}
            <p style="text-align: center;">No existen observaciones pendientes.</p>
         {% else %}
         <table class="tabla-observaciones">
             <thead>
                 <tr>
-                    <th align="center"  style=""> Item </th>
-                    <th> Componente </th>
-                    <th align="left"> Descripci&oacute;n </th>
+                    <th align="center" style="width: 25%;"> Item </th>
+                    <th align="center" style="width: 30%;"> Componente </th>
+                    <th align="center" style="width: 45%;"> Descripci&oacute;n </th>
                 </tr>
             </thead>
             <tbody>
             {% for observacion in resultados %}
                 <tr>
-                    <td align="center" class="{% if observacion.estado.nombre == 'No Solucionado' %}no-solucionada {% elif observacion.estado.nombre == 'Parcialmente Solucionado' %} parcial-solucionada {% else %} solucionada {% endif %}">
+                    {% if colores %}
+                        <td align="center" class="{% if observacion.estado.nombre == 'No Solucionado' %}no-solucionada {% elif observacion.estado.nombre == 'Parcialmente Solucionado' %} parcial-solucionada {% else %} solucionada {% endif %}">
+                    {% else %}
+                        <td align="center" class="{% cycle 'row1' 'row2' %}">
+                    {% endif %}
                         OBS_{{ parque.codigo }}-{{ observacion.aerogenerador.nombre }}-{{ observacion.observacion_id }}
                     </td>
-                    <td class="{% cycle 'row1' 'row2' %}"> {{ observacion.componente }} </td>
-                    <td class="{% cycle 'row1' 'row2' %}"> {{ observacion.nombre }} </td>
+                    <td align="center" class="{% cycle 'row1' 'row2' %}"> {{ observacion.componente }} </td>
+                    <td align="left" class="{% cycle 'row1' 'row2' %}"> {{ observacion.nombre }} </td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
+
+        {% if colores %}
+        <br style="width:100px">  </br>
+
+        <table style="table-layout:fixed" >
+            <tr>
+                <td style="margin-bottom:0px;padding-bottom:0px;color:#4ab664;width:1cm;border:1px;margin-right:0px;padding-right:0px;" class="solucionada ">h</td>
+                <td style="margin-bottom:0px;padding-bottom:0px;width:5cm;border:0px;margin-right:0px;padding-right:0px;" > Observación reparada</td>
+            </tr>
+            <tr>
+                <td style="margin-bottom:0px;padding-bottom:0px;color:#4ab664;width:1cm;border:1px;margin-right:0px;padding-right:0px;" class="parcial-solucionada "></td>
+                <td style="margin-bottom:0px;padding-bottom:0px;width:5cm;border:0px;margin-right:0px;padding-right:0px;" > Observación parcialmente reparada</td>
+            </tr>
+            <tr>
+                <td style="margin-bottom:0px;padding-bottom:0px;color:#4ab664;width:1cm;border:1px;margin-right:0px;padding-right:0px;" class="no-solucionada "></td>
+                <td style="margin-bottom:0px;padding-bottom:0px;width:5cm;border:0px;margin-right:0px;padding-right:0px;" > Observación no reparada</td>
+            </tr>
+        </table>
+
+        {% endif %}
 
         {% if show_fotos %}
         <h1 style="page-break-before: always"> Fotograf&iacute;as </h1>
@@ -148,6 +192,7 @@
                 <td> <img src='{{ main_fotos|get_item:observacion.id }}'/>
                     <div>
                         OBS_{{ parque.codigo }}-{{ observacion.aerogenerador.nombre }}-{{ observacion.observacion_id }}
+                    {% if colores %}
                         <span style="padding-left:10px">
                             {% if observacion.estado.nombre == 'Solucionado' %}
                             <img src='data:image/png;base64,{{ img_solucionado }}' height="20px" width="20px"/>
@@ -157,7 +202,7 @@
                             <img src='data:image/png;base64,{{ img_nosolucionado }}' height="20px" width="20px"/>
                             {% endif %}
                         </span>
-
+                    {% endif %}
 
                     </div>
                 </td>
@@ -170,12 +215,12 @@
         {% endif %}
     </div>
 
-    <div id="page-footer">
-        {%block page_foot%}
-            {% comment %}
-                <pdf:pagenumber />
-            {% endcomment %}
-        {%endblock%}
+    <div id="page-footer-left">
+        {{ nombre }}
+    </div>
+
+    <div id="page-footer-center">
+        Página <pdf:pagenumber /> de <pdf:pagecount />
     </div>
 </body>
 </html>

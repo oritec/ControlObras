@@ -42,6 +42,9 @@ class ParqueSolar(models.Model):
     codigo = models.CharField(max_length=50,unique=True)
     logo = models.ImageField(upload_to=logos_directory_path, max_length=500, null=True, blank=True)
     word = models.FileField(upload_to=word_directory_path, max_length=500, null=True, blank=True)
+    pais = models.CharField(max_length=100, default='')
+    region = models.CharField(max_length=100, default='')
+    municipio = models.CharField(max_length=100, default='')
     def __str__(self):
         return '%s' % (self.nombre)
 

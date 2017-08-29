@@ -10,7 +10,7 @@
         "model": "ncr.componente",
         "pk": 2,
         "fields": {
-            "nombre": "Hub"
+            "nombre": "Buje"
         }
     },
     {
@@ -94,7 +94,7 @@
         "model": "ncr.subcomponente",
         "pk": 1,
         "fields": {
-            "nombre": "Armarios"
+            "nombre": "Armarios Eléctricos"
         }
     },
     {
@@ -108,7 +108,7 @@
         "model": "ncr.subcomponente",
         "pk": 3,
         "fields": {
-            "nombre": "Corona"
+            "nombre": "Corona de Giro"
         }
     },
     {
@@ -178,14 +178,14 @@
         "model": "ncr.subcomponente",
         "pk": 13,
         "fields": {
-            "nombre": "Jaula"
+            "nombre": "Jaula del elevador"
         }
     },
     {
         "model": "ncr.subcomponente",
         "pk": 14,
         "fields": {
-            "nombre": "LCTU"
+            "nombre": "Conector Tierra"
         }
     },
     {
@@ -213,14 +213,14 @@
         "model": "ncr.subcomponente",
         "pk": 18,
         "fields": {
-            "nombre": "Señaletica"
+            "nombre": "Señalética"
         }
     },
     {
         "model": "ncr.subcomponente",
         "pk": 19,
         "fields": {
-            "nombre": "Tornilleria"
+            "nombre": "Tornillería"
         }
     },
     {
@@ -283,7 +283,7 @@
         "model": "ncr.tipo",
         "pk": 5,
         "fields": {
-            "nombre": "Fugo, derrame"
+            "nombre": "Fuga, derrame"
         }
     },
     {
@@ -340,13 +340,6 @@
         "pk": 13,
         "fields": {
             "nombre": "Otro"
-        }
-    },
-    {
-        "model": "ncr.severidad",
-        "pk": 1,
-        "fields": {
-            "nombre": "0"
         }
     },
     {

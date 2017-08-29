@@ -37,10 +37,10 @@
                                 <div class="col-md-9">
                                     <div class="m-grid">
                                         <div class="m-grid-row">
-                                            <div class="m-grid-col m-grid-col-md-6">
+                                            <div class="m-grid-col m-grid-col-md-6 m-grid-col-sm-6">
                                                 {{ field }}
                                             </div>
-                                            <div class="m-grid-col m-grid-col-md-6 m-grid-col-middle">
+                                            <div class="m-grid-col m-grid-col-md-6 m-grid-col-sm-6 m-grid-col-middle">
                                                 <p>
                                                 <a href="javascript:;" class="btn btn-sm blue-hoki" id="{{ field.auto_id }}_todo">
                                                     <i class="fa fa-long-arrow-right"></i> Seleccionar Todo
@@ -138,8 +138,20 @@
                      <b> Generar reporte en PDF </b> </h4>
             </div>
             <div class="modal-body">
-                 <h5><b>Ingresa el título del reporte</b> </h5>
-                <input id="titulo" name="titulo" class="form-control"></input>
+                <h5><b>Fecha</b> </h5>
+                <div class="input-group input-medium date date-picker" data-date-format="dd-mm-yyyy" data-date-show-today-button="true">
+                    <input id="fecha" name="fecha" class="form-control" readonly="">
+                    <span class="input-group-btn">
+                        <button class="btn default" type="button">
+                            <i class="fa fa-calendar"></i>
+                        </button>
+                    </span>
+                </div>
+                <h5><b>¿Incluir código de colores? </b> </h5>
+                <input name="colores" data-off-text="No" checked="" data-on-text="Si" data-size="small" class="make-switch" id="colores" type="checkbox">
+                <h5><b>Ingresa el título del reporte</b> </h5>
+                <input id="titulo" name="titulo" class="form-control">
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
@@ -187,10 +199,11 @@
             toolbarPlacement:"bottom",
             todayHighlight:true,
             todayBtn:"linked",
-
         });
         //$('body').removeClass("modal-open"); // fix bug when inline picker is used in modal
     }
+
+    $('.date-picker').datepicker("setDate", new Date());
 
     /* Workaround to restrict daterange past date select: http://stackoverflow.com/questions/11933173/how-to-restrict-the-selectable-date-ranges-in-bootstrap-datepicker */
 
@@ -225,6 +238,9 @@
         $("#row_form").show();
         $("#row_resultados").hide();
         $( "[name='excel']" ).remove();
+        $( "[name='pdf']" ).remove();
+        $( "[name='colores']" ).remove();
+        $( "[name='fecha']" ).remove();
     });
     $("#exportExcel").click(function(){
         var form = $("#form_ncr");
@@ -235,7 +251,16 @@
         var form = $("#form_ncr");
         $(form).append('<input type="hidden" name="pdf" value="1">');
         var titulo = $("#titulo").val();
+        var colores = $("#colores").bootstrapSwitch('state');
+        console.log(colores);
+        var fecha = $("#fecha").val();
         $(form).append('<input type="hidden" name="titulo" value="' + titulo + '">');
+        if (colores) {
+            $(form).append('<input type="hidden" name="colores" type="checkbox" checked="">');
+        } else {
+            $( "[name='colores']" ).remove();
+        }
+        $(form).append('<input type="hidden" name="fecha" value="' + fecha + '">');
         $(form).submit();
     });
     window.scrollTo(0, 0);

@@ -3,6 +3,7 @@ from django import forms
 from ncr.models import Observacion, Revision,EstadoRevision,Severidad,Componente,Subcomponente,Tipo
 from vista.models import ParqueSolar,Aerogenerador
 import logging
+from datetime import date
 logger = logging.getLogger('oritec')
 
 class ObservacionForm(forms.ModelForm):
@@ -15,7 +16,8 @@ class ObservacionForm(forms.ModelForm):
         labels = {
             'nombre': 'Descripción',
             'reported_by': 'Reportado por',
-            'no_serie': 'Número de Serie'
+            'no_serie': 'Número de Serie',
+            'clase': 'Categoría'
         }
     def __init__(self, *args, **kwargs):
         super(ObservacionForm, self).__init__(*args, **kwargs)
@@ -90,6 +92,7 @@ class RevisionFormFull(forms.ModelForm):
         model = Revision
         fields = ['observacion','fecha_revision','severidad','descripcion', 'estado','reported_by']
         labels = {
+            'fecha_revision' : 'Fecha revisión',
             'descripcion': 'Detalle',
             'reported_by': 'Reportado por'
         }
@@ -110,7 +113,7 @@ class RevisionFormFull(forms.ModelForm):
 
 class NCR(forms.Form):
     aerogenerador = forms.ModelMultipleChoiceField(queryset=Aerogenerador.objects.all(),required=False)
-    condicion = forms.MultipleChoiceField(choices=[('reparadas', 'Reparadas'), ('no reparadas', 'No Reparadas')],required=False,label="Condición")
+    condicion = forms.MultipleChoiceField(choices=[('reparadas', 'Cerrada'), ('no reparadas', 'Abierta')],required=False,label="Condición")
     estado = forms.ModelMultipleChoiceField(queryset=EstadoRevision.objects.all(),required=False)
     severidad = forms.ModelMultipleChoiceField(queryset=Severidad.objects.all(),required=False)
     componente = forms.ModelMultipleChoiceField(queryset=Componente.objects.all(),required=False)
@@ -125,8 +128,11 @@ class NCR(forms.Form):
 
 class Punchlist(forms.Form):
     aerogenerador = forms.ModelMultipleChoiceField(queryset=Aerogenerador.objects.all().order_by('idx'),required=False)
+    fecha = forms.DateField(widget=forms.DateInput(format='%d-%m-%Y'), input_formats=('%d-%m-%Y',), initial=date.today)
     fotos = forms.BooleanField(label='¿Incluir fotos?',required=False)
     reparadas = forms.BooleanField(label='¿Incluir observaciones reparadas?',required=False)
+    colores = forms.BooleanField(label='¿Incluir código de colores?', required=False)
+
     def __init__(self, *args, **kwargs):
         parque = kwargs.pop('parque')
         super(Punchlist, self).__init__(*args, **kwargs)
@@ -140,3 +146,10 @@ class Punchlist(forms.Form):
         self.fields['reparadas'].widget.attrs['data-size'] = 'small'
         self.fields['reparadas'].widget.attrs['data-on-text'] = 'Si'
         self.fields['reparadas'].widget.attrs['data-off-text'] = 'No'
+        self.fields['colores'].widget.attrs['class'] = 'make-switch'
+        self.fields['colores'].widget.attrs['data-size'] = 'small'
+        self.fields['colores'].widget.attrs['data-on-text'] = 'Si'
+        self.fields['colores'].widget.attrs['data-off-text'] = 'No'
+        self.fields['colores'].widget.attrs['checked'] = ''
+        self.fields['fecha'].widget.attrs['class'] = 'form-control'
+        self.fields['fecha'].widget.attrs['readonly'] = True

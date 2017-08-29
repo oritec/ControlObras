@@ -60,10 +60,11 @@
                             <input type="button" id="del_observacion{{ observacion.id }}" data-target="#basic1" data-toggle="modal" class="btn btn-xs btn-circle red" value="Borrar" onclick="$('#del_id').val({{ observacion.id }})"/>
                         </h4>
                         <ul>
-                            <li> <b>Clase:</b> {% if observacion.clase %} NCR {% else %} Incidencia {% endif %} </li>
+                            <li> <b>Aerogenerador:</b> {{ observacion.aerogenerador }} </li>
+                            <li> <b>Categoría:</b> {% if observacion.clase %} NCR {% else %} Incidencia {% endif %} </li>
                             <li> <b>Componente:</b> {{ observacion.componente }}</li>
-                            <li> <b>Sub-Componente:</b> {{ observacion.sub_componente }}</li>
                             <li> <b>N&uacute;mero de Serie:</b> {% if observacion.no_serie == '' %} - {% else %}{{ observacion.no_serie }} {% endif %}</li>
+                            <li> <b>Sub-Componente:</b> {{ observacion.sub_componente }}</li>
                             <li> <b>Tipo:</b> {{ observacion.tipo }}</li>
                             <li> <b>Severidad:</b> {{ revision.severidad }}</li>
                             <li> <b>Descipci&oacute;n:</b> {{ observacion.nombre }}</li>
@@ -172,7 +173,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" data-dismiss="modal" class="btn dark btn-outline">Close</button>
+                <button type="button" data-dismiss="modal" class="btn dark btn-outline">Cerrar</button>
             </div>
         </div>
     </div>
@@ -255,7 +256,7 @@
                          <b>Advertencia</b> </h4>
                 </div>
                 <div class="modal-body">
-                     <h5><b>Observación no solucionada. Indica por qué quieres cerrarla.</b> </h5>
+                     <h5><b>Observación no solucionada. Por favor indique la razón para cerrarla.</b> </h5>
                     <textarea id="cierre_msg" name="cierre_msg" class="form-control" rows="3"></textarea>
                 </div>
                 <div class="modal-footer">
@@ -284,7 +285,7 @@
                          <b>Advertencia</b> </h4>
                 </div>
                 <div class="modal-body">
-                     <h5><b>¿Seguro que quieres volver a abrir la observaci&oacute;n</b> </h5>
+                     <h5><b>¿Seguro que quiere volver a abrir la observaci&oacute;n?</b> </h5>
                 </div>
                 <div class="modal-footer">
                         <input type="hidden" name="del_id" id="del_id_obs2" value="">
