@@ -409,7 +409,7 @@ def informeNCR(request,slug):
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
     contenido.user=request.user
-    contenido.titulo=u'Informe NCR'
+    contenido.titulo=u'Informe NCRs'
     contenido.subtitulo='Parque '+ parque.nombre
     contenido.menu = ['menu-ncr', 'menu2-informeNCR']
 
@@ -539,7 +539,12 @@ def punchlistResults(parque, aerogenerador, reparadas):
     if not reparadas:
         resultados = resultados.exclude(estado__nombre__exact='Solucionado').exclude(cerrado=True)
     main_fotos = listFotos(resultados)
-    titulo = 'LISTADO DE PENDIENTES AEROGENERADOR ' + aerogenerador.nombre
+    if aerogenerador.nombre == 'General':
+        titulo = 'LISTADO DE OBSERVACIONES GENERALES'
+    if aerogenerador.nombre == 'Puerto':
+        titulo = 'LISTADO DE OBSERVACIONES EN PUERTO'
+    else:
+        titulo = 'LISTADO DE PENDIENTES AEROGENERADOR ' + aerogenerador.nombre
     return [resultados, main_fotos, titulo]
 
 def generateWord(parque, aerogenerador,reparadas):
