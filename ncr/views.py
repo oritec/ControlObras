@@ -667,7 +667,7 @@ def punchlist(request,slug):
                     logger.debug(resultados)
                     colores = form.cleaned_data['colores']
                     fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
-                    nombre = 'PL_' + parque.codigo + '-' + ag.nombre + '-' + fecha_str + '.pdf'
+                    nombre = 'PL_' + parque.codigo + '-' + ag.nombre + '_' + fecha_str + '.pdf'
                     respuesta = generatePdf(parque,resultados,main_fotos,titulo,request,
                                             show_fotos=show_fotos,
                                             colores=colores,
@@ -686,7 +686,7 @@ def punchlist(request,slug):
                         logger.debug(resultados)
                         colores = form.cleaned_data['colores']
                         fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
-                        archivo_name = 'PL_' + parque.codigo + '-' + ag.nombre + '-' + fecha_str + '.pdf'
+                        archivo_name = 'PL_' + parque.codigo + '-' + ag.nombre + '_' + fecha_str + '.pdf'
                         archivo = generatePdf(parque, resultados, main_fotos, titulo,
                                               show_fotos=show_fotos,
                                               colores = colores,
