@@ -17,7 +17,8 @@ class ObservacionForm(forms.ModelForm):
             'nombre': 'Descripción',
             'reported_by': 'Reportado por',
             'no_serie': 'Número de Serie',
-            'clase': 'Categoría'
+            'clase': 'Categoría',
+            'fecha_observacion': 'Fecha observación'
         }
     def __init__(self, *args, **kwargs):
         super(ObservacionForm, self).__init__(*args, **kwargs)
