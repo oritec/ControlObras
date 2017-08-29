@@ -637,7 +637,9 @@ def punchlist(request,slug):
                     ag = form.cleaned_data['aerogenerador'][0]
                     target_stream = generateWord(parque,ag,form.cleaned_data['reparadas'])
                     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-                    response['Content-Disposition'] = 'attachment; filename="ReportePunchlist-' + ag.nombre + '.docx"'
+                    fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
+                    nombre = 'PL_' + parque.codigo + '-' + ag.nombre + '_' + fecha_str + '.docx'
+                    response['Content-Disposition'] = 'attachment; filename='+nombre
                     target_stream.flush()
                     ret_word = target_stream.getvalue()
                     target_stream.close()
@@ -651,7 +653,8 @@ def punchlist(request,slug):
 
                     for ag in form.cleaned_data['aerogenerador']:
                         target_stream = generateWord(parque, ag, form.cleaned_data['reparadas'])
-                        archivo_name = 'ReportePunchlist-' + ag.nombre + '.docx'
+                        fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
+                        archivo_name = 'PL_' + parque.codigo + '-' + ag.nombre + '_' + fecha_str + '.docx'
                         logger.debug(archivo_name)
                         archive.writestr(archivo_name, target_stream.getvalue())
                     archive.close()
