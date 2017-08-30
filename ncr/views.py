@@ -464,7 +464,7 @@ def informeNCR(request,slug):
                     colores = False
                 fecha = datetime.strptime(request.POST['fecha'],'%d-%m-%Y').date()
 
-                nombre_archivo = 'NombreArchivo'
+                nombre_archivo = 'SinNombre'
                 if request.POST['nombre'] != '':
                     nombre_archivo = request.POST['nombre']
                 nombre = 'INFNCR_' + parque.codigo + '-' + nombre_archivo + '_' + fecha.strftime("%y%m%d") + '.pdf'
