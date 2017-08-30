@@ -26,7 +26,8 @@ class ParqueFormFull(forms.ModelForm):
 class ParqueForm(forms.ModelForm):
     class Meta:
         model = ParqueSolar
-        fields = ['nombre']
+        fields = ['nombre','codigo']
     def __init__(self, *args, **kwargs):
         super(ParqueForm, self).__init__(*args, **kwargs)
         self.fields['nombre'].widget.attrs['class'] = 'form-control'
+        self.fields['codigo'].widget.attrs['class'] = 'form-control'

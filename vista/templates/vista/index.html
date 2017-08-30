@@ -45,7 +45,7 @@
                     <div class="form-group">
                         <select id="parques" class="selectpicker form-control" name="parqueselect">
                         {% for parque in parques %}
-                            <option value="{{ parque.slug }}"> {{ parque }} </option>
+                            <option value="{{ parque.slug }}"> {{ parque.getPrintName }} </option>
                         {% endfor %}
                         </select>
                     </div>
@@ -81,6 +81,28 @@
                     </div>
 
                 </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-6 col-md-offset-3">
+                        <h2> Ingresar código del proyecto: </h2>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-6 col-md-offset-3">
+
+                            <div class="form-group">
+                                {{ formAddParque.codigo }}
+                            </div>
+                            <span class="help-block">
+                                {{ formAddParque.codigo.errors }}
+                            </span>
+                    </div>
+
+                </div>
+                <br>
                 <div class="row">
                     <button type="button" class="btn btn-primary" id="home"> < Volver</button>
                     <input type="submit" value="Crear >" name="addParque" class="btn btn-success"/>
@@ -130,6 +152,8 @@
     <script src="{% static 'common/js/jquery.easings.min.js' %}" type="text/javascript"></script>
     <script src="{% static 'common/js/scrolloverflow.min.js' %}" type="text/javascript"></script>
     <script src="{% static 'common/js/jquery.fullpage.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-toastr/toastr.min.js' %}" type="text/javascript"></script>
+
 
 <script>
     $(document).ready(function() {
@@ -238,6 +262,33 @@
             window.location=url;
         });
 
+        toastr.options = {
+				"closeButton": false,
+				"debug": false,
+				"newestOnTop": false,
+				"progressBar": false,
+				"positionClass": "toast-top-right",
+				"preventDuplicates": false,
+				"onclick": null,
+				"showDuration": "300",
+				"hideDuration": "1000",
+				"timeOut": "4000",
+				"extendedTimeOut": "1000",
+				"showEasing": "swing",
+				"hideEasing": "linear",
+				"showMethod": "fadeIn",
+				"hideMethod": "fadeOut"
+			};
+
+		{% if cont.toastrMsg != '' %}
+			toastr["{{ cont.toastrStatus }}"]("{{ cont.toastrMsg }}");
+		{% endif %}
+
+		{% if messages %}
+		    {% for message in messages %}
+		    	toastr["{{ message.tags }}"]("{{ message }}");
+		    {% endfor %}
+		{% endif %}
     });
 </script>
 

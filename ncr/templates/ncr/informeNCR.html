@@ -149,9 +149,10 @@
                 </div>
                 <h5><b>¿Incluir código de colores? </b> </h5>
                 <input name="colores" data-off-text="No" checked="" data-on-text="Si" data-size="small" class="make-switch" id="colores" type="checkbox">
-                <h5><b>Ingresa el título del reporte</b> </h5>
+                <h5><b>Ingrese el título del reporte</b> </h5>
                 <input id="titulo" name="titulo" class="form-control">
-
+                <h5><b>Ingrese nombre del archivo generado </b> </h5>
+                <input id="nombre" name="nombre" class="form-control">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
@@ -241,6 +242,7 @@
         $( "[name='pdf']" ).remove();
         $( "[name='colores']" ).remove();
         $( "[name='fecha']" ).remove();
+        $( "[name='nombre']" ).remove();
     });
     $("#exportExcel").click(function(){
         var form = $("#form_ncr");
@@ -261,6 +263,8 @@
             $( "[name='colores']" ).remove();
         }
         $(form).append('<input type="hidden" name="fecha" value="' + fecha + '">');
+        var nombre = $("#nombre").val();
+        $(form).append('<input type="hidden" name="nombre" value="' + nombre + '">');
         $(form).submit();
     });
     window.scrollTo(0, 0);

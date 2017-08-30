@@ -32,7 +32,7 @@ def word_directory_path(instance, filename):
 
 @python_2_unicode_compatible
 class ParqueSolar(models.Model):
-    nombre = models.CharField(max_length=50, unique=True)
+    nombre = models.CharField(max_length=50)
     slug = models.SlugField()
     cliente = models.CharField(max_length=100, default='')
     suministrador = models.CharField(max_length=100, default='')
@@ -45,8 +45,13 @@ class ParqueSolar(models.Model):
     pais = models.CharField(max_length=100, default='')
     region = models.CharField(max_length=100, default='')
     municipio = models.CharField(max_length=100, default='')
+    class Meta:
+        unique_together = (("nombre", "codigo"))
     def __str__(self):
         return '%s' % (self.nombre)
+
+    def getPrintName(self):
+        return self.codigo + ", "  + self.nombre
 
     def save(self, *args, **kwargs):
         self.slug = defaultfilters.slugify(self.nombre)

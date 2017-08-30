@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base-printable.html" %}
 {% load staticfiles %}
 {% load customtags %}
 {% load tz %}
@@ -33,7 +33,7 @@
         {% for revision in observacion.revision_set.all %}
         <div class="note note-info" style="margin-left:10px;margin-right:10px;">
             <div class = "row">
-                <div class="col-md-3">
+                <div class="col-md-3 col-sm-3 col-xs-3">
                     <a href="javascript:;" class="thumbnail">
                         {% if fotos|get_item:revision.id %}
                             <img src="{{ main_fotos|get_item:revision.id  }}" alt="foto" name="galeria" id="thumbnail-{{ revision.id }}"/>
@@ -41,24 +41,13 @@
                             <img src="{% static 'common/images/photo_add6.png' %}" alt="foto" name="galeria" id="thumbnail-{{ revision.id }}"/>
                         {% endif %}
                     </a>
-                    <row>
-                        <a data-toggle="modal" href="#long" class="btn btn-sm green" id="addPhotoModal-{{ revision.id }}" name="addPhoto" onclick="$('#fileupload').attr('action','{% url 'ncr:imagenes-agregar' parque.slug revision.id %}');">
-                            Agregar Foto <i class="fa fa-plus"></i>
-                        </a>
-                        <a  class="btn btn-sm grey" name="galeria" id="galeria-{{ revision.id }}">
-                            Galer&iacute;a <i class="fa fa-image"></i>
-                        </a>
-                    </row>
+
 
                 </div>
                 {% if forloop.first %}
-                    <div class="col-md-9">
+                    <div class="col-md-9 col-sm-9 col-xs-9">
                         <h4 class="block">Revisi&oacute;n {{ forloop.counter }} - Fecha: {{ revision.fecha_revision }}
-                            <a href="{% url 'ncr:observaciones-editar' parque.slug observacion.id %}" class="btn btn-circle btn-xs blue" style="margin-left: 10px"> Editar
-                                <i class="fa fa-edit"></i>
-                            </a>
-                            <input type="button" id="del_observacion{{ observacion.id }}" data-target="#basic1" data-toggle="modal" class="btn btn-xs btn-circle red" value="Borrar" onclick="$('#del_id').val({{ observacion.id }})"/>
-                        </h4>
+                            </h4>
                         <ul>
                             <li> <b>Aerogenerador:</b> {{ observacion.aerogenerador }} </li>
                             <li> <b>Categoría:</b> {% if observacion.clase %} NCR {% else %} Incidencia {% endif %} </li>
@@ -77,10 +66,6 @@
                 {% else %}
                     <div class="col-md-9">
                         <h4 class="block">Revisi&oacute;n {{ forloop.counter }} - Fecha: {{ revision.fecha_revision }}
-                        <a href="{% url 'ncr:revisiones-editar' parque.slug observacion.id revision.id %}" class="btn btn-circle btn-xs blue" style="margin-left: 10px"> Editar
-                            <i class="fa fa-edit"></i>
-                        </a>
-                        <input type="button" id="del_revision{{ revision.id }}" data-target="#basic2" data-toggle="modal" class="btn btn-xs btn-circle red" value="Borrar" onclick="$('#del_id_rev').val({{ revision.id }})"/>
                         </h4>
                         <ul>
                             <li> <b>Estado:</b> {{ revision.estado }}</li>
@@ -94,37 +79,7 @@
                 {% endif %}
             </div>
         </div>
-        {% if forloop.last %}
-            {% if not observacion.cerrado %}
-                <div class="row">
-                    <div class="col-md-12">
-                        <a href="{% url 'ncr:revisiones-add' parque.slug observacion.id %}" class="btn btn-sm blue" style="margin-left:10px;">
-                            Agregar Revisi&oacute;n <i class="fa fa-plus"></i>
-                        </a>
-                        {% if observacion.estado.nombre == 'Solucionado' %}
-                        <a id="closeSafe" class="btn btn-sm grey-mint" style="margin-left:10px;margin-right:10px;">
-                            Cerrar Observaci&oacute;n <i class="fa fa-check-square-o"></i>
-                        </a>
-                        {% else %}
-                        <a href="" id="close_{{ observacion.id }}" data-target="#basic3" data-toggle="modal" class="btn btn-sm grey-mint" style="margin-left:10px;margin-right:10px;" onclick="$('#del_id_obs').val({{ observacion.id }});$('#cierre_msg').val('');">
-                            Cerrar Observaci&oacute;n <i class="fa fa-check-square-o"></i>
-                        </a>
-                        {% endif %}
-                        <a href="{% url 'ncr:observaciones-show' parque.slug observacion.id %}?printable=true" class="btn btn-sm grey-salt" target="_blank">
-                            Vista Impresi&oacute;n <i class="fa fa-print"></i>
-                        </a>
-                    </div>
-                </div>
-            {% else %}
-                <div class="row">
-                    <div class="col-md-12">
-                        <a href="" id="close_{{ observacion.id }}" data-target="#basic4" data-toggle="modal" class="btn btn-sm grey-mint" style="margin-left:10px;margin-right:10px;" onclick="$('#del_id_obs2').val({{ observacion.id }})">
-                            Abrir Observaci&oacute;n <i class="fa fa-check-square-o"></i>
-                        </a>
-                    </div>
-                </div>
-            {% endif %}
-        {% endif %}
+
         {% endfor %}
     {% endif %}
 

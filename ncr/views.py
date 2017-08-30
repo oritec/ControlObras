@@ -195,7 +195,12 @@ def show_observacion(request,slug,observacion_id):
         for foto in results:
             fotos[r.id].append(foto.imagen.url)
 
-    return render(request, 'ncr/showObservacion.html',
+    template_name = 'ncr/showObservacion.html'
+
+    if 'printable' in request.GET:
+        template_name = 'ncr/showObservacion-printable.html'
+
+    return render(request, template_name,
         {'cont': contenido,
          'parque': parque,
          'observacion': observacion,
@@ -458,11 +463,18 @@ def informeNCR(request,slug):
                 else:
                     colores = False
                 fecha = datetime.strptime(request.POST['fecha'],'%d-%m-%Y').date()
+
+                nombre_archivo = 'NombreArchivo'
+                if request.POST['nombre'] != '':
+                    nombre_archivo = request.POST['nombre']
+                nombre = 'INFNCR_' + parque.codigo + '-' + nombre_archivo + '_' + fecha.strftime("%y%m%d") + '.pdf'
+
                 respuesta = generatePdf(parque,resultados,imagenes,request.POST['titulo'],request,
                                         colores=colores,
-                                        fecha=fecha
+                                        fecha=fecha,
+                                        nombre = nombre,
                                         )
-                respuesta['Content-Disposition'] = 'attachment; filename="ReporteNCR.pdf"'
+                respuesta['Content-Disposition'] = 'attachment; filename="' + nombre + '"'
                 return respuesta
 
     return render(request, 'ncr/informeNCR.html',
@@ -541,9 +553,9 @@ def punchlistResults(parque, aerogenerador, reparadas):
     if not reparadas:
         resultados = resultados.exclude(estado__nombre__exact='Solucionado').exclude(cerrado=True)
     main_fotos = listFotos(resultados)
-    if aerogenerador.nombre == 'General':
+    if aerogenerador.nombre == u'General':
         titulo = 'LISTADO DE OBSERVACIONES GENERALES'
-    if aerogenerador.nombre == 'Puerto':
+    elif aerogenerador.nombre == u'Puerto':
         titulo = 'LISTADO DE OBSERVACIONES EN PUERTO'
     else:
         titulo = 'LISTADO DE PENDIENTES AEROGENERADOR ' + aerogenerador.nombre

@@ -121,10 +121,10 @@
                                     {{ revisionForm.severidad }}
                                     <span class="help-block"> {{ revisionForm.severidad.errors }} </span>
                                 </div>
-                                <div class="col-md-1">
-                                    <button type="button" class="btn btn-circle btn-icon-only" data-toggle="tooltip" data-placement="top" title="Tooltip on bottom">
-                                      <i class="fa fa-question"></i>
-                                    </button>
+                                <div class="col-md-1" style="border-left:0px;">
+                                    <a class="btn btn-circle btn-icon-only grey-cascade" id="help_severidad" href="javascript:;">
+                                        <i class="fa fa-question"></i>
+                                    </a>
                                 </div>
                             </div>
 
@@ -178,6 +178,7 @@
     <script src="{% static 'common/assets/global/plugins/bootstrap-select/js/bootstrap-select.min.js' %}" type="text/javascript"></script>
     <script src="{% static 'common/assets/global/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js' %}" type="text/javascript"></script>
     <script src="{% static 'common/assets/global/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootbox/bootbox.min.js' %}" type="text/javascript"></script>
     <!--
     <script src="{% static 'common/assets/pages/scripts/components-date-time-pickers.min.js' %}" type="text/javascript"></script>
     -->
@@ -220,5 +221,13 @@
 
     });
 
+    var help_text = '<p><b>Severidad 1</b>: Observaci&oacute;n esencialmente est&eacute;tica, sin incidencia en el funcionamiento de la m&aacute;quina y/o seguridad de las personas.</p>';
+    help_text += '<p><b>Severidad 2</b>: Observaci&oacute;n con incidencia en el funcionamiento de la m&aacute;quina y/o seguridad de las personas, con consecuencias menores pudiendo ser importantes en el largo plazo. La reparaci&oacute;n se realizar&aacute; cuando sea posible.</p>';
+    help_text += '<p><b>Severidad 3</b>: Observaci&oacute;n con incidencia en el funcionamiento de la m&aacute;quina y/o seguridad de las personas, con consecuencias menores pudiendo ser importantes en el medio plazo. La reparaci&oacute;n debe realizarse lo antes posible.</p>';
+    help_text += '<p><b>Severidad 4</b>: Observaci&oacute;n con incidencia en el funcionamiento de la m&aacute;quina y/o seguridad de las personas, con consecuencias mayores y que podr&iacute;an ser importantes en el corto plazo. La reparaci&oacute;n debe realizarse inmediatamente.</p>';
+    help_text += '<p><b>Severidad 5</b>: Observaci&oacute;n con incidencia en el funcionamiento de la m&aacute;quina y/o seguridad de las personas. con consecuencias mayores y que podr&iacute;an ser importantes en el corto plazo. Se debe detener el aerogenerador para realizar la reparaci&oacute;n inmediatamente.</p>';
 
+    $("#help_severidad").click(function(){
+        bootbox.alert(help_text);
+    });
 {% endblock %}
