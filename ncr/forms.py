@@ -131,7 +131,7 @@ class Punchlist(forms.Form):
     aerogenerador = forms.ModelMultipleChoiceField(queryset=Aerogenerador.objects.all().order_by('idx'),required=False)
     fecha = forms.DateField(widget=forms.DateInput(format='%d-%m-%Y'), input_formats=('%d-%m-%Y',), initial=date.today)
     fotos = forms.BooleanField(label='¿Incluir fotos?',required=False)
-    reparadas = forms.BooleanField(label='¿Incluir observaciones reparadas?',required=False)
+    reparadas = forms.BooleanField(label='¿Incluir observaciones solucionadas?',required=False)
     colores = forms.BooleanField(label='¿Incluir código de colores?', required=False)
 
     def __init__(self, *args, **kwargs):
