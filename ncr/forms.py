@@ -120,6 +120,11 @@ class NCR(forms.Form):
     componente = forms.ModelMultipleChoiceField(queryset=Componente.objects.all(),required=False)
     subcomponente = forms.ModelMultipleChoiceField(queryset=Subcomponente.objects.all(),required=False)
     tipo = forms.ModelMultipleChoiceField(queryset=Tipo.objects.all(),required=False)
+    clase = forms.MultipleChoiceField(choices=[('1', 'NCR'), ('0', 'Incidencia')],
+                                          required=False, label="Categoría")
+    punchlist = forms.MultipleChoiceField(choices=[('0', 'No'), ('1', 'Si')],
+                                          required=False, label="Punchlist")
+
     def __init__(self, *args, **kwargs):
         parque = kwargs.pop('parque')
         super(NCR, self).__init__(*args, **kwargs)

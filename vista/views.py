@@ -23,6 +23,10 @@ def index(request):
             formParque = ParqueForm(request.POST)
             if formParque.is_valid():
                 formParque.save()
+            else:
+                logger.debug('error')
+                mensaje = 'Código de parque ya existe!'
+                messages.add_message(request, messages.ERROR, mensaje)
     return render(request, 'vista/index.html',
                   {'parques': parques,
                    'formAddParque': formAddParque})

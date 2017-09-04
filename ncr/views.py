@@ -7,7 +7,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 from forms import ObservacionForm, RevisionForm, RevisionFormFull, NCR, Punchlist
-from ncr.models import Observacion, Revision, Fotos, Observador
+from ncr.models import Observacion, Revision, Fotos, Observador,Componente,Subcomponente,Tipo,Severidad,EstadoRevision
 from easy_pdf.rendering import render_to_pdf_response, render_to_pdf
 from vista.models import Aerogenerador
 import json
@@ -27,6 +27,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from datetime import date
 from datetime import datetime
+from django.core.serializers import serialize
 
 logger = logging.getLogger('oritec')
 
@@ -46,6 +47,60 @@ def home(request,slug):
          'aerogeneradores':aerogeneradores,
         })
 
+def serializeGrafico(d):
+    s = '['
+    if len(d) > 0:
+        for v in d:
+            s += '{'
+            for key, value in v.iteritems():
+                if isinstance(value, (int, long, float, complex)):
+                    s += key + ':'+ str(value) + ','
+                elif isinstance(value,(dict,list)):
+                    s2 = serializeGrafico(value)
+                    s += key + ':' + s2 + ','
+                else:
+                    s +=  key + ':"' + value + '",'
+            s = s[:-1]
+            s += '},'
+        s = s[:-1]
+
+    s += ']'
+
+    return s
+
+
+def graficoBarrasSimple(resultados,field,secciones, showall = False):
+    data_graficos = []
+    count = 0
+    for s in secciones:
+        karws = {field: s}
+        aux=resultados.filter(**karws)
+        if (aux.count()>0 or showall):
+            data_graficos.append({"name":s.graphText(),"y":aux.count()})
+            count += 1
+
+    datos= serializeGrafico(data_graficos)
+    return datos
+
+
+def graficoBarrasCompleto(resultados, field, secciones, showall = False):
+    data_full = []
+    count = 0
+    filtros = Severidad.objects.all()
+    for f in filtros:
+        data_graficos = []
+        karws = {'severidad': f}
+        resultados_filtrados = resultados.filter(**karws)
+        for s in secciones:
+            karws = {field: s}
+            aux=resultados_filtrados.filter(**karws)
+            if (aux.count()>0 or showall):
+                data_graficos.append({"name":s.graphText(),"y":aux.count()})
+                count += 1
+        data_full.append({"name": f.graphText(), "data": data_graficos})
+    datos = serializeGrafico(data_full)
+    return datos
+
 @login_required(login_url='ingresar')
 def observaciones_resumen(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
@@ -58,6 +113,16 @@ def observaciones_resumen(request,slug):
     observaciones = Observacion.objects.filter(parque=parque)
     url_append = ''
     table_show_ag = True
+
+    grafico_estado = graficoBarrasSimple(observaciones,'estado',EstadoRevision.objects.all().order_by('-id'),showall=True)
+    grafico_severidad = graficoBarrasSimple(observaciones,'severidad',Severidad.objects.all(), showall=True)
+    grafico_componente = graficoBarrasSimple(observaciones,'componente',Componente.objects.all())
+    grafico_subcomponente = graficoBarrasSimple(observaciones, 'sub_componente', Subcomponente.objects.all())
+    grafico_tipo = graficoBarrasSimple(observaciones, 'tipo', Tipo.objects.all())
+
+    test1 = graficoBarrasCompleto(observaciones,'aerogenerador',aerogeneradores, showall=True)
+    test2 = graficoBarrasSimple(observaciones.filter(severidad__nombre='2'),'aerogenerador',aerogeneradores, showall=True)
+
     return render(request, 'ncr/resumen.html',
                   {'cont': contenido,
                    'parque': parque,
@@ -65,6 +130,13 @@ def observaciones_resumen(request,slug):
                    'url_append':url_append,
                    'table_show_ag': table_show_ag,
                    'aerogeneradores':aerogeneradores,
+                   'grafico_estado':grafico_estado,
+                   'grafico_severidad': grafico_severidad,
+                   'grafico_componente': grafico_componente,
+                   'grafico_subcomponente': grafico_subcomponente,
+                   'grafico_tipo': grafico_tipo,
+                   'test1':test1,
+                   'test2': test2,
                    })
 
 @login_required(login_url='ingresar')
@@ -441,6 +513,24 @@ def informeNCR(request,slug):
                 resultados = resultados.filter(cerrado = condicion)
             elif (len(form.cleaned_data['condicion']) == 0):
                 resultados = []
+
+            if (len(form.cleaned_data['clase']) == 1):
+                if '1' in form.cleaned_data['clase']:
+                    clase = True
+                else:
+                    clase = False
+                resultados = resultados.filter(clase = clase)
+            elif (len(form.cleaned_data['clase']) == 0):
+                resultados = []
+
+            if (len(form.cleaned_data['punchlist']) == 1):
+                if '1' in form.cleaned_data['punchlist']:
+                    punchlist = True
+                else:
+                    punchlist = False
+                resultados = resultados.filter(punchlist = punchlist)
+            elif (len(form.cleaned_data['punchlist']) == 0):
+                resultados = []
             #for key,value in form.cleaned_data.iteritems():
             #    logger.debug(key)
             logger.debug(resultados)
@@ -464,7 +554,7 @@ def informeNCR(request,slug):
                     colores = False
                 fecha = datetime.strptime(request.POST['fecha'],'%d-%m-%Y').date()
 
-                nombre_archivo = 'SinNombre'
+                nombre_archivo = 'Sin'
                 if request.POST['nombre'] != '':
                     nombre_archivo = request.POST['nombre']
                 nombre = 'INFNCR_' + parque.codigo + '-' + nombre_archivo + '_' + fecha.strftime("%y%m%d") + '.pdf'
@@ -484,7 +574,6 @@ def informeNCR(request,slug):
          'form':form,
          'resultados':resultados,
         })
-
 
 def generatePdf(parque,resultados,imagenes, titulo,
                 request = None,

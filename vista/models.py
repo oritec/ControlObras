@@ -18,6 +18,8 @@ class Aerogenerador(models.Model):
         unique_together = (("parque", "idx"),("parque", "nombre"))
     def __str__(self):
         return '%s' % (self.nombre)
+    def graphText(self):
+        return '%s' % (self.nombre)
     def save(self, *args, **kwargs):
         self.slug = defaultfilters.slugify(self.nombre)
         super(Aerogenerador, self).save(*args, **kwargs)

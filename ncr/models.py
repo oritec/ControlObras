@@ -21,11 +21,15 @@ class Componente(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
     def __str__(self):
         return '%s' % (self.nombre)
+    def graphText(self):
+        return '%s' % (self.nombre)
 
 @python_2_unicode_compatible
 class Subcomponente(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
     def __str__(self):
+        return '%s' % (self.nombre)
+    def graphText(self):
         return '%s' % (self.nombre)
 
 @python_2_unicode_compatible
@@ -33,17 +37,23 @@ class Tipo(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
     def __str__(self):
         return '%s' % (self.nombre)
+    def graphText(self):
+        return '%s' % (self.nombre)
 
 @python_2_unicode_compatible
 class Severidad(models.Model):
     nombre = models.CharField(max_length=2, unique=True)
     def __str__(self):
         return '%s' % (self.nombre)
+    def graphText(self):
+        return 'Nivel ' + '%s' % (self.nombre)
 
 @python_2_unicode_compatible
 class EstadoRevision(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
     def __str__(self):
+        return '%s' % (self.nombre)
+    def graphText(self):
         return '%s' % (self.nombre)
 
 def rev_directory_path(instance, filename):
@@ -239,6 +249,7 @@ class Observacion(models.Model):
 
         if aux.count() > 0:
             self.estado = aux[0].estado
+            self.severidad = aux[0].severidad
         elif res.count() > 0:
             aux2 = res[0]
             self.estado = aux2.estado

@@ -72,6 +72,32 @@
                 </a>
             </div>
         </div>
+        <div class="clearfix">
+
+        </div>
+        <br>
+        {% include 'ncr/graficos.html' %}
+        <div class="row">
+            <div class="col-md-12">
+                <div id="grafico_aerogenerador"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div id="grafico_aerogenerador2"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div id="grafico_aerogenerador3" style="height: 1000px;"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div id="grafico_aerogenerador4" style="height: 1000px;"></div>
+            </div>
+        </div>
+
     {% endif %}
 
 <div class="modal fade" id="basic" tabindex="-1" role="basic" aria-hidden="true">
@@ -112,14 +138,40 @@
     <script src="{% static 'common/assets/global/scripts/datatable.js' %}" type="text/javascript"></script>
     <script src="{% static 'common/assets/global/plugins/datatables/datatables.min.js' %}" type="text/javascript"></script>
     <script src="{% static 'common/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/highcharts/js/highcharts.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/highcharts/js/highcharts-3d.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/highcharts/js/highcharts-more.js' %}" type="text/javascript"></script>
 
     <script src="{% static 'common/js/tabla-observaciones.js' %}" type="text/javascript"></script>
-
+    <script src="{% static 'common/js/ncr-charts.js' %}" type="text/javascript"></script>
 <!-- END PAGE LEVEL PLUGINS -->
 {% endblock %}
 
 {% block jquery %}
 
     $("#back_url").val(window.location.href);
+    var estadodata = {{ grafico_estado|safe }};
+    var severidaddata = {{ grafico_severidad|safe }};
+    var componentedata = {{ grafico_componente|safe }};
+    var subcomponentedata = {{ grafico_subcomponente|safe }};
+    var tipodata = {{ grafico_tipo|safe }};
+    var data1 = {{ test1|safe }};
+    var data2 = {{ test2|safe }};
+    var titulo = '';
+
+    NCRGraficos.showGraficoEstado(estadodata);
+    titulo= 'Número de observaciones por severidad';
+    NCRGraficos.showGraficoColumnas(severidaddata,titulo,'#grafico_severidad');
+    titulo= 'Número de observaciones por componente';
+    NCRGraficos.showGraficoColumnas(componentedata,titulo,'#grafico_componente');
+    titulo= 'Número de observaciones por sub-componente';
+    NCRGraficos.showGraficoColumnas(subcomponentedata,titulo,'#grafico_subcomponente');
+    titulo= 'Número de observaciones por Tipo';
+    NCRGraficos.showGraficoColumnas(tipodata,titulo,'#grafico_tipo');
+    titulo= 'Severidad por aerogenerador';
+    NCRGraficos.showGraficoFull(data1,data2,titulo,'#grafico_aerogenerador');
+    NCRGraficos.showGraficoFull2(data1,data2,titulo,'#grafico_aerogenerador2');
+    NCRGraficos.showGraficoFull3(data1,data2,titulo,'#grafico_aerogenerador3');
+    NCRGraficos.showGraficoFull4(data1,data2,titulo,'#grafico_aerogenerador4');
 
 {% endblock %}
