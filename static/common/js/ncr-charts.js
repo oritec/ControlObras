@@ -14,6 +14,16 @@ var NCRGraficos = function () {
                 text: 'Número de observaciones por estado',
                 x: -20 //center
             },
+            colors: ['#90ed7d',
+                     '#e3e414',
+                     '#f4342a',
+                     '#7cb5ec',
+                     '#434348',
+                     '#f7a35c',
+                     '#8085e9',
+                     '#f15c80',
+                     '#2b908f',
+                     '#91e8e1'],
             plotOptions: {
                 pie: {
                     allowPointSelect: true,
@@ -91,6 +101,16 @@ var NCRGraficos = function () {
             xAxis: {
                 type: 'category'
             },
+            colors: ['#7cb5ec',
+                     '#f7a35c',
+                     '#2ced7e',
+                     '#e3e414',
+                     '#d14ef4',
+                     '#434348',
+                     '#8085e9',
+                     '#f15c80',
+                     '#2b908f',
+                     '#91e8e1'],
             plotOptions: {
                 series: {
                     borderWidth: 0,
@@ -123,6 +143,16 @@ var NCRGraficos = function () {
             xAxis: {
                 type: 'category'
             },
+            colors: ['#7cb5ec',
+                     '#f7a35c',
+                     '#2ced7e',
+                     '#e3e414',
+                     '#d14ef4',
+                     '#434348',
+                     '#8085e9',
+                     '#f15c80',
+                     '#2b908f',
+                     '#91e8e1'],
             plotOptions: {
                 series: {
                     borderWidth: 0,
@@ -158,6 +188,16 @@ var NCRGraficos = function () {
             xAxis: {
                 type: 'category'
             },
+            colors: ['#7cb5ec',
+                     '#f7a35c',
+                     '#2ced7e',
+                     '#e3e414',
+                     '#d14ef4',
+                     '#434348',
+                     '#8085e9',
+                     '#f15c80',
+                     '#2b908f',
+                     '#91e8e1'],
             plotOptions: {
                 series: {
                     borderWidth: 0,
@@ -190,6 +230,16 @@ var NCRGraficos = function () {
             xAxis: {
                 type: 'category'
             },
+            colors: ['#7cb5ec',
+                     '#f7a35c',
+                     '#2ced7e',
+                     '#e3e414',
+                     '#d14ef4',
+                     '#434348',
+                     '#8085e9',
+                     '#f15c80',
+                     '#2b908f',
+                     '#91e8e1'],
             plotOptions: {
                 series: {
                     borderWidth: 0,
