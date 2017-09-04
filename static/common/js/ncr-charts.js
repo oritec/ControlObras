@@ -14,9 +14,9 @@ var NCRGraficos = function () {
                 text: 'Número de observaciones por estado',
                 x: -20 //center
             },
-            colors: ['#90ed7d',
-                     '#e3e414',
-                     '#f4342a',
+            colors: ['#00FF00',
+                     '#FFFF00',
+                     '#FF0000',
                      '#7cb5ec',
                      '#434348',
                      '#f7a35c',
@@ -33,8 +33,8 @@ var NCRGraficos = function () {
                         enabled: true,
                         format: '{y}',
                         connectorPadding:0,
-                        connectorWidth: 0,
-                        distance:-50
+                        connectorWidth: 1,
+                        distance:10
                     },
                     showInLegend: true
                 }
@@ -65,6 +65,11 @@ var NCRGraficos = function () {
             },
             xAxis: {
                 type: 'category'
+            },
+            yAxis: {
+                title: {
+                    text: 'Nº de observaciones'
+                }
             },
             plotOptions: {
                 series: {
@@ -101,10 +106,10 @@ var NCRGraficos = function () {
             xAxis: {
                 type: 'category'
             },
-            colors: ['#7cb5ec',
+            colors: ['#52CFFF',
                      '#f7a35c',
                      '#2ced7e',
-                     '#e3e414',
+                     '#FFF00B',
                      '#d14ef4',
                      '#434348',
                      '#8085e9',
@@ -143,10 +148,10 @@ var NCRGraficos = function () {
             xAxis: {
                 type: 'category'
             },
-            colors: ['#7cb5ec',
+            colors: ['#52CFFF',
                      '#f7a35c',
                      '#2ced7e',
-                     '#e3e414',
+                     '#FFF00B',
                      '#d14ef4',
                      '#434348',
                      '#8085e9',
@@ -188,10 +193,10 @@ var NCRGraficos = function () {
             xAxis: {
                 type: 'category'
             },
-            colors: ['#7cb5ec',
+            colors: ['#52CFFF',
                      '#f7a35c',
                      '#2ced7e',
-                     '#e3e414',
+                     '#FFF00B',
                      '#d14ef4',
                      '#434348',
                      '#8085e9',
@@ -230,10 +235,10 @@ var NCRGraficos = function () {
             xAxis: {
                 type: 'category'
             },
-            colors: ['#7cb5ec',
+            colors: ['#52CFFF',
                      '#f7a35c',
                      '#2ced7e',
-                     '#e3e414',
+                     '#FFF00B',
                      '#d14ef4',
                      '#434348',
                      '#8085e9',
