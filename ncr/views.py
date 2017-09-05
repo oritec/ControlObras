@@ -504,6 +504,12 @@ def informeNCR(request,slug):
     form = NCR(parque=parque)
     resultados = None
 
+    grafico_estado = ''
+    grafico_severidad = ''
+    grafico_componente = ''
+    grafico_subcomponente = ''
+    grafico_tipo = ''
+
     if request.method == 'POST':
         logger.debug('informeNCR Post')
         form = NCR(request.POST,parque=parque)
@@ -544,6 +550,24 @@ def informeNCR(request,slug):
             #for key,value in form.cleaned_data.iteritems():
             #    logger.debug(key)
             logger.debug(resultados)
+            graficos = []
+            if len(form.cleaned_data['estado']) > 1:
+                grafico_estado = graficoBarrasSimple(resultados, 'estado', EstadoRevision.objects.all().order_by('-id'),
+                                                 showall=True)
+
+            if len(form.cleaned_data['severidad']) > 1:
+                grafico_severidad = graficoBarrasSimple(resultados, 'severidad', Severidad.objects.all(), showall=True)
+                graficos.append('severidad')
+            if len(form.cleaned_data['componente']) > 1:
+                grafico_componente = graficoBarrasSimple(resultados, 'componente', Componente.objects.all())
+                graficos.append('componente')
+            if len(form.cleaned_data['subcomponente']) > 1:
+                grafico_subcomponente = graficoBarrasSimple(resultados, 'sub_componente', Subcomponente.objects.all())
+                graficos.append('subcomponente')
+            if len(form.cleaned_data['tipo']) > 1:
+                grafico_tipo = graficoBarrasSimple(resultados, 'tipo', Tipo.objects.all())
+                graficos.append('tipo')
+
             if 'excel' in request.POST:
                 logger.debug('Excel')
                 target_stream = generateExcelNCR(resultados)
@@ -583,6 +607,12 @@ def informeNCR(request,slug):
          'aerogeneradores':aerogeneradores,
          'form':form,
          'resultados':resultados,
+         'grafico_estado':grafico_estado,
+         'grafico_severidad': grafico_severidad,
+         'grafico_componente': grafico_componente,
+         'grafico_subcomponente': grafico_subcomponente,
+         'grafico_tipo': grafico_tipo,
+         'graficos':graficos,
         })
 
 def generatePdf(parque,resultados,imagenes, titulo,
