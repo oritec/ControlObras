@@ -510,6 +510,8 @@ def informeNCR(request,slug):
     grafico_subcomponente = ''
     grafico_tipo = ''
 
+    graficos = []
+
     if request.method == 'POST':
         logger.debug('informeNCR Post')
         form = NCR(request.POST,parque=parque)
@@ -550,7 +552,7 @@ def informeNCR(request,slug):
             #for key,value in form.cleaned_data.iteritems():
             #    logger.debug(key)
             logger.debug(resultados)
-            graficos = []
+
             if len(form.cleaned_data['estado']) > 1:
                 grafico_estado = graficoBarrasSimple(resultados, 'estado', EstadoRevision.objects.all().order_by('-id'),
                                                  showall=True)
