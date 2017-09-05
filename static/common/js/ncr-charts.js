@@ -14,9 +14,9 @@ var NCRGraficos = function () {
                 text: 'Número de observaciones por estado',
                 x: -20 //center
             },
-            colors: ['#00FF00',
-                     '#FFFF00',
-                     '#FF0000',
+            colors: ['#1ce67b',
+                     '#fff110',
+                     '#ff6559',
                      '#7cb5ec',
                      '#434348',
                      '#f7a35c',
@@ -136,7 +136,7 @@ var NCRGraficos = function () {
         });
     }
 
-    var GraficoFull2 = function (data1,data2,titulo,div) {
+    var GraficoFull2 = function (data1,titulo,div) {
         $(div).highcharts({
             chart : {
                 type: 'column'
@@ -146,7 +146,17 @@ var NCRGraficos = function () {
                 x: -20 //center
             },
             xAxis: {
-                type: 'category'
+                type: 'category',
+                labels: {
+                    style: {
+                        fontSize: '7px'
+                    }
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'Nº de observaciones'
+                }
             },
             colors: ['#52CFFF',
                      '#f7a35c',
@@ -280,9 +290,9 @@ var NCRGraficos = function () {
             //dataSeveridad = data;
             GraficoFull(data1,data2,titulo,div)
         },
-        showGraficoFull2: function(data1,data2,titulo,div) {
+        showGraficoFull2: function(data,titulo,div) {
             //dataSeveridad = data;
-            GraficoFull2(data1,data2,titulo,div)
+            GraficoFull2(data,titulo,div)
         },
         showGraficoFull3: function(data1,data2,titulo,div) {
             //dataSeveridad = data;

@@ -76,27 +76,17 @@
 
         </div>
         <br>
-        {% include 'ncr/graficos.html' %}
-        <div class="row">
-            <div class="col-md-12">
-                <div id="grafico_aerogenerador"></div>
+        {% if observaciones|length > 0 %}
+            {% include 'ncr/graficos.html' %}
+            {% if grafico_aerogenerador %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div id="grafico_aerogenerador"></div>
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div id="grafico_aerogenerador2"></div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div id="grafico_aerogenerador3" style="height: 1000px;"></div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div id="grafico_aerogenerador4" style="height: 1000px;"></div>
-            </div>
-        </div>
+            {% endif %}
+        {% endif %}
+
 
     {% endif %}
 
@@ -155,8 +145,10 @@
     var componentedata = {{ grafico_componente|safe }};
     var subcomponentedata = {{ grafico_subcomponente|safe }};
     var tipodata = {{ grafico_tipo|safe }};
-    var data1 = {{ test1|safe }};
-    var data2 = {{ test2|safe }};
+    {% if grafico_aerogenerador %}
+        var aerogeneradordata = {{ grafico_aerogenerador|safe }};
+    {% endif %}
+
     var titulo = '';
 
     NCRGraficos.showGraficoEstado(estadodata);
@@ -168,10 +160,9 @@
     NCRGraficos.showGraficoColumnas(subcomponentedata,titulo,'#grafico_subcomponente');
     titulo= 'Número de observaciones por Tipo';
     NCRGraficos.showGraficoColumnas(tipodata,titulo,'#grafico_tipo');
-    titulo= 'Severidad por aerogenerador';
-    NCRGraficos.showGraficoFull(data1,data2,titulo,'#grafico_aerogenerador');
-    NCRGraficos.showGraficoFull2(data1,data2,titulo,'#grafico_aerogenerador2');
-    NCRGraficos.showGraficoFull3(data1,data2,titulo,'#grafico_aerogenerador3');
-    NCRGraficos.showGraficoFull4(data1,data2,titulo,'#grafico_aerogenerador4');
+    {% if grafico_aerogenerador %}
+        titulo= 'Severidad por aerogenerador';
+        NCRGraficos.showGraficoFull2(aerogeneradordata,titulo,'#grafico_aerogenerador');
+    {% endif %}
 
 {% endblock %}

@@ -120,8 +120,7 @@ def observaciones_resumen(request,slug):
     grafico_subcomponente = graficoBarrasSimple(observaciones, 'sub_componente', Subcomponente.objects.all())
     grafico_tipo = graficoBarrasSimple(observaciones, 'tipo', Tipo.objects.all())
 
-    test1 = graficoBarrasCompleto(observaciones,'aerogenerador',aerogeneradores, showall=True)
-    test2 = graficoBarrasSimple(observaciones.filter(severidad__nombre='2'),'aerogenerador',aerogeneradores, showall=True)
+    grafico_aerogenerador = graficoBarrasCompleto(observaciones,'aerogenerador',aerogeneradores, showall=True)
 
     return render(request, 'ncr/resumen.html',
                   {'cont': contenido,
@@ -135,8 +134,7 @@ def observaciones_resumen(request,slug):
                    'grafico_componente': grafico_componente,
                    'grafico_subcomponente': grafico_subcomponente,
                    'grafico_tipo': grafico_tipo,
-                   'test1':test1,
-                   'test2': test2,
+                   'grafico_aerogenerador': grafico_aerogenerador,
                    })
 
 @login_required(login_url='ingresar')
@@ -152,12 +150,24 @@ def observaciones(request,slug,slug_ag):
     url_append='?aerogenerador='+str(aerogenerador.idx)
 
     observaciones = Observacion.objects.filter(aerogenerador__idx__exact=aerogenerador.idx, parque= parque)
+    grafico_estado = graficoBarrasSimple(observaciones, 'estado', EstadoRevision.objects.all().order_by('-id'),
+                                         showall=True)
+    grafico_severidad = graficoBarrasSimple(observaciones, 'severidad', Severidad.objects.all(), showall=True)
+    grafico_componente = graficoBarrasSimple(observaciones, 'componente', Componente.objects.all())
+    grafico_subcomponente = graficoBarrasSimple(observaciones, 'sub_componente', Subcomponente.objects.all())
+    grafico_tipo = graficoBarrasSimple(observaciones, 'tipo', Tipo.objects.all())
+
     return render(request, 'ncr/resumen.html',
         {'cont': contenido,
-         'parque': parque,
-         'observaciones': observaciones,
-         'url_append': url_append,
-         'aerogeneradores':aerogeneradores,
+            'parque': parque,
+            'observaciones': observaciones,
+            'url_append': url_append,
+            'aerogeneradores':aerogeneradores,
+            'grafico_estado':grafico_estado,
+            'grafico_severidad': grafico_severidad,
+            'grafico_componente': grafico_componente,
+            'grafico_subcomponente': grafico_subcomponente,
+            'grafico_tipo': grafico_tipo,
         })
 
 @login_required(login_url='ingresar')
