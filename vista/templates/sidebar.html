@@ -106,6 +106,30 @@
                     {% endfor %}
                     </ul>
 				</li>
+                <li class="nav-item" id="menu-fu">
+					<a href="javascript:;" class="nav-link nav-toggle">
+						<i class="fa fa-line-chart"></i>
+						<span class="title">Follow Up</span>
+						<span class="selected"></span>
+						<span class="arrow open"></span>
+					</a>
+                    <ul class="sub-menu">
+                        <li class="nav-item " id="menu2-componentes">
+							<a href="{% url 'fu:componentes' parque.slug %}" class="nav-link ">
+								<i class="fa fa-caret-right"></i>
+								<span class="title">Componentes</span>
+							</a>
+						</li>
+                    </ul>
+                    <ul class="sub-menu">
+                        <li class="nav-item " id="menu2-actividades">
+							<a href="{% url 'fu:actividades' parque.slug %}" class="nav-link ">
+								<i class="fa fa-caret-right"></i>
+								<span class="title">Actividades</span>
+							</a>
+						</li>
+                    </ul>
+                </li>
                 {% endif %}
 			</ul>
 			<!-- END SIDEBAR MENU -->

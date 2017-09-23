@@ -198,3 +198,13 @@ def spacify(value, autoescape=None):
     return mark_safe(re.sub('\s', '&'+'nbsp;', esc(value)))
 spacify.needs_autoescape = True
 register.filter(spacify)
+
+@register.filter()
+def checkIdx(componente, idx_str):
+    idx = int(idx_str)
+    return componente.filter(idx=idx).count() > 0
+
+@register.filter()
+def get_column_width(lista):
+    idx = len(lista)
+    return 12/idx

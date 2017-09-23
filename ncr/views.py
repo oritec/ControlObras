@@ -29,6 +29,7 @@ from datetime import date
 from datetime import datetime
 from django.core.serializers import serialize
 
+
 logger = logging.getLogger('oritec')
 
 @login_required(login_url='ingresar')
@@ -68,7 +69,6 @@ def serializeGrafico(d):
 
     return s
 
-
 def graficoBarrasSimple(resultados,field,secciones, showall = False):
     data_graficos = []
     count = 0
@@ -81,7 +81,6 @@ def graficoBarrasSimple(resultados,field,secciones, showall = False):
 
     datos= serializeGrafico(data_graficos)
     return datos
-
 
 def graficoBarrasCompleto(resultados, field, secciones, showall = False):
     data_full = []

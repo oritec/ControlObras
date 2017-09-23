@@ -26,5 +26,6 @@ urlpatterns += [
     url(r'^login/$', ingresar, {'homepage':'vista:index'}, name='ingresar'),
     url(r'^logout/$', salir, name='salir'),
     url(r'^(?P<slug>[-\w\d]+)/ncr/',include('ncr.urls', namespace='ncr', app_name="ncr")),
+    url(r'^(?P<slug>[-\w\d]+)/followup/',include('fu.urls', namespace='fu', app_name="fu")),
     url(r'^',include('vista.urls', namespace='vista', app_name="vista")),
 ]

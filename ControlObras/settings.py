@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'easy_pdf',
     'vista',
     'usuarios',
-    'ncr'
+    'ncr',
+    'fu'
 ]
 
 MIDDLEWARE = [
