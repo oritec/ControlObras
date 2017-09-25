@@ -24,6 +24,7 @@
         <div class="row">
             <div class="col-md-12">
                 <input type="button" id="add_componente" data-target="#basic" data-toggle="modal" class="btn btn-sm green-steel" value="Agregar Componente a Proyecto"/>
+                <input type="button" id="del_componente" data-target="#delete" data-toggle="modal" class="btn btn-sm red-soft" value="Eliminar Componente de Proyecto"/>
             </div>
         </div>
         <p></p>
@@ -83,7 +84,45 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
-                <button type="submit" id='enviarmodal' class="btn green" name="FromList">Agregar</button>
+                <button type="submit" id='enviarmodal' class="btn green" name="addComponente">Agregar</button>
+                    <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                </form>
+                <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
+
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade bs-modal-lg" id="delete" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">
+                    <span class="glyphicon glyphicon-remove-sign" style="color:rgba(244,52,42,0.89);font-size:20px"></span>
+                     <b>Eliminar Componente</b> </h4>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'fu:actividades' parque.slug %}" method="post" id="formModal" class="horizontal-form">
+                {% csrf_token %}
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="control-label">{{ deleteComponentesForm.componente.label }}:</label>
+                                {{ deleteComponentesForm.componente }}
+                                <span class="help-block"> {{ deleteComponentesForm.componente.errors }} </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                <button type="submit" id='enviarmodal' class="btn green" name="delComponente">Eliminar</button>
                     <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
                 </form>
                 <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->

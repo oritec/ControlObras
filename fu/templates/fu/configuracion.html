@@ -5,6 +5,8 @@
 {% block css %}
     <!-- BEGIN PAGE LEVEL STYLES -->
     <link href="{% static 'common/bootstrap-fileinput/css/fileinput.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/assets/global/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css' %}" rel="stylesheet" type="text/css" />
+
     <!-- END PAGE LEVEL STYLES -->
 {% endblock %}
 
@@ -15,110 +17,50 @@
         <div class="portlet">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-cogs"></i> Información del parque
+                    <i class="fa fa-cogs"></i> Fechas de duraci&oacute;n del proyecto
                 </div>
             </div>
             <div class="portlet-body form">
-                <form action="{% url 'vista:configuracion' parque.slug %}" class="horizontal-form" method="post" enctype="multipart/form-data">
+                <form action="{% url 'fu:configuracion' parque.slug %}" class="horizontal-form" method="post">
                     {% csrf_token %}
                     <div class="form-body">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="control-label">{{ form.nombre.label }}</label>
-                                    {{ form.nombre }}
-                                    <span class="help-block"> {{ form.nombre.errors }} </span>
+                                    <label class="control-label col-md-3">{{ form.fecha_inicio.label }}</label>
+                                    <div class="col-md-9">
+                                        <div class="input-group input-medium date date-picker" data-date-format="dd-mm-yyyy" data-date-show-today-button="true">
+                                            {{ form.fecha_inicio }}
+                                            <span class="input-group-btn">
+                                                <button class="btn default" type="button">
+                                                    <i class="fa fa-calendar"></i>
+                                                </button>
+                                            </span>
+                                        </div>
+                                        <span class="help-block"> {{ form.fecha_inicio.errors }} </span>
+                                    </div>
                                 </div>
                             </div>
                             <!--/span-->
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="control-label">{{ form.cliente.label }}</label>
-                                    {{ form.cliente }}
-                                    <span class="help-block"> {{ form.cliente.errors }} </span>
-                                </div>
-                            </div>
-                            <!--/span-->
-                        </div>
-                        <!--/row-->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="control-label">{{ form.suministrador.label }}</label>
-                                    {{ form.suministrador }}
-                                    <span class="help-block"> {{ form.suministrador.errors }} </span>
-                                </div>
-                            </div>
-                            <!--/span-->
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="control-label">{{ form.plataforma.label }}</label>
-                                    {{ form.plataforma }}
-                                    <span class="help-block"> {{ form.plataforma.errors }} </span>
-                                </div>
-                            </div>
-                            <!--/span-->
-                        </div>
-                        <!--/row-->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="control-label">{{ form.no_aerogeneradores.label }}</label>
-                                    {{ form.no_aerogeneradores }}
-                                    <span class="help-block"> {{ form.no_aerogeneradores.errors }} </span>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="control-label">{{ form.codigo.label }}</label>
-                                    {{ form.codigo }}
-                                    <span class="help-block"> {{ form.codigo.errors }} </span>
+                                    <label class="control-label col-md-3">{{ form.fecha_final.label }}</label>
+                                    <div class="col-md-9">
+                                        <div class="input-group input-medium date date-picker" data-date-format="dd-mm-yyyy" data-date-show-today-button="true">
+                                            {{ form.fecha_final }}
+                                            <span class="input-group-btn">
+                                                <button class="btn default" type="button">
+                                                    <i class="fa fa-calendar"></i>
+                                                </button>
+                                            </span>
+                                        </div>
+                                        <span class="help-block"> {{ form.fecha_final.errors }} </span>
+                                    </div>
                                 </div>
                             </div>
                             <!--/span-->
                         </div>
                         <!--/row-->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="control-label">{{ form.logo.label }}</label>
-                                    {{ form.logo }}
-                                    <span class="help-block"> {{ form.logo.errors }} </span>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="control-label">{{ form.word.label }}</label>
-                                    {{ form.word }}
-                                    <span class="help-block"> {{ form.word.errors }} </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <h4 class="form-section">Información Geográfica</h4>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="control-label">{{ form.pais.label }}</label>
-                                    {{ form.pais }}
-                                    <span class="help-block"> {{ form.pais.errors }} </span>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="control-label">{{ form.region.label }}</label>
-                                    {{ form.region }}
-                                    <span class="help-block"> {{ form.region.errors }} </span>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="control-label">{{ form.municipio.label }}</label>
-                                    {{ form.municipio }}
-                                    <span class="help-block"> {{ form.municipio.errors }} </span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                     <div class="form-actions right">
                         <a href="{% url 'vista:home' parque.slug %}" class="btn default">Cancelar</a>
@@ -138,28 +80,26 @@
 <!-- BEGIN PAGE LEVEL PLUGINS -->
     <script src="{% static 'common/bootstrap-fileinput/js/fileinput.js' %}" type="text/javascript"></script>
     <script src="{% static 'common/bootstrap-fileinput/js/locales/es.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js' %}" type="text/javascript"></script>
+
 <!-- END PAGE LEVEL PLUGINS -->
 {% endblock %}
 
 {% block jquery %}
 
-    $("#id_logo").fileinput({'showUpload':false,
-                            'language':'es',
-                            'allowedFileTypes' :['image'],
-                            'previewSettings':{image: {width: "auto", height: "60px"}},
-                            {% if form.initial.logo %}
-                            'initialPreview': ["<img src='{{ form.initial.logo.url }}' class='file-preview-image' alt='Desert' title='Desert'>"],
-                            'initialPreviewAsData': false,
-                            'initialPreviewShowDelete': false
-                            {% endif %}
-                            });
-    $("#id_word").fileinput({'showUpload':false,
-                            'language':'es',
-                            'allowedFileExtensions' :['docx'],
-                            //'previewSettings':{image: {width: "auto", height: "60px"}},
-                            {% if form.initial.word %}
-
-                            {% endif %}
-                            });
+    if (jQuery().datepicker) {
+        $('.date-picker').datepicker({
+            locale: "es",
+            language: "es",
+            rtl: App.isRTL(),
+            orientation: "right",
+            autoclose: true,
+            showTodayButton: true,
+            toolbarPlacement:"bottom",
+            todayHighlight:true,
+            todayBtn:"linked",
+        });
+    }
 
 {% endblock %}

@@ -40,3 +40,17 @@ class RelacionesFU(models.Model):
         unique_together = ("componentes_parque", "componente")
     def __str__(self):
         return 'Relaciones Componentes Parque ' + '%s' % (self.componentes_parque.parque.nombre)
+
+def plan_directory_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    return 'planificacion/{0}'.format(filename)
+
+@python_2_unicode_compatible
+class ConfiguracionFU(models.Model):
+    parque = models.ForeignKey('vista.ParqueSolar', on_delete=models.CASCADE)
+    fecha_inicio = models.DateField(blank=False, null=False)
+    fecha_final = models.DateField(blank=False, null=False)
+    plan = models.FileField(upload_to=plan_directory_path, max_length=500, null=True, blank=True)
+    prev_plan = models.FileField(upload_to=plan_directory_path, max_length=500, null=True, blank=True)
+    def __str__(self):
+        return 'Configuracion'

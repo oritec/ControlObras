@@ -7,15 +7,37 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from vista.models import ParqueSolar, Aerogenerador
 from vista.functions import *
-from fu.forms import ComponenteForm, ActividadesComponentesForm
-from fu.models import Componente, ComponentesParque, RelacionesFU
+from fu.forms import ComponenteForm, AddComponentesForm, ConfiguracionFUForm,PlanificacionForm,DeleteComponentesForm
+from fu.models import Componente, ComponentesParque, RelacionesFU, ConfiguracionFU
 from django.contrib import messages
 from django.db.models import Max
 from collections import OrderedDict
 from django.http import HttpResponse
+from querystring_parser import parser
+from dateutil import relativedelta
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.worksheet.table import Table, TableStyleInfo
+from openpyxl.styles import PatternFill, Border, Side, Alignment, Protection, Font, Color
+import StringIO
+
+meses_espanol={"1":"Enero",
+       "2":"Febrero",
+       "3":"Marzo",
+       "4":"Abril",
+       "5":"Mayo",
+       "6":"Junio",
+       "7":"Julio",
+       "8":"Agosto",
+       "9":"Septiembre",
+       "10":"Octubre",
+       "11":"Noviembre",
+       "12":"Diciembre",
+       }
+
 import json
 logger = logging.getLogger('oritec')
-from querystring_parser import parser
+
 
 # Create your views here.
 @login_required(login_url='ingresar')
@@ -65,16 +87,98 @@ def componente(request,slug):
         })
 
 def getOrden(componente, d,p,m,pm):
+    ret_d = 0
+    ret_p = 0
+    ret_m = 0
+    ret_pm = 0
     for e in componente.estados.all():
         if e.idx == 1:
-            d += 1
+            ret_d = d + 1
         elif e.idx == 2:
-            p += 1
+            ret_p = p + 1
         elif e.idx == 3:
-            m += 1
+            ret_m = m + 1
         elif e.idx == 4:
-            pm += 1
-    return [d,p,m,pm]
+            ret_pm = pm + 1
+    return [ret_d,ret_p,ret_m,ret_pm]
+
+def getComponentesbyState(componentes_parque, estado):
+
+    if estado == 'descarga':
+        orden = 'orden_descarga'
+        indice = 1
+    elif estado == 'premontaje':
+        orden = 'orden_premontaje'
+        indice = 2
+    elif estado == 'montaje':
+        orden = 'orden_montaje'
+        indice = 3
+    elif estado == 'puestaenmarcha':
+        orden = 'orden_puestaenmarcha'
+        indice = 4
+    else:
+        return None
+
+    lista = OrderedDict()
+    for c in RelacionesFU.objects.filter(componentes_parque=componentes_parque).order_by(orden):
+        for e in c.componente.estados.all():
+            if e.idx == indice:
+                lista[c.id]=c.componente.nombre
+    return lista
+
+def addComponente(componentes_parque, new_componente):
+    aux = RelacionesFU.objects.filter(componentes_parque=componentes_parque)
+    if aux.exists():
+        maximos = aux.aggregate(Max('orden_descarga'),
+                                Max('orden_premontaje'),
+                                Max('orden_montaje'),
+                                Max('orden_puestaenmarcha'))
+        descarga = maximos['orden_descarga__max']
+        premontaje = maximos['orden_premontaje__max']
+        montaje = maximos['orden_montaje__max']
+        puestaenmarcha = maximos['orden_puestaenmarcha__max']
+    else:
+        descarga = 0
+        premontaje = 0
+        montaje = 0
+        puestaenmarcha = 0
+    [descarga, premontaje, montaje, puestaenmarcha] = getOrden(new_componente,
+                                                               descarga,
+                                                               premontaje,
+                                                               montaje,
+                                                               puestaenmarcha)
+
+    r = RelacionesFU(componentes_parque=componentes_parque,
+                     componente=new_componente,
+                     orden_descarga=descarga,
+                     orden_premontaje=premontaje,
+                     orden_montaje=montaje,
+                     orden_puestaenmarcha=puestaenmarcha)
+    r.save()
+
+def deleteComponente(componentes_parque, del_componente):
+    aux = RelacionesFU.objects.get(componentes_parque=componentes_parque, componente=del_componente)
+    if aux.orden_descarga > 0:
+        aux2=RelacionesFU.objects.filter(componentes_parque=componentes_parque, orden_descarga__gt = aux.orden_descarga)
+        for c in aux2:
+            c.orden_descarga += -1
+            c.save()
+    if aux.orden_premontaje > 0:
+        aux2=RelacionesFU.objects.filter(componentes_parque=componentes_parque, orden_premontaje__gt = aux.orden_premontaje)
+        for c in aux2:
+            c.orden_premontaje += -1
+            c.save()
+    if aux.orden_montaje > 0:
+        aux2=RelacionesFU.objects.filter(componentes_parque=componentes_parque, orden_montaje__gt = aux.orden_montaje)
+        for c in aux2:
+            c.orden_montaje += -1
+            c.save()
+    if aux.orden_puestaenmarcha > 0:
+        aux2=RelacionesFU.objects.filter(componentes_parque=componentes_parque, orden_puestaenmarcha__gt = aux.orden_puestaenmarcha)
+        for c in aux2:
+            c.orden_puestaenmarcha += -1
+            c.save()
+    aux.delete()
 
 @login_required(login_url='ingresar')
 def actividades(request,slug):
@@ -93,62 +197,22 @@ def actividades(request,slug):
     contenido.menu = ['menu-fu', 'menu2-actividades']
 
     if request.method == 'POST':
-        choicesComponentesForm = ActividadesComponentesForm(request.POST, parque=parque)
-        if choicesComponentesForm.is_valid():
-            aux = RelacionesFU.objects.filter(componentes_parque=componentes_parque)
-            if aux.exists():
-                maximos = aux.aggregate(Max('orden_descarga'),
-                                        Max('orden_premontaje'),
-                                        Max('orden_montaje'),
-                                        Max('orden_puestaenmarcha'))
-                componente = choicesComponentesForm.cleaned_data['componente']
-                descarga = maximos['orden_descarga__max']
-                premontaje = maximos['orden_premontaje__max']
-                montaje = maximos['orden_montaje__max']
-                puestaenmarcha = maximos['orden_puestaenmarcha__max']
-            else:
-                componente = choicesComponentesForm.cleaned_data['componente']
-                descarga = 0
-                premontaje = 0
-                montaje = 0
-                puestaenmarcha = 0
-            [descarga,premontaje,montaje,puestaenmarcha] = getOrden(componente,
-                                                                    descarga,
-                                                                    premontaje,
-                                                                    montaje,
-                                                                    puestaenmarcha)
+        if 'delComponente' in request.POST:
+            deleteComponentesForm = DeleteComponentesForm(request.POST, parque=parque)
+            if deleteComponentesForm.is_valid():
+                deleteComponente(componentes_parque,deleteComponentesForm.cleaned_data['componente'])
+        elif 'addComponente' in request.POST:
+            choicesComponentesForm = AddComponentesForm(request.POST, parque=parque)
+            if choicesComponentesForm.is_valid():
+                addComponente(componentes_parque,choicesComponentesForm.cleaned_data['componente'])
 
-            r = RelacionesFU(componentes_parque=componentes_parque,
-                         componente= componente,
-                         orden_descarga=descarga,
-                         orden_premontaje=premontaje,
-                         orden_montaje=montaje,
-                         orden_puestaenmarcha=puestaenmarcha)
-            r.save()
+    choicesComponentesForm = AddComponentesForm(parque = parque)
+    deleteComponentesForm = DeleteComponentesForm(parque = parque)
+    lista_descarga = getComponentesbyState(componentes_parque,'descarga')
+    lista_premontaje = getComponentesbyState(componentes_parque,'premontaje')
+    lista_montaje = getComponentesbyState(componentes_parque,'montaje')
+    lista_puestaenmarcha = getComponentesbyState(componentes_parque,'puestaenmarcha')
 
-    choicesComponentesForm = ActividadesComponentesForm(parque = parque)
-    lista_descarga = OrderedDict()
-    lista_premontaje = OrderedDict()
-    lista_montaje = OrderedDict()
-    lista_puestaenmarcha = OrderedDict()
-
-    for c in RelacionesFU.objects.filter(componentes_parque=componentes_parque).order_by('orden_descarga'):
-        for e in c.componente.estados.all():
-            if e.idx == 1:
-                lista_descarga[c.id]=c.componente.nombre
-    for c in RelacionesFU.objects.filter(componentes_parque=componentes_parque).order_by('orden_premontaje'):
-        for e in c.componente.estados.all():
-            if e.idx == 2:
-                lista_premontaje[c.id] = c.componente.nombre
-    for c in RelacionesFU.objects.filter(componentes_parque=componentes_parque).order_by('orden_montaje'):
-        for e in c.componente.estados.all():
-            if e.idx == 3:
-                lista_montaje[c.id] = c.componente.nombre
-    for c in RelacionesFU.objects.filter(componentes_parque=componentes_parque).order_by('orden_puestaenmarcha'):
-        for e in c.componente.estados.all():
-            if e.idx == 4:
-                lista_puestaenmarcha[c.id] = c.componente.nombre
-    estados = ['descarga','premontaje','montaje','puestaenmarcha']
     actividades = OrderedDict()
     actividades['descarga']=lista_descarga
     actividades['premontaje']= lista_premontaje
@@ -167,6 +231,7 @@ def actividades(request,slug):
          'parque': parque,
          'aerogeneradores':aerogeneradores,
          'choicesComponentesForm': choicesComponentesForm,
+         'deleteComponentesForm': deleteComponentesForm,
          'actividades': actividades,
          'titulos': titulos,
         })
@@ -197,3 +262,247 @@ def ordenar_actividades(request, slug, estado):
             response,
             content_type="application/json"
         )
+
+@login_required(login_url='ingresar')
+def configuracion(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    try:
+        configuracion = ConfiguracionFU.objects.get(parque=parque)
+    except ConfiguracionFU.DoesNotExist:
+        configuracion = None
+
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
+    contenido=ContenidoContainer()
+    contenido.user=request.user
+    contenido.titulo=u'Parque Eólico'
+    contenido.subtitulo= parque.nombre
+    contenido.menu = ['menu-fu', 'menu2-configuracionfu']
+
+    form = None
+
+    if request.method == 'POST':
+        if configuracion is None:
+            form = ConfiguracionFUForm(request.POST)
+        else:
+            form = ConfiguracionFUForm(request.POST, instance=configuracion)
+        if form.is_valid():
+            if configuracion is None:
+                conf = form.save(commit=False)
+                conf.parque = parque
+                conf.save()
+            else:
+                form.save()
+            messages.add_message(request, messages.SUCCESS, 'Configuración guardada con éxito')
+        else:
+            messages.add_message(request, messages.ERROR, 'Configuración no se ha podido guardar.')
+
+    if form is None:
+        if configuracion is None:
+            form = ConfiguracionFUForm()
+        else:
+            form = ConfiguracionFUForm(instance=configuracion)
+    return render(request, 'fu/configuracion.html',
+                  {'cont': contenido,
+                   'parque': parque,
+                   'aerogeneradores': aerogeneradores,
+                   'form': form
+                   })
+
+@login_required(login_url='ingresar')
+def planificacion(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    try:
+        configuracion = ConfiguracionFU.objects.get(parque=parque)
+    except ConfiguracionFU.DoesNotExist:
+        configuracion = None
+
+    contenido=ContenidoContainer()
+    contenido.user=request.user
+    contenido.titulo= u'Planificación Follow Up'
+    contenido.subtitulo= u'Parque Eólico ' +parque.nombre
+    contenido.menu = ['menu-fu', 'menu2-planificacion']
+
+    form = None
+
+    if form is None and configuracion is not None:
+        form = PlanificacionForm(instance = configuracion)
+
+    return render(request, 'fu/planificacion.html',
+                  {'cont': contenido,
+                   'parque': parque,
+                   'form': form,
+                   })
+
+@login_required(login_url='ingresar')
+def download_config(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    try:
+        configuracion = ConfiguracionFU.objects.get(parque=parque)
+    except ConfiguracionFU.DoesNotExist:
+        return
+
+    try:
+        componentes_parque = ComponentesParque.objects.get(parque=parque)
+    except ComponentesParque.DoesNotExist:
+        componentes_parque = ComponentesParque(parque=parque)
+        componentes_parque.save()
+
+    aux = configuracion.fecha_inicio
+    final = configuracion.fecha_final
+
+    semanas = []
+    meses = {}
+    anhos = {}
+    semana = str(aux.isocalendar()[1])
+    semanas.append(semana)
+    meses[semana] = meses_espanol[str(aux.month)]
+    anhos[semana] = str(aux.year)
+    aux = aux + relativedelta.relativedelta(weeks=1)
+    while aux < final:
+        semana = str(aux.isocalendar()[1])
+        semanas.append(semana)
+        meses[semana] = meses_espanol[str(aux.month)]
+        anhos[semana] = str(aux.year)
+        aux = aux + relativedelta.relativedelta(weeks=1)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Planificacion"
+    bgColor = Color(rgb="283861")
+    bg = PatternFill(patternType='solid', fgColor=bgColor)
+    font = Font(color="FFFFFF")
+    thin = Side(border_style="thin", color="000000")
+    solid = Side(border_style="medium", color="000000")
+    borderfull = Border(top=thin, left=thin, right=thin, bottom=thin)
+    bordertop = Border(top=thin, left=thin, right=thin)
+    borderbottom = Border(left=thin, right=thin, bottom=thin)
+    borderside = Border(left=thin, right=thin)
+    # alignment = Alignment(horizontal="center", vertical="center",text_rotation =90, wrap_text = False, shrink_to_fit = False, indent = 0)
+    alignment1 = Alignment(horizontal="center", vertical="center", text_rotation=90)
+    alignment2 = Alignment(vertical="center")
+    alignment3 = Alignment(horizontal="center")
+    alignment4 = Alignment(horizontal="center", wrap_text = True)
+
+    row = 3
+    column = 4
+    idx = 0
+
+    d = ws.cell(row=row, column=1, value='Actividad')
+    d.fill = bg
+    d.font = font
+    d.border = borderfull
+    d.alignment = alignment3
+    d = ws.cell(row=row, column=2, value='Componente')
+    d.fill = bg
+    d.font = font
+    d.border = borderfull
+    d.alignment = alignment3
+    d = ws.cell(row=row, column=3, value='Semana')
+    d.fill = bg
+    d.font = font
+    d.border = borderfull
+    d.alignment = alignment3
+
+    ws.column_dimensions["A"].width = 11.0
+    ws.column_dimensions["B"].width = 25.0
+    ws.column_dimensions["C"].width = 11.0
+    prev_year = ''
+    prev_month = ''
+    prev_month_col = 0
+    prev_year_col = 0
+
+    for s in semanas:
+        d = ws.cell(row=row, column=column+idx, value=semanas[idx])
+        d.fill = bg
+        d.font = font
+        d.border = borderfull
+        d.alignment = alignment3
+        if prev_year != anhos[semanas[idx]]:
+            prev_year = anhos[semanas[idx]]
+            d = ws.cell(row=row-2, column=column + idx, value=prev_year)
+            d.fill = bg
+            d.font = font
+            d.alignment = alignment4
+            if prev_year_col == 0:
+                prev_year_col = column + idx
+            else:
+                ws.merge_cells(start_row=row-2, start_column=prev_year_col, end_row=row - 2, end_column=column+ idx -1)
+                prev_year_col = column + idx
+
+        if prev_month != meses[semanas[idx]]:
+            prev_month = meses[semanas[idx]]
+            d = ws.cell(row=row-1, column=column + idx, value=prev_month)
+            d.fill = bg
+            d.font = font
+            d.border = borderfull
+            d.alignment = alignment4
+            if prev_month_col == 0:
+                prev_month_col = column + idx
+            else:
+                ws.merge_cells(start_row=row-1, start_column=prev_month_col, end_row=row - 1, end_column=column+ idx -1)
+                prev_month_col = column + idx
+        idx += 1
+    ws.merge_cells(start_row=row - 2, start_column=prev_year_col, end_row=row - 2, end_column=column + idx - 1)
+    ws.merge_cells(start_row=row - 1, start_column=prev_month_col, end_row=row - 1, end_column=column + idx - 1)
+
+    for aux_col in range(4,column+idx):
+        d = ws.cell(row=row - 2, column=aux_col)
+        d.border = borderbottom
+
+    estados = OrderedDict()
+    estados['descarga'] = 'Descarga en Parque'
+    estados['premontaje'] = 'Pre-montaje'
+    estados['montaje'] = 'Montaje'
+    estados['puestaenmarcha'] = 'Puesta en marcha'
+    #estados = ['descarga','premontaje','montaje','puestaenmarcha']
+
+    column = 2
+    row = 4
+
+    for e, titulo in estados.iteritems():
+        componentes = getComponentesbyState(componentes_parque,e)
+        if len(componentes) > 0:
+            d = ws.cell(row=row, column=1, value=titulo)
+            d.alignment = alignment1
+            d.fill = bg
+            d.font = font
+            d.border = borderfull
+            first_row = row
+            first = True
+            for idx, nombre in componentes.iteritems():
+                d=ws.cell(row=row, column=column , value=nombre)
+                d.alignment = alignment2
+                d.fill = bg
+                d.font = font
+                ws.merge_cells(start_row=row, start_column=column, end_row=row + 1, end_column=column)
+                if first:
+                    d.border = bordertop
+                    d = ws.cell(row=row + 1, column=column)
+                    d.border = borderside
+                    first = False
+                else:
+                    d.border = borderside
+                    d = ws.cell(row=row+1, column=column)
+                    d.border = borderside
+
+                d2 = ws.cell(row=row, column=column+1, value='Contractual')
+                d2.border = bordertop
+                d2.alignment = alignment3
+                d2 = ws.cell(row=row+1, column=column + 1, value='Plan')
+                d2.border = borderbottom
+                d2.alignment = alignment3
+                row += 2
+            d.border = borderbottom
+            ws.merge_cells(start_row=first_row, start_column=1, end_row=row-1, end_column=1)
+
+
+    target_stream = StringIO.StringIO()
+    wb.save(target_stream)
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="PlantilaPlanificacion.xlsx"'
+    target_stream.flush()
+    ret_excel = target_stream.getvalue()
+    target_stream.close()
+    response.write(ret_excel)
+    return response
