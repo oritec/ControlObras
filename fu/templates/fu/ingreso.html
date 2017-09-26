@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load customtags %}
+{% load tz %}
+{% block css %}
+    <!-- BEGIN PAGE LEVEL STYLES -->
+    <link href="{% static 'common/bootstrap-fileinput/css/fileinput.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/assets/global/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css' %}" rel="stylesheet" type="text/css" />
+    <style>
+        .vertical-align {
+            position: relative;
+            transform: translateY(50%);
+        }
+        .table-titulo{
+            border: 1px solid #e7ecf1;
+
+        }
+        .table-contenido{
+            border: 1px solid #e7ecf1;
+        }
+    </style>
+    <!-- END PAGE LEVEL STYLES -->
+{% endblock %}
+
+{% block contenido %}
+
+
+<div class="row">
+    <div class="col-md-12" >
+        <div class="table-responsive" style="padding-bottom: 30px">
+          <table class="table" >
+              <tbody>
+              {% for titulo,lista in componentes.items %}
+                  <tr>
+                      <td class="table-titulo" style="vertical-align: middle;">
+                          {{ titulo }}
+                      </td>
+                      <td class="table-contenido">
+                          {% for componente in lista %}
+                              <div class="btn-group">
+                                    <a href="javascript:;" class="icon-btn bg-grey-salt dropdown-toggle" data-toggle="dropdown">
+                                    <i class="fa {{ icons|get_item:titulo }}"></i>
+                                    <div style=" padding-left: 5px;padding-right: 5px;"> {{ componente.nombre }} </div>
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a href="javascript:;"> Registrar
+                                            </a>
+                                        </li>
+
+                                    </ul>
+                              </div>
+                          {% endfor %}
+                      </td>
+                  </tr>
+              {% endfor %}
+              </tbody>
+          </table>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block javascript %}
+<!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="{% static 'common/bootstrap-fileinput/js/fileinput.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/bootstrap-fileinput/js/locales/es.js' %}" type="text/javascript"></script>
+
+<!-- END PAGE LEVEL PLUGINS -->
+{% endblock %}
+
+{% block jquery %}
+
+{% endblock %}

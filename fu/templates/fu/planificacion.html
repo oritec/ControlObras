@@ -55,12 +55,38 @@
     </div>
 </div>
 
+<div class="row">
+    <div class="col-md-12">
+        <div id="grafico_plan_1"></div>
+    </div>
+    <div class="col-md-12">
+        <div id="grafico_contractual_1"></div>
+    </div>
+    <div class="col-md-12">
+        <div id="grafico_plan_3"></div>
+    </div>
+    <div class="col-md-12">
+        <div id="grafico_contractual_3"></div>
+    </div>
+    <div class="col-md-12">
+        <div id="grafico_plan_4"></div>
+    </div>
+    <div class="col-md-12">
+        <div id="grafico_contractual_4"></div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block javascript %}
 <!-- BEGIN PAGE LEVEL PLUGINS -->
     <script src="{% static 'common/bootstrap-fileinput/js/fileinput.js' %}" type="text/javascript"></script>
     <script src="{% static 'common/bootstrap-fileinput/js/locales/es.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/highcharts/js/highcharts.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/highcharts/js/highcharts-3d.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/highcharts/js/highcharts-more.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/highcharts/js/modules/heatmap.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/js/planificacion.js' %}" type="text/javascript"></script>
 <!-- END PAGE LEVEL PLUGINS -->
 {% endblock %}
 
@@ -84,5 +110,41 @@
 
                             {% endif %}
                             });
+
+
+    var thisweek = "{{ thisweek|safe }}";
+
+    var xlabels_1 = {{ x_axis|get_item:1|safe }};
+    var ylabels_1 = {{ y_axis|get_item:1|safe }};
+    var plan_1 = {{ plan|get_item:1|safe }};
+    var contractual_1 = {{ contractual|get_item:1|safe }};
+    var tituloplan_1 =  "Descarga en Parque - Plan";
+    var divplan_1 = "grafico_plan_1";
+    var titulocontractual_1 =  "Descarga en Parque - Contractual";
+    var divcontractual_1 = "grafico_contractual_1";
+    FUGraficos.showGraficoPlanificacion(xlabels_1,ylabels_1,plan_1,tituloplan_1,divplan_1,thisweek);
+    FUGraficos.showGraficoPlanificacion(xlabels_1,ylabels_1,contractual_1,titulocontractual_1,divcontractual_1,thisweek);
+
+    var xlabels_3 = {{ x_axis|get_item:3|safe }};
+    var ylabels_3 = {{ y_axis|get_item:3|safe }};
+    var plan_3 = {{ plan|get_item:3|safe }};
+    var contractual_3 = {{ contractual|get_item:3|safe }};
+    var tituloplan_3 =  "Montaje - Plan";
+    var divplan_3 = "grafico_plan_3";
+    var titulocontractual_3 =  "Montaje - Contractual";
+    var divcontractual_3 = "grafico_contractual_3";
+    FUGraficos.showGraficoPlanificacion(xlabels_3,ylabels_3,plan_3,tituloplan_3,divplan_3,thisweek);
+    FUGraficos.showGraficoPlanificacion(xlabels_3,ylabels_3,contractual_3,titulocontractual_3,divcontractual_3,thisweek);
+
+    var xlabels_4 = {{ x_axis|get_item:4|safe }};
+    var ylabels_4 = {{ y_axis|get_item:4|safe }};
+    var plan_4 = {{ plan|get_item:4|safe }};
+    var contractual_4 = {{ contractual|get_item:4|safe }};
+    var tituloplan_4 =  "Puesta en marcha - Plan";
+    var divplan_4 = "grafico_plan_4";
+    var titulocontractual_4 =  "Puesta en marcha - Contractual";
+    var divcontractual_4 = "grafico_contractual_4";
+    FUGraficos.showGraficoPlanificacion(xlabels_4,ylabels_4,plan_4,tituloplan_4,divplan_4,thisweek);
+    FUGraficos.showGraficoPlanificacion(xlabels_4,ylabels_4,contractual_4,titulocontractual_4,divcontractual_4,thisweek);
 
 {% endblock %}

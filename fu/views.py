@@ -8,18 +8,22 @@ from django.shortcuts import get_object_or_404
 from vista.models import ParqueSolar, Aerogenerador
 from vista.functions import *
 from fu.forms import ComponenteForm, AddComponentesForm, ConfiguracionFUForm,PlanificacionForm,DeleteComponentesForm
-from fu.models import Componente, ComponentesParque, RelacionesFU, ConfiguracionFU
+from fu.models import Componente, ComponentesParque, RelacionesFU, ConfiguracionFU, Contractual, Plan, EstadoFU
 from django.contrib import messages
 from django.db.models import Max
 from collections import OrderedDict
 from django.http import HttpResponse
 from querystring_parser import parser
 from dateutil import relativedelta
+from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Protection, Font, Color
+from openpyxl import load_workbook
 import StringIO
+from django.conf import settings
+import os
 
 meses_espanol={"1":"Enero",
        "2":"Febrero",
@@ -263,6 +267,29 @@ def ordenar_actividades(request, slug, estado):
             content_type="application/json"
         )
 
+def checkValidFile(ws, componentes_parque):
+    fila = 4
+    columna = 2
+    valor = ws.cell(row=fila,column=columna).value
+    while valor is not None:
+        elementos = componentes_parque.componentes.filter(nombre=valor)
+        if elementos.count() < 0:
+            return -1
+        fila = fila +2
+        valor = ws.cell(row=fila, column=columna).value
+
+    return fila
+
+def getLastColumn(ws):
+    fila = 3
+    columna = 4
+    valor = ws.cell(row=fila,column=columna).value
+    while valor is not None:
+        # Verifica que los nombres sean componentes válidos
+        columna = columna + 2
+        valor = ws.cell(row=fila, column=columna).value
+    return columna
+
 @login_required(login_url='ingresar')
 def configuracion(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
@@ -308,6 +335,145 @@ def configuracion(request,slug):
                    'form': form
                    })
 
+def readPlanFile(configuracion, componentes_parque):
+    nombre_archivo = os.path.join(settings.MEDIA_ROOT, configuracion.plan.name)
+    wb = load_workbook(nombre_archivo)
+    ws = wb.active
+    last_row = checkValidFile(ws, componentes_parque)
+    if last_row == -1:
+        # Retorna falso, no se pudo leer este archivo correctamente.
+        return False
+    else:
+        # si está bien el archivo, entonces hay que borrar la planificación para el parque antes de insertar la nueva.
+        objs = Plan.objects.filter(parque = configuracion.parque)
+        for obj in objs:
+            obj.delete()
+        objs = Contractual.objects.filter(parque = configuracion.parque)
+        for obj in objs:
+            obj.delete()
+    last_column = getLastColumn(ws)
+    fila = 4
+    ultimo_estado = None
+    ultimo_anho = None
+    estado = None
+    while fila < last_row:
+        columna = 4
+        nombre_componente = ws.cell(row=fila, column=2).value
+        # lo puedo hacer de forma segura, porque se supone que los validé en checkValidFile
+        componente = Componente.objects.get(nombre=nombre_componente)
+        nombre_estado = ws.cell(row=fila, column=1).value
+
+        if nombre_estado is not None:
+            if nombre_estado != ultimo_estado:
+                ultimo_estado = nombre_estado
+                estado = None
+                if ultimo_estado == 'Descarga en Parque':
+                    estado = EstadoFU.objects.get(idx=1)
+                elif ultimo_estado == 'Pre-montaje':
+                    estado = EstadoFU.objects.get(idx=2)
+                elif ultimo_estado == 'Montaje':
+                    estado = EstadoFU.objects.get(idx=3)
+                elif ultimo_estado == 'Puesta en marcha':
+                    estado = EstadoFU.objects.get(idx=4)
+                else:
+                    estado = None
+                    logger.debug('No existe el estado')
+
+        if ultimo_estado is not None and estado is not None:
+            while columna < last_column:
+                semana = ws.cell(row=3, column=columna).value
+                anho = ws.cell(row=1, column=columna).value
+                if anho is not None:
+                    if anho != ultimo_anho:
+                        ultimo_anho = anho
+                contractual = ws.cell(row=fila,column = columna).value
+                plan = ws.cell(row=fila+1,column = columna).value
+                d = ultimo_anho + "-W" + semana + "-0"
+                fecha = datetime.strptime(d, "%Y-W%W-%w")
+                if plan is not None:
+                    plan = int(plan)
+                    if plan != 0:
+                        nuevo = Plan(parque = configuracion.parque,
+                                     componente = componente,
+                                     estado = estado,
+                                     fecha = fecha,
+                                     no_aerogeneradores=plan)
+                        nuevo.save()
+
+                if contractual is not None:
+                    contractual = int(contractual)
+                    if contractual != 0:
+                        nuevo = Contractual(parque = configuracion.parque,
+                                     componente = componente,
+                                     estado= estado,
+                                     fecha = fecha,
+                                     no_aerogeneradores=contractual)
+                        nuevo.save()
+
+                columna += 1
+        fila += 2
+    return True
+
+def graficoPlanificacion(parque):
+    configuracion = ConfiguracionFU.objects.get(parque=parque)
+    componentes_parque = ComponentesParque.objects.get(parque=parque)
+    aux = configuracion.fecha_inicio
+    final = configuracion.fecha_final
+    xvalues = {}
+    yvalues = {}
+    plan_values = {}
+    contractual_values = {}
+    for i in range(1,5):
+        xlabels = '['
+        ylabels = '['
+        plan = '['
+        contractual = '['
+        idx = 0
+        idy = 0
+        first = True
+        aux = configuracion.fecha_inicio
+        while aux < final:
+            semana = str(aux.isocalendar()[1])
+            anho = aux.year
+            d = str(anho) + "-W" + semana + "-0"
+            fecha_query = datetime.strptime(d, "%Y-W%W-%w")
+            xlabels += '"'+ str(anho) + '-' + semana + '",'
+            idy = 0
+            for componente in componentes_parque.componentes.all():
+                e = None
+                for aux_e in componente.estados.all():
+                    if aux_e.idx == i:
+                        e = aux_e
+                        break
+                if e is not None:
+                    if first:
+                        ylabels += '"' + componente.nombre + '",'
+                    try:
+                        q = Plan.objects.get(parque=parque, componente=componente, estado=e,fecha=fecha_query)
+                        val = q.no_aerogeneradores
+                    except Plan.DoesNotExist:
+                        val = 0
+                    plan += '['+str(idx)+','+str(idy)+','+str(val)+'],'
+                    try:
+                        q = Contractual.objects.get(parque=parque, componente=componente, estado=e,fecha=fecha_query)
+                        val = q.no_aerogeneradores
+                    except Contractual.DoesNotExist:
+                        val = 0
+                    contractual += '['+str(idx)+','+str(idy)+','+str(val)+'],'
+                    idy += 1
+            first = False
+            idx += 1
+            aux = aux + relativedelta.relativedelta(weeks=1)
+        xlabels = xlabels[:-1] + ']'
+        ylabels = ylabels[:-1] + ']'
+        plan = plan[:-1] + ']'
+        contractual = contractual[:-1] + ']'
+        xvalues[i] = xlabels
+        yvalues[i] = ylabels
+        plan_values[i] = plan
+        contractual_values[i] = contractual
+    return [xvalues,yvalues,plan_values,contractual_values]
+
 @login_required(login_url='ingresar')
 def planificacion(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
@@ -315,6 +481,12 @@ def planificacion(request,slug):
         configuracion = ConfiguracionFU.objects.get(parque=parque)
     except ConfiguracionFU.DoesNotExist:
         configuracion = None
+
+    try:
+        componentes_parque = ComponentesParque.objects.get(parque=parque)
+    except ComponentesParque.DoesNotExist:
+        componentes_parque = ComponentesParque(parque=parque)
+        componentes_parque.save()
 
     contenido=ContenidoContainer()
     contenido.user=request.user
@@ -324,13 +496,38 @@ def planificacion(request,slug):
 
     form = None
 
+    if request.method == 'POST':
+        form = PlanificacionForm(request.POST, request.FILES, instance=configuracion)
+        if form.is_valid():
+            configuracion = form.save()
+
+        if configuracion.plan:
+            if configuracion.plan != configuracion.prev_plan:
+                readPlanFile(configuracion,componentes_parque)
+            else:
+                logger.debug('Se sube configuración, pero se mantiene igual.')
+
     if form is None and configuracion is not None:
         form = PlanificacionForm(instance = configuracion)
+
+    [x_axis, y_axis, plan,contractual] = graficoPlanificacion(parque)
+
+
+    aux = datetime.today()
+    semana = str(aux.isocalendar()[1])
+    anho = aux.year
+    thisweek = str(anho) + "-" + semana
+
 
     return render(request, 'fu/planificacion.html',
                   {'cont': contenido,
                    'parque': parque,
                    'form': form,
+                   'x_axis': x_axis,
+                   'y_axis': y_axis,
+                   'plan': plan,
+                   'contractual': contractual,
+                   'thisweek': thisweek
                    })
 
 @login_required(login_url='ingresar')
@@ -506,3 +703,50 @@ def download_config(request,slug):
     target_stream.close()
     response.write(ret_excel)
     return response
+
+@login_required(login_url='ingresar')
+def ingreso(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    try:
+        configuracion = ConfiguracionFU.objects.get(parque=parque)
+    except ConfiguracionFU.DoesNotExist:
+        configuracion = None
+
+    try:
+        componentes_parque = ComponentesParque.objects.get(parque=parque)
+    except ComponentesParque.DoesNotExist:
+        componentes_parque = ComponentesParque(parque=parque)
+        componentes_parque.save()
+
+    contenido=ContenidoContainer()
+    contenido.user=request.user
+    contenido.titulo= u'Planificación Follow Up'
+    contenido.subtitulo= u'Parque Eólico ' +parque.nombre
+    contenido.menu = ['menu-fu', 'menu2-ingreso']
+
+    form = None
+
+    componentes = OrderedDict()
+    icons = {}
+
+    componentes['Descarga en Parque'] = componentes_parque.componentes.all().filter(estados__idx=1)
+    componentes['Montaje'] = componentes_parque.componentes.all().filter(estados__idx=3)
+    componentes['Puesta en marcha'] = componentes_parque.componentes.all().filter(estados__idx=4)
+
+    icons['Descarga en Parque'] = 'fa-map-marker'
+    icons['Montaje'] = 'fa-cogs'
+    icons['Puesta en marcha'] = 'fa-thumbs-o-up'
+
+    if request.method == 'POST':
+        # form = PlanificacionForm(request.POST, request.FILES, instance=configuracion)
+        # if form.is_valid():
+        #     configuracion = form.save()
+        pass;
+
+    return render(request, 'fu/ingreso.html',
+                  {'cont': contenido,
+                   'parque': parque,
+                   'form': form,
+                   'componentes': componentes,
+                   'icons': icons,
+                   })
