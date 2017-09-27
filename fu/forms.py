@@ -2,7 +2,7 @@
 from django import forms
 from vista.models import ParqueSolar,Aerogenerador
 from fu.models import ComponentesParque, Componente,RelacionesFU,ConfiguracionFU
-from fu.models import EstadoFU
+from fu.models import EstadoFU, Registros, Paradas
 import logging
 logger = logging.getLogger('oritec')
 
@@ -66,3 +66,66 @@ class PlanificacionForm(forms.ModelForm):
         }
     def __init__(self, *args, **kwargs):
         super(PlanificacionForm, self).__init__(*args, **kwargs)
+
+class RegistroForm(forms.ModelForm):
+    fecha = forms.DateField(widget=forms.DateInput(format='%d-%m-%Y'),
+                                  input_formats=('%d-%m-%Y',))
+    class Meta:
+        model = Registros
+        fields = ['fecha']
+    def __init__(self, *args, **kwargs):
+        super(RegistroForm, self).__init__(*args, **kwargs)
+        self.fields['fecha'].widget.attrs['class'] = 'form-control'
+        self.fields['fecha'].widget.attrs['readonly'] = True
+
+class RegistroDescargaForm(forms.ModelForm):
+    fecha = forms.DateField(widget=forms.DateInput(format='%d-%m-%Y'),
+                                  input_formats=('%d-%m-%Y',))
+    class Meta:
+        model = Registros
+        fields = ['fecha','no_serie']
+    def __init__(self, *args, **kwargs):
+        super(RegistroDescargaForm, self).__init__(*args, **kwargs)
+        self.fields['fecha'].widget.attrs['class'] = 'form-control'
+        self.fields['fecha'].widget.attrs['readonly'] = True
+        self.fields['no_serie'].widget.attrs['class'] = 'form-control'
+
+class ParadasForm(forms.ModelForm):
+    fecha_inicio = forms.DateTimeField(widget=forms.DateTimeInput(format='%d-%m-%Y %H:%M'),
+                                        input_formats=('%d-%m-%Y %H:%M',))
+    fecha_final = forms.DateTimeField(widget=forms.DateTimeInput(format='%d-%m-%Y %H:%M'),
+                                       input_formats=('%d-%m-%Y %H:%M',))
+    class Meta:
+        model = Paradas
+        fields = ['parque','fecha_inicio','fecha_final','aerogenerador','componente','trabajo','viento','grua','observaciones']
+    def __init__(self, *args, **kwargs):
+        super(ParadasForm, self).__init__(*args, **kwargs)
+
+        if 'initial' in kwargs:
+            parque = kwargs['initial']['parque']
+            self.fields['aerogenerador'].queryset = Aerogenerador.objects.filter(parque=parque)
+        elif 'instance' in kwargs:
+            parque = kwargs['instance'].parque
+            self.fields['aerogenerador'].queryset = Aerogenerador.objects.filter(parque=parque)
+
+        self.fields['parque'].widget = forms.HiddenInput()
+        self.fields['fecha_inicio'].widget.attrs['class'] = 'form-control'
+        self.fields['fecha_inicio'].widget.attrs['readonly'] = True
+        self.fields['fecha_final'].widget.attrs['class'] = 'form-control'
+        self.fields['fecha_final'].widget.attrs['readonly'] = True
+        self.fields['aerogenerador'].widget.attrs['class'] = 'bs-select form-control'
+        self.fields['aerogenerador'].widget.attrs['data-live-search'] = 'true'
+        self.fields['aerogenerador'].widget.attrs['data-size'] = '8'
+        self.fields['componente'].widget.attrs['class'] = 'bs-select form-control'
+        self.fields['componente'].widget.attrs['data-live-search'] = 'true'
+        self.fields['componente'].widget.attrs['data-size'] = '8'
+        self.fields['trabajo'].widget.attrs['class'] = 'bs-select form-control'
+        self.fields['trabajo'].widget.attrs['data-live-search'] = 'true'
+        self.fields['trabajo'].widget.attrs['data-size'] = '8'
+        self.fields['grua'].widget.attrs['class'] = 'bs-select form-control'
+        self.fields['grua'].widget.attrs['data-live-search'] = 'true'
+        self.fields['grua'].widget.attrs['data-size'] = '8'
+        self.fields['viento'].widget.attrs['class'] = 'form-control'
+        self.fields['observaciones'].widget = forms.Textarea()
+        self.fields['observaciones'].widget.attrs['class'] = 'form-control'
+        self.fields['observaciones'].widget.attrs['row'] = '3'

@@ -2,7 +2,8 @@
 from __future__ import unicode_literals
 from django.utils.encoding import python_2_unicode_compatible
 from django.db import models
-from vista.models import ParqueSolar
+from vista.models import ParqueSolar,Aerogenerador
+import datetime
 
 import logging
 logger = logging.getLogger('oritec')
@@ -84,3 +85,50 @@ class Contractual(models.Model):
     def __str__(self):
         return 'Contractual, parque=' + self.parque.nombre + ',componente=' + self.componente.nombre + ',estado=' + self.estado.nombre + \
                ',nº de aerogeneradores=' + str(self.no_aerogeneradores)
+
+@python_2_unicode_compatible
+class Registros(models.Model):
+    parque = models.ForeignKey(ParqueSolar, on_delete=models.CASCADE)
+    aerogenerador = models.ForeignKey(Aerogenerador,on_delete=models.CASCADE)
+    componente = models.ForeignKey(Componente, on_delete=models.CASCADE)
+    estado = models.ForeignKey(EstadoFU, on_delete=models.CASCADE)
+    fecha = models.DateField(blank=False, null=False)
+    no_serie = models.CharField(max_length=100, unique=False, blank=False, null=True)
+    def __str__(self):
+        return 'Registro, parque=' + self.parque.nombre + ',aerogenerador='+ self.aerogenerador.nombre + \
+               ',componente=' + self.componente.nombre + ',estado=' + self.estado.nombre + \
+               ',fecha=' + self.fecha.strftime("%d-%m-%Y")
+
+@python_2_unicode_compatible
+class ParadasTrabajo(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    def __str__(self):
+        return '%s' % (self.nombre)
+
+@python_2_unicode_compatible
+class ParadasGrua(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    def __str__(self):
+        return '%s' % (self.nombre)
+
+@python_2_unicode_compatible
+class Paradas(models.Model):
+    parque = models.ForeignKey(ParqueSolar, on_delete=models.CASCADE)
+    fecha_inicio = models.DateTimeField(blank=False, null=False)
+    fecha_final = models.DateTimeField(blank=False, null=False)
+    aerogenerador = models.ForeignKey(Aerogenerador,on_delete=models.CASCADE)
+    componente = models.ForeignKey(Componente, on_delete=models.CASCADE)
+    trabajo = models.ForeignKey(ParadasTrabajo, on_delete=models.CASCADE)
+    duracion = models.FloatField(blank=True,null=True)
+    viento = models.FloatField(blank=True,null=True)
+    grua = models.ForeignKey(ParadasGrua, on_delete=models.CASCADE)
+    observaciones = models.CharField(max_length=200,blank=True,null=True)
+    def __str__(self):
+        return 'Paradas, parque=' + self.parque.nombre + ',aerogenerador='+ self.aerogenerador.nombre + \
+               ',componente=' + self.componente.nombre + ',fecha_inicial=' + self.fecha_inicial.strftime("%d-%m-%Y") + \
+               ',fecha_final=' + self.fecha_final.strftime("%d-%m-%Y")
+    def save(self, *args, **kwargs):
+        if self.fecha_inicio and self.fecha_final:
+            c = self.fecha_final - self.fecha_inicio
+            self.duracion = c.total_seconds()/3600
+        super(Paradas, self).save(*args, **kwargs)  # Call the "real" save() method.

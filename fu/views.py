@@ -8,11 +8,13 @@ from django.shortcuts import get_object_or_404
 from vista.models import ParqueSolar, Aerogenerador
 from vista.functions import *
 from fu.forms import ComponenteForm, AddComponentesForm, ConfiguracionFUForm,PlanificacionForm,DeleteComponentesForm
+from fu.forms import RegistroDescargaForm, RegistroForm, ParadasForm
 from fu.models import Componente, ComponentesParque, RelacionesFU, ConfiguracionFU, Contractual, Plan, EstadoFU
+from fu.models import Registros, Paradas
 from django.contrib import messages
 from django.db.models import Max
 from collections import OrderedDict
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from querystring_parser import parser
 from dateutil import relativedelta
 from datetime import datetime
@@ -21,6 +23,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Protection, Font, Color
 from openpyxl import load_workbook
+from django.core.urlresolvers import reverse
 import StringIO
 from django.conf import settings
 import os
@@ -107,7 +110,6 @@ def getOrden(componente, d,p,m,pm):
     return [ret_d,ret_p,ret_m,ret_pm]
 
 def getComponentesbyState(componentes_parque, estado):
-
     if estado == 'descarga':
         orden = 'orden_descarga'
         indice = 1
@@ -477,6 +479,7 @@ def graficoPlanificacion(parque):
 @login_required(login_url='ingresar')
 def planificacion(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     try:
         configuracion = ConfiguracionFU.objects.get(parque=parque)
     except ConfiguracionFU.DoesNotExist:
@@ -522,6 +525,7 @@ def planificacion(request,slug):
     return render(request, 'fu/planificacion.html',
                   {'cont': contenido,
                    'parque': parque,
+                   'aerogeneradores': aerogeneradores,
                    'form': form,
                    'x_axis': x_axis,
                    'y_axis': y_axis,
@@ -704,9 +708,49 @@ def download_config(request,slug):
     response.write(ret_excel)
     return response
 
+# 2: El componente-estado ya fue ingresado
+# 1: El componente-estado está bloqueado por prerequisitos
+# 0: El componente-estado puede ser ingresado
+def getComponenteStatus(registros,idx,componente,relaciones):
+    aux = registros.filter(componente=componente, estado__idx=idx)
+    if aux.count() > 0:
+        return 2
+
+    if idx == 1: # Estado descarga
+        return 0
+    elif idx == 3: # Estado montaje
+        aux2 = registros.filter(componente=componente, estado__idx=1) # Si está abierto el componente en descarga
+        if aux2.count()>0:
+            c_aux = relaciones.get(componente=componente)
+            c_ids = []
+            for c in relaciones.filter(orden_montaje__lt=c_aux.orden_montaje, orden_montaje__gt=0):
+                c_ids.append(c.componente.id)
+            aux3 = registros.filter(componente_id__in=c_ids,estado__idx=3)
+            if aux3.count() == len(c_ids):
+                return 0
+            else:
+                return 1
+        else:
+            return 1
+    elif idx == 4: # Estado puesta en marcha
+        c_ids = []
+        for c in relaciones.filter(orden_montaje__gt=0):
+            c_ids.append(c.id)
+        aux3 = registros.filter(componente_id__in=c_ids, estado__idx=3)
+        if aux3.count() == len(c_ids):
+            return 0
+        else:
+            return 1
+    else:
+        return 1
+
+    return 1
+
 @login_required(login_url='ingresar')
-def ingreso(request,slug):
+def ingreso(request,slug,slug_ag):
     parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
+    aerogenerador = get_object_or_404(Aerogenerador, parque=parque, slug=slug_ag)
     try:
         configuracion = ConfiguracionFU.objects.get(parque=parque)
     except ConfiguracionFU.DoesNotExist:
@@ -722,31 +766,217 @@ def ingreso(request,slug):
     contenido.user=request.user
     contenido.titulo= u'Planificación Follow Up'
     contenido.subtitulo= u'Parque Eólico ' +parque.nombre
-    contenido.menu = ['menu-fu', 'menu2-ingreso']
-
-    form = None
-
-    componentes = OrderedDict()
-    icons = {}
-
-    componentes['Descarga en Parque'] = componentes_parque.componentes.all().filter(estados__idx=1)
-    componentes['Montaje'] = componentes_parque.componentes.all().filter(estados__idx=3)
-    componentes['Puesta en marcha'] = componentes_parque.componentes.all().filter(estados__idx=4)
-
-    icons['Descarga en Parque'] = 'fa-map-marker'
-    icons['Montaje'] = 'fa-cogs'
-    icons['Puesta en marcha'] = 'fa-thumbs-o-up'
+    contenido.menu = ['menu-fu', 'menu2-ingreso-'+str(aerogenerador.idx)]
 
     if request.method == 'POST':
-        # form = PlanificacionForm(request.POST, request.FILES, instance=configuracion)
-        # if form.is_valid():
-        #     configuracion = form.save()
-        pass;
+        registro = None
+        if 'formDescarga' in request.POST:
+            formDescarga= RegistroDescargaForm(request.POST)
+            if formDescarga.is_valid():
+                registro = formDescarga.save(commit=False)
+                estado = EstadoFU.objects.get(idx=1)
+            else:
+                messages.add_message(request, messages.ERROR, 'Registro no pudo realizarse')
+        elif 'formMontaje' in request.POST:
+            form = RegistroForm(request.POST)
+            if form.is_valid():
+                registro = form.save(commit=False)
+                estado = EstadoFU.objects.get(idx=3)
+            else:
+                messages.add_message(request, messages.ERROR, 'Registro no pudo realizarse')
+        elif 'delete' in request.POST:
+            componente_id = int(request.POST['del_id'])
+            estado_id = int(request.POST['del_estado_id'])
+            c = Componente.objects.get(id=componente_id)
+            reg = Registros.objects.get(parque=parque, aerogenerador=aerogenerador,componente=c, estado__idx=estado_id)
+            reg.delete()
+            messages.add_message(request, messages.SUCCESS, 'Registro eliminado con éxito!')
+        if registro is not None:
+            registro.parque = parque
+            registro.aerogenerador = aerogenerador
+            componente_id = int(request.POST['id'])
+            componente = Componente.objects.get(id=componente_id)
+            registro.componente = componente
+            registro.estado = estado
+            registro.save()
+            messages.add_message(request, messages.SUCCESS, 'Registro realizado con éxito!')
+
+    componentes = OrderedDict()
+
+    componentes['Descarga en Parque'] = {}
+    componentes['Montaje'] = {}
+    componentes['Puesta en marcha'] = {}
+
+    registros = Registros.objects.filter(parque=parque, aerogenerador=aerogenerador)
+    relaciones = RelacionesFU.objects.filter(componentes_parque = componentes_parque)
+
+    componentes['Descarga en Parque']['objetos'] = []
+    for c in componentes_parque.componentes.all().filter(estados__idx=1):
+        aux = getComponenteStatus(registros, 1, c, relaciones)
+        objeto = {}
+        color = 'bg-yellow-crusta'
+        if aux == 2:
+            color = 'bg-green-meadow'
+            reg = registros.get(componente=c,estado__idx=1)
+            objeto['tooltip'] = reg.fecha.strftime("%d/%m/%Y") + '<br>' + reg.no_serie
+        objeto['componente'] = c
+        objeto['color'] = color
+        objeto['status'] = aux
+        objeto['estado'] = 1
+        componentes['Descarga en Parque']['objetos'].append(objeto)
+
+    componentes['Montaje']['objetos']  = []
+    for c in componentes_parque.componentes.all().filter(estados__idx=3):
+        aux = getComponenteStatus(registros, 3, c, relaciones)
+        color = 'bg-grey-salt'
+        objeto = {}
+        if aux == 2:
+            color = 'bg-green-meadow'
+            reg = registros.get(componente=c, estado__idx=3)
+            objeto['tooltip'] = reg.fecha.strftime("%d/%m/%Y")
+        elif aux == 0:
+            color = 'bg-yellow-crusta'
+        objeto['componente'] = c
+        objeto['color'] = color
+        objeto['status'] = aux
+        objeto['estado'] = 3
+        componentes['Montaje']['objetos'].append(objeto)
+
+
+    componentes['Puesta en marcha']['objetos']  = []
+    for c in componentes_parque.componentes.all().filter(estados__idx=4):
+        aux = getComponenteStatus(registros, 4, c, relaciones)
+        color = 'bg-grey-salt'
+        objeto = {}
+        if aux == 2:
+            color = 'bg-green-meadow'
+            reg = registros.get(componente=c, estado__idx=4)
+            objeto['tooltip'] = reg.fecha.strftime("%d/%m/%Y")
+        elif aux == 0:
+            color = 'bg-yellow-crusta'
+        objeto['componente'] = c
+        objeto['color'] = color
+        objeto['status'] = aux
+        objeto['estado'] = 4
+        componentes['Puesta en marcha']['objetos'].append(objeto)
+
+
+    componentes['Descarga en Parque']['id'] = 'descarga'
+    componentes['Montaje']['id'] = 'montaje'
+    componentes['Puesta en marcha']['id'] = 'puestaenmarcha'
+
+    componentes['Descarga en Parque']['icon'] = 'fa-map-marker'
+    componentes['Montaje']['icon'] = 'fa-cogs'
+    componentes['Puesta en marcha']['icon'] = 'fa-thumbs-o-up'
+
+
+    formDescarga = RegistroDescargaForm()
+    form = RegistroForm()
 
     return render(request, 'fu/ingreso.html',
                   {'cont': contenido,
                    'parque': parque,
+                   'aerogeneradores': aerogeneradores,
                    'form': form,
                    'componentes': componentes,
-                   'icons': icons,
+                   'aerogenerador': aerogenerador,
+                   'formDescarga': formDescarga,
                    })
+
+@login_required(login_url='ingresar')
+def paradas(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
+    contenido=ContenidoContainer()
+    contenido.user=request.user
+    contenido.titulo=u'Listado de Paradas '
+    contenido.subtitulo='Parque '+ parque.nombre
+    contenido.menu = ['menu-fu', 'menu2-paradas']
+
+    paradas = Paradas.objects.all()
+
+    if request.method == 'POST':
+        if 'del_id' in request.POST:
+            id = int(request.POST['del_id'])
+            parada = Paradas.objects.get(id=id)
+            parada.delete()
+            messages.add_message(request, messages.SUCCESS, 'Registro eliminado con éxito!')
+        else:
+            messages.add_message(request, messages.ERROR, 'Error al eliminar registro')
+
+    return render(request, 'fu/paradas.html',
+        {'cont': contenido,
+            'parque': parque,
+            'aerogeneradores': aerogeneradores,
+            'paradas': paradas,
+        })
+
+@login_required(login_url='ingresar')
+def add_paradas(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
+    contenido=ContenidoContainer()
+    contenido.user=request.user
+    contenido.titulo=u'Listado de Paradas '
+    contenido.subtitulo='Parque '+ parque.nombre
+    contenido.menu = ['menu-fu', 'menu2-paradas']
+
+    form = None
+
+    if request.method == 'POST':
+        form = ParadasForm(request.POST,initial={'parque':parque})
+        if form.is_valid():
+            parada = form.save(commit=False)
+            parada.parque = parque
+            parada.save()
+            messages.add_message(request, messages.SUCCESS, 'Registro agregado con éxito!')
+            return HttpResponseRedirect(reverse('fu:paradas', args=[parque.slug]))
+        else:
+            messages.add_message(request, messages.ERROR, 'Error al agregar el registro')
+
+
+    if form is None:
+        form = ParadasForm(initial={'parque':parque})
+    back_url = reverse('fu:paradas', args=[parque.slug])
+    return render(request, 'fu/agregarParada.html',
+        {'cont': contenido,
+            'parque': parque,
+            'form': form,
+            'back_url':back_url,
+            'aerogeneradores': aerogeneradores,
+        })
+
+@login_required(login_url='ingresar')
+def edit_paradas(request,slug,id):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
+    parada = get_object_or_404(Paradas, id=id)
+    contenido=ContenidoContainer()
+    contenido.user=request.user
+    contenido.titulo=u'Listado de Paradas '
+    contenido.subtitulo='Parque '+ parque.nombre
+    contenido.menu = ['menu-fu', 'menu2-paradas']
+
+    form = None
+
+    if request.method == 'POST':
+        form = ParadasForm(request.POST, instance=parada)
+        if form.is_valid():
+            parada = form.save()
+            messages.add_message(request, messages.SUCCESS, 'Registro editado con éxito!')
+            return HttpResponseRedirect(reverse('fu:paradas', args=[parque.slug]))
+        else:
+            messages.add_message(request, messages.SUCCESS, 'Error al editar el registro')
+
+    if form is None:
+        form = ParadasForm(instance=parada)
+    back_url = reverse('fu:paradas', args=[parque.slug])
+    edit_parada = parada
+    return render(request, 'fu/agregarParada.html',
+        {'cont': contenido,
+            'parque': parque,
+            'form': form,
+            'aerogeneradores': aerogeneradores,
+            'back_url':back_url,
+            'edit_parada': edit_parada,
+        })

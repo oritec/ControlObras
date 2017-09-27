@@ -46,5 +46,33 @@
             "nombre": "Fin",
             "idx":5
         }
+    },
+    {
+        "model": "fu.paradastrabajo",
+        "pk": 1,
+        "fields": {
+            "nombre": "Descarga"
+        }
+    },
+    {
+        "model": "fu.paradastrabajo",
+        "pk": 2,
+        "fields": {
+            "nombre": "Montaje"
+        }
+    },
+    {
+        "model": "fu.paradasgrua",
+        "pk": 1,
+        "fields": {
+            "nombre": "Principal"
+        }
+    },
+    {
+        "model": "fu.paradasgrua",
+        "pk": 2,
+        "fields": {
+            "nombre": "Auxiliar"
+        }
     }
 ]

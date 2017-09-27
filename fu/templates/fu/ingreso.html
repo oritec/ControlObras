@@ -30,27 +30,50 @@
         <div class="table-responsive" style="padding-bottom: 30px">
           <table class="table" >
               <tbody>
-              {% for titulo,lista in componentes.items %}
+              {% for titulo,elementos in componentes.items %}
                   <tr>
                       <td class="table-titulo" style="vertical-align: middle;">
                           {{ titulo }}
                       </td>
                       <td class="table-contenido">
-                          {% for componente in lista %}
+                          {% with objetos=elementos|get_item:'objetos' %}
+                          {% for objeto in objetos %}
+                              {% if objeto|get_item:"status" == 0 %}
                               <div class="btn-group">
-                                    <a href="javascript:;" class="icon-btn bg-grey-salt dropdown-toggle" data-toggle="dropdown">
-                                    <i class="fa {{ icons|get_item:titulo }}"></i>
-                                    <div style=" padding-left: 5px;padding-right: 5px;"> {{ componente.nombre }} </div>
+                                    <a href="javascript:;" class="icon-btn {{ objeto|get_item:"color" }} dropdown-toggle" data-toggle="dropdown">
+                                    <i class="fa {{ elementos|get_item:'icon' }}"></i>
+                                    <div style=" padding-left: 5px;padding-right: 5px;"> {{ objeto|get_item:"componente"|get_attr:"nombre" }} </div>
                                     </a>
                                     <ul class="dropdown-menu">
                                         <li>
-                                            <a href="javascript:;"> Registrar
+                                            <a href="javascript:;" name="{{ elementos|get_item:'id' }}-{{ objeto|get_item:"componente"|get_attr:"id" }}"> Registrar
                                             </a>
                                         </li>
-
                                     </ul>
                               </div>
+                              {% elif objeto|get_item:"status" == 2 %}
+                              <div class="btn-group">
+                                    <a href="javascript:;" class="icon-btn {{ objeto|get_item:"color" }} dropdown-toggle" data-toggle="dropdown" name="ingresado" title="{{ objeto|get_item:"tooltip" }}">
+                                    <i class="fa {{ elementos|get_item:'icon' }}"></i>
+                                    <div style=" padding-left: 5px;padding-right: 5px;"> {{ objeto|get_item:"componente"|get_attr:"nombre" }} </div>
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a href="javascript:;" name="eliminar-{{ objeto|get_item:"componente"|get_attr:"id" }}-{{ objeto|get_item:"estado" }}"> Eliminar
+                                            </a>
+                                        </li>
+                                    </ul>
+                              </div>
+                              {% elif objeto|get_item:"status" == 1 %}
+                              <div class="btn-group">
+                                    <a href="javascript:;" class="icon-btn {{ objeto|get_item:"color" }}" style="pointer-events: none;">
+                                    <i class="fa {{ elementos|get_item:'icon' }}"></i>
+                                    <div style=" padding-left: 5px;padding-right: 5px;"> {{ objeto|get_item:"componente"|get_attr:"nombre" }} </div>
+                                    </a>
+                              </div>
+                              {% endif %}
                           {% endfor %}
+                          {% endwith %}
                       </td>
                   </tr>
               {% endfor %}
@@ -60,7 +83,140 @@
     </div>
 </div>
 
+<div class="modal fade bs-modal-lg" id="descarga" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">
+                    <span class="glyphicon glyphicon-plus" style="color:rgba(74,182,100,0.89);font-size:20px"></span>
+                     <b id="descarga-titulo">Registro</b> </h4>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'fu:ingreso' parque.slug aerogenerador.slug %}" method="post" id="descargaForm" class="horizontal-form">
+                {% csrf_token %}
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="control-label col-md-3" style="padding-top:3px">{{ formDescarga.fecha.label }}</label>
+                                <div class="col-md-9">
+                                    <div class="input-group input-medium date date-picker" data-date-format="dd-mm-yyyy" data-date-show-today-button="true">
+                                        {{ formDescarga.fecha }}
+                                        <span class="input-group-btn">
+                                            <button class="btn default" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                    <span class="help-block"> {{ formDescarga.fecha.errors }} </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="control-label col-md-3" style="padding-top:3px">{{ formDescarga.no_serie.label }}</label>
+                                <div class="col-md-9">
+                                    {{ formDescarga.no_serie }}
+                                    <span class="help-block"> {{ formDescarga.no_serie.errors }} </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                <button type="submit" id='enviarDescarga' class="btn green" name="formDescarga">Agregar</button>
+                    <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                </form>
+                <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
 
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade bs-modal-lg" id="registro" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">
+                    <span class="glyphicon glyphicon-plus" style="color:rgba(74,182,100,0.89);font-size:20px"></span>
+                     <b id="descarga-titulo">Registro</b> </h4>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'fu:ingreso' parque.slug aerogenerador.slug %}" method="post" id="registroForm" class="horizontal-form">
+                {% csrf_token %}
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="control-label col-md-3" style="padding-top:3px">{{ form.fecha.label }}</label>
+                                <div class="col-md-9">
+                                    <div class="input-group input-medium date date-picker" data-date-format="dd-mm-yyyy" data-date-show-today-button="true">
+                                        {{ form.fecha }}
+                                        <span class="input-group-btn">
+                                            <button class="btn default" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                    <span class="help-block"> {{ form.fecha.errors }} </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                <button type="submit" id='enviarRegistro' class="btn green" name="formRegistro">Agregar</button>
+                    <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                </form>
+                <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
+
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="delete" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">
+                    <span class="glyphicon glyphicon-exclamation-sign" style="color:rgba(255, 63, 0, 0.89);font-size:20px"></span>
+                     <b>Advertencia</b> </h4>
+            </div>
+            <div class="modal-body">
+                 <h5><b id="eliminar-msg">&iquest;Desea borrar el registro?</b> </h5>
+            </div>
+            <div class="modal-footer">
+
+                <form action="{% url 'fu:ingreso' parque.slug aerogenerador.slug %}" method="post" id="formDelete">
+                    {% csrf_token %}
+                    <input type="hidden" name="del_id" id="del_id" value="">
+                    <input type="hidden" name="del_estado_id" id="del_estado_id" value="">
+                    <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" id='enviarmodal' class="btn red" name="delete">Borrar</button>
+                    <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                </form>
+                <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
 
 {% endblock %}
 
@@ -68,10 +224,101 @@
 <!-- BEGIN PAGE LEVEL PLUGINS -->
     <script src="{% static 'common/bootstrap-fileinput/js/fileinput.js' %}" type="text/javascript"></script>
     <script src="{% static 'common/bootstrap-fileinput/js/locales/es.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js' %}" type="text/javascript"></script>
 
 <!-- END PAGE LEVEL PLUGINS -->
 {% endblock %}
 
 {% block jquery %}
+    if (jQuery().datepicker) {
+        $('.date-picker').datepicker({
+            locale: "es",
+            language: "es",
+            rtl: App.isRTL(),
+            orientation: "right",
+            autoclose: true,
+            showTodayButton: true,
+            toolbarPlacement:"bottom",
+            todayHighlight:true,
+            todayBtn:"linked",
+        });
+    }
+
+    $("[name='ingresado']").each(function( index ) {
+        $(this).tooltip({
+            placement:"right",
+            html: true,
+        });
+    });
+
+    $("[name^='descarga']").each(function( index ) {
+        $(this).click(function(index){
+            var id = $(this).attr('name').split('-')[1];
+            //console.log(componente_id);
+            //console.log($(this).attr('name'));
+            var element1 = $(this).parent().parent().siblings()[0];
+            var element2 = $(element1).children('div')[0];
+            var componente_name = $(element2).html();
+            //console.log(componente_name);
+            var titulo = 'Registro Descarga ' + componente_name;
+            $('#descarga-titulo').html(titulo);
+            $('#descargaForm').append('<input type="hidden" name="id" id="componente_id" value="' + id + '">');
+            $('#descarga').modal();
+        });
+    });
+
+
+    $("[name^='montaje']").each(function( index ) {
+        $(this).click(function(index){
+            var id = $(this).attr('name').split('-')[1];
+            //console.log(componente_id);
+            //console.log($(this).attr('name'));
+            var element1 = $(this).parent().parent().siblings()[0];
+            var element2 = $(element1).children('div')[0];
+            var componente_name = $(element2).html();
+            //console.log(componente_name);
+            var titulo = 'Registro Montaje ' + componente_name;
+            $('#descarga-titulo').html(titulo);
+            $('#registroForm').append('<input type="hidden" name="id" id="componente_id" value="' + id + '">');
+            $('#enviarRegistro').attr('name','formMontaje');
+            $('#registro').modal();
+        });
+    });
+
+    $("[name^='eliminar']").each(function( index ) {
+        $(this).click(function(index){
+            var id = $(this).attr('name').split('-')[1];
+            var estado_id = parseInt($(this).attr('name').split('-')[2]);
+            //console.log(componente_id);
+            //console.log($(this).attr('name'));
+            var element1 = $(this).parent().parent().siblings()[0];
+            var element2 = $(element1).children('div')[0];
+            var componente_name = $(element2).html();
+            //console.log(componente_name);
+            if (estado_id == 1){
+                var estado_name = 'Descarga en parque';
+            } else if (estado_id == 2) {
+                var estado_name = 'Pre-montaje';
+            } else if (estado_id == 3) {
+                var estado_name = 'Montaje';
+            } else if (estado_id == 4) {
+                var estado_name = 'Puesta en marcha';
+            }
+            var titulo = '&iquest;Seguro desea borrar el registro para ' + estado_name + ' de componente ' + componente_name + '?';
+            $('#eliminar-msg').html(titulo);
+            $('#formDelete > #del_id').val(id)
+            $('#formDelete > #del_estado_id').val(estado_id)
+            $('#delete').modal();
+        });
+    });
+
+    $('#descarga').on('hidden.bs.modal', function (e) {
+        $('#descargaForm > #componente_id').remove();
+    });
+
+    $('#registro').on('hidden.bs.modal', function (e) {
+        $('#registroForm > #componente_id').remove();
+    });
 
 {% endblock %}

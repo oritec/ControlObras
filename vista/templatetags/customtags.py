@@ -188,7 +188,6 @@ def filter_ag_idx(value,arg):
 def field_type(field):
     return field.field.widget.__class__.__name__
 
-
 @stringfilter
 def spacify(value, autoescape=None):
     if autoescape:
@@ -208,3 +207,8 @@ def checkIdx(componente, idx_str):
 def get_column_width(lista):
     idx = len(lista)
     return 12/idx
+
+@register.filter()
+def filter_ag_fu(value):
+    f=value.filter(idx__gt=0)
+    return f

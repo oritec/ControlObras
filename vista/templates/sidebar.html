@@ -138,12 +138,20 @@
 								<span class="title">Planificaci&oacute;n</span>
 							</a>
 						</li>
-                        <li class="nav-item " id="menu2-ingreso">
-							<a href="{% url 'fu:ingreso' parque.slug %}" class="nav-link ">
+                        <li class="nav-item " id="menu2-paradas">
+							<a href="{% url 'fu:paradas' parque.slug %}" class="nav-link ">
 								<i class="fa fa-caret-right"></i>
-								<span class="title">Ingreso</span>
+								<span class="title">Listado de paradas</span>
 							</a>
 						</li>
+                        {% for wtg in aerogeneradores|filter_ag_fu %}
+						<li class="nav-item " id="menu2-ingreso-{{ wtg.idx }}">
+							<a href="{% url 'fu:ingreso' parque.slug wtg.slug %}" class="nav-link ">
+								<i class="fa fa-caret-right"></i>
+								<span class="title">{{ wtg.nombre }}</span>
+							</a>
+						</li>
+                        {% endfor %}
                     </ul>
                 </li>
                 {% endif %}

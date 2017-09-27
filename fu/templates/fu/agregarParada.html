@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load customtags %}
+{% load tz %}
+{% block css %}
+    <!-- BEGIN PAGE LEVEL STYLES -->
+    <link href="{% static 'common/assets/global/plugins/bootstrap-select/css/bootstrap-select.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/assets/global/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/assets/global/plugins/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL STYLES -->
+{% endblock %}
+
+{% block contenido %}
+
+<div class="row">
+    {% if parque.no_aerogeneradores == 0 %}
+        <div class="col-md-11 col-md-offset-1">
+            <h4>Por favor, ingresar la informaci&oacute;n del parque (Configuraci&oacute;n).</h4>
+        </div>
+    {%  else %}
+        <div class="row">
+            <div class="portlet box blue" style="margin-left:30px;margin-right:30px;">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-search"></i> Datos de la detenci&oacute;n
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <!-- BEGIN FORM-->
+                    {% if edit_parada %}
+                        <form action="{% url 'fu:editar-paradas' parque.slug edit_parada.id %}" class="form-horizontal form-bordered" id="form_observacion" method="post">
+                    {% else %}
+                         <form action="{% url 'fu:agregar-paradas' parque.slug %}" class="form-horizontal form-bordered" id="form_observacion" method="post">
+                    {% endif %}
+                        {% csrf_token %}
+                        {{ form.parque }}
+                        <div class="form-body">
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ form.fecha_inicio.label }}</label>
+                                <div class="col-md-4">
+                                    <div class="input-group date form_datetime">
+                                        {{ form.fecha_inicio }}
+                                        <span class="input-group-btn">
+                                            <button class="btn default date-set" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                    <span class="help-block"> {{ form.fecha_inicio.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ form.fecha_final.label }}</label>
+                                <div class="col-md-4">
+                                    <div class="input-group date form_datetime">
+                                        {{ form.fecha_final }}
+                                        <span class="input-group-btn">
+                                            <button class="btn default date-set" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                    <span class="help-block"> {{ form.fecha_final.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ form.aerogenerador.label }}</label>
+                                <div class="col-md-9" style="padding-top:20px">
+                                    {{ form.aerogenerador }}
+                                    <span class="help-block"> {{ form.aerogenerador.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ form.componente.label }}</label>
+                                <div class="col-md-9">
+                                    {{ form.componente }}
+                                    <span class="help-block"> {{ form.componente.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ form.trabajo.label }}:</label>
+                                <div class="col-md-9">
+                                    {{ form.trabajo }}
+                                    <span class="help-block"> {{ form.trabajo.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ form.viento.label }}</label>
+                                <div class="col-md-9">
+                                    {{ form.viento }}
+                                    <span class="help-block"> {{ form.viento.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ form.grua.label }}</label>
+                                <div class="col-md-9">
+                                    {{ form.grua }}
+                                    <span class="help-block"> {{ form.grua.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ form.observaciones.label }}</label>
+                                <div class="col-md-9">
+                                    {{ form.observaciones }}
+                                    <span class="help-block"> {{ form.observaciones.errors }} </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <div class="row">
+                                <div class="col-md-offset-3 col-md-9">
+                                    <button type="submit" class="btn green">
+                                        <i class="fa fa-save"></i> Guardar </button>
+                                    <a href="{{ back_url }}" class="btn default">Cancelar</a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="{% static 'common/js/moment/moment-with-locales.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/pages/scripts/components-bootstrap-switch.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-select/js/bootstrap-select.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-datetimepicker/js/locales/bootstrap-datetimepicker.es.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootbox/bootbox.min.js' %}" type="text/javascript"></script>
+    <!--
+    <script src="{% static 'common/assets/pages/scripts/components-date-time-pickers.min.js' %}" type="text/javascript"></script>
+    -->
+    <!-- END PAGE LEVEL PLUGINS -->
+{% endblock %}
+
+{% block jquery %}
+    if (jQuery().datepicker) {
+        $('.date-picker').datepicker({
+            locale: "es",
+            language: "es",
+            rtl: App.isRTL(),
+            orientation: "right",
+            autoclose: true,
+            showTodayButton: true,
+            toolbarPlacement:"bottom",
+            todayHighlight:true,
+            todayBtn:"linked",
+
+        });
+        //$('body').removeClass("modal-open"); // fix bug when inline picker is used in modal
+    }
+
+    if (jQuery().datetimepicker) {
+        $(".form_datetime").datetimepicker({
+            isRTL: App.isRTL(),
+            locale: "es",
+            language: "es",
+            weekStart: 1,
+            format: "dd-mm-yyyy hh:ii",
+            autoclose: true,
+            todayBtn: true,
+            pickerPosition: (App.isRTL() ? "bottom-right" : "bottom-left"),
+            minuteStep: 10,
+            todayHighlight:true,
+        });
+    }
+
+    $('.bs-select').selectpicker({
+        iconBase: 'fa',
+        tickIcon: 'fa-check',
+        dropupAuto: false,
+    });
+
+{% endblock %}
