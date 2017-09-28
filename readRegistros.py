@@ -38,10 +38,8 @@ def checkValidFile(ws, componentes_parque):
     return fila
 
 if __name__ == '__main__':
-    try:
-        parque = ParqueSolar.objects.get(slug='lap-003')
-    except ParqueSolar.DoesNotExist:
-        parque = ParqueSolar.objects.get(slug='cli-001')
+
+    parque = ParqueSolar.objects.get(slug='cli-001')
 
     print parque.nombre
     componentes_parque = ComponentesParque.objects.get(parque=parque)
