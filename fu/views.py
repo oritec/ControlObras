@@ -278,7 +278,8 @@ def checkValidFile(ws, componentes_parque):
     valor = ws.cell(row=fila,column=columna).value
     while valor is not None:
         elementos = componentes_parque.componentes.filter(nombre=valor)
-        if elementos.count() < 0:
+        if elementos.count() <= 0:
+            logger.debug('Archivo inválido')
             return -1
         fila = fila +2
         valor = ws.cell(row=fila, column=columna).value
