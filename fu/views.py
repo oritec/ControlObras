@@ -60,6 +60,9 @@ def componente(request,slug):
     if request.method == 'POST':
         if 'delete' in request.POST:
             logger.debug('Componente a eliminar id=' + request.POST['del_id'])
+            c = get_object_or_404(Componente, id=int(request.POST['del_id']))
+            c.delete()
+            messages.add_message(request, messages.SUCCESS, 'Componente eliminado.')
         elif 'id' in request.POST:
             logger.debug('Componente a editar id=' + request.POST['id'])
             c = get_object_or_404(Componente, id=int(request.POST['id']))
