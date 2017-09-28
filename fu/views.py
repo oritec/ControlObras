@@ -27,6 +27,8 @@ from django.core.urlresolvers import reverse
 import StringIO
 from django.conf import settings
 import os
+from ncr.views import serializeGrafico
+from django.db.models import Sum
 
 meses_espanol={"1":"Enero",
        "2":"Febrero",
@@ -45,20 +47,82 @@ meses_espanol={"1":"Enero",
 import json
 logger = logging.getLogger('oritec')
 
+def graficoComponentes(componentes_parque,estado,anho,semana):
+    data_full = []
+    # Me entrega el domingo final de esa semana.
+    d = str(anho) + '-W' + str(semana)
+    r = datetime.strptime(d + '-0', "%Y-W%W-%w")
+    # Los totales
+    data_graficos = []
+    for s in componentes_parque.componentes.all():
+        if s.estados.all().filter(idx=estado.idx).count() > 0:
+            data_graficos.append({"name": s.nombre, "y": 55})
+    data_full.append({"name": "Total", "data": data_graficos})
+
+    # Contractual
+    data_graficos = []
+    for s in componentes_parque.componentes.all():
+        if s.estados.all().filter(idx=estado.idx).count() > 0:
+            c = Contractual.objects.filter(parque=componentes_parque.parque,
+                                           componente=s,
+                                           estado=estado,
+                                           fecha__lte=r).aggregate(Sum('no_aerogeneradores'))
+            data_graficos.append({"name": s.nombre, "y": c['no_aerogeneradores__sum']})
+    data_full.append({"name": "Contractual", "data": data_graficos})
+
+    # Plan
+    data_graficos = []
+    for s in componentes_parque.componentes.all():
+        if s.estados.all().filter(idx=estado.idx).count() > 0:
+            c = Plan.objects.filter(parque=componentes_parque.parque,
+                                           componente=s,
+                                           estado=estado,
+                                           fecha__lte=r).aggregate(Sum('no_aerogeneradores'))
+            data_graficos.append({"name": s.nombre, "y": c['no_aerogeneradores__sum']})
+    data_full.append({"name": "Plan", "data": data_graficos})
+    # Real
+
+    data_graficos = []
+    for s in componentes_parque.componentes.all():
+        if s.estados.all().filter(idx=estado.idx).count() > 0:
+            c = Registros.objects.filter(parque=componentes_parque.parque,
+                                    componente=s,
+                                    estado=estado,
+                                    fecha__lte=r)
+            data_graficos.append({"name": s.nombre, "y": c.count()})
+    data_full.append({"name": "Real", "data": data_graficos})
+
+
+    datos = serializeGrafico(data_full)
+    return datos
+
 @login_required(login_url='ingresar')
 def dashboard(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
+    try:
+        componentes_parque = ComponentesParque.objects.get(parque=parque)
+    except ComponentesParque.DoesNotExist:
+        componentes_parque = ComponentesParque(parque=parque)
+        componentes_parque.save()
+
     contenido = ContenidoContainer()
     contenido.user = request.user
     contenido.titulo = u'Dashboard Follow Up'
     contenido.subtitulo = u'Parque Eólico - ' + parque.nombre
     contenido.menu = ['menu-fu', 'menu2-dashboard']
 
+    estado = EstadoFU.objects.get(idx=1)
+    graficoDescarga = graficoComponentes(componentes_parque,estado,2017,38)
+    estado = EstadoFU.objects.get(idx=3)
+    graficoMontaje = graficoComponentes(componentes_parque, estado, 2017, 38)
+
     return render(request, 'fu/dashboard.html',
                   {'cont': contenido,
                    'parque': parque,
                    'aerogeneradores': aerogeneradores,
+                   'graficoDescarga': graficoDescarga,
+                   'graficoMontaje': graficoMontaje,
                    })
 
 @login_required(login_url='ingresar')
@@ -737,19 +801,30 @@ def getComponenteStatus(registros,idx,componente,relaciones):
     if idx == 1: # Estado descarga
         return 0
     elif idx == 3: # Estado montaje
-        aux2 = registros.filter(componente=componente, estado__idx=1) # Si está abierto el componente en descarga
-        if aux2.count()>0:
+        if componente.estados.all().filter(idx__lt=3).count() > 0:
+            aux2 = registros.filter(componente=componente, estado__idx=1) # Si está abierto el componente en descarga
+            if aux2.count()>0:
+                c_aux = relaciones.get(componente=componente)
+                c_ids = []
+                for c in relaciones.filter(orden_montaje__lt=c_aux.orden_montaje, orden_montaje__gt=0):
+                    c_ids.append(c.componente.id)
+                aux3 = registros.filter(componente_id__in=c_ids,estado__idx=3)
+                if aux3.count() == len(c_ids):
+                    return 0
+                else:
+                    return 1
+            else:
+                return 1
+        else:
             c_aux = relaciones.get(componente=componente)
             c_ids = []
             for c in relaciones.filter(orden_montaje__lt=c_aux.orden_montaje, orden_montaje__gt=0):
                 c_ids.append(c.componente.id)
-            aux3 = registros.filter(componente_id__in=c_ids,estado__idx=3)
+            aux3 = registros.filter(componente_id__in=c_ids, estado__idx=3)
             if aux3.count() == len(c_ids):
                 return 0
             else:
                 return 1
-        else:
-            return 1
     elif idx == 4: # Estado puesta en marcha
         c_ids = []
         for c in relaciones.filter(orden_montaje__gt=0):

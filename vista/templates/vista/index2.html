@@ -33,16 +33,11 @@
             background-size: cover;
         }
         #section0{
-            background-image: url({% static 'common/images/inicial2.png' %});
-            background-repeat: no-repeat;
-            background-position: right top;
+            background-image: url({% static 'common/images/inicial.png' %});
         }
-
-        #section0 #content{
-            top: 15%;
-            transform: translateY(-15%);
-            left: 0%;
-            transform: translateX(15%);
+        #section0 h1{
+            top: 70%;
+            transform: translateY(-70%);
             position: relative;
         }
     </style>
@@ -52,27 +47,30 @@
 
     <div id="fullpage">
         <div class="section" id="section0">
-            <div id="content">
-                <div class="row" >
-                    <h1 style="color: #60657d;font-size:1.8em;"> SELECCIONAR PROYECTO: </h1>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 col-md-offset-3">
-                        <div class="form-group">
-                            <select id="parques" class="selectpicker form-control" name="parqueselect">
-                            {% for parque in parques %}
-                                <option value="{{ parque.slug }}"> {{ parque.getPrintName }} </option>
-                            {% endfor %}
-                            </select>
-                        </div>
+            <div class="row" style="position:fixed;top:20px;left:40px">
+                <img src="{% static "common/images/saroenfull.png" %}" width="200px">
+            </div>
+            <div class="row" >
+                <h1> Seleccionar Proyecto: </h1>
+            </div>
+            <div class="row">
+
+                <div class="col-md-6 col-md-offset-3">
+                    <div class="form-group">
+                        <select id="parques" class="selectpicker form-control" name="parqueselect">
+                        {% for parque in parques %}
+                            <option value="{{ parque.slug }}"> {{ parque.getPrintName }} </option>
+                        {% endfor %}
+                        </select>
                     </div>
                 </div>
-                <div class="row">
-                    <button type="button" class="btn btn-primary" id="newParque">Crear Nuevo</button>
-                    <input type="button" id="delParque" data-target="#basic" data-toggle="modal" class="btn btn-danger" value="Borrar" onclick="$('#modal_parque').val($('#parques').val());"/>
-                    <button type="button" class="btn btn-success" id="irParque">Ir ></button>
 
-                </div>
+            </div>
+            <div class="row">
+                <button type="button" class="btn btn-primary" id="newParque">Crear Nuevo</button>
+                <input type="button" id="delParque" data-target="#basic" data-toggle="modal" class="btn btn-danger" value="Borrar" onclick="$('#modal_parque').val($('#parques').val());"/>
+                <button type="button" class="btn btn-success" id="irParque">Ir ></button>
+
             </div>
         </div>
         <div class="section">
@@ -221,7 +219,7 @@
             //Design
             controlArrows: true,
             verticalCentered: true,
-            sectionsColor : ['#000000', '#f0f6fa','#6b8dad','#f0f6fa'],
+            sectionsColor : ['#355674', '#f0f6fa','#6b8dad','#f0f6fa'],
             paddingTop: '3em',
             paddingBottom: '10px',
             fixedElements: '#header, .footer',
