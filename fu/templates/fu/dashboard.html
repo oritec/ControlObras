@@ -1,0 +1,74 @@
+{% extends "fu/baseDashboard.html" %}
+{% load staticfiles %}
+{% load customtags %}
+{% load tz %}
+{% block css %}
+    <!-- BEGIN PAGE LEVEL STYLES -->
+    <link href="{% static 'common/assets/global/plugins/datatables/datatables.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL STYLES -->
+    <style>
+        .bootstrap-datetimepicker-widget tr:hover {
+            background-color: #808080;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+
+
+{% if parque.no_aerogeneradores == 0 %}
+    <div class="row">
+        <div class="col-md-11 col-md-offset-1">
+            <h4>Por favor, ingresar la informaci&oacute;n del parque (Configuraci&oacute;n).</h4>
+        </div>
+    </div>
+{% else %}
+    <div class="page-bar">
+        <div class="page-toolbar">
+            <div class="form-group" style="margin-bottom: 0px;">
+                <div class='input-group date' id="dashboard-report-range">
+                    <input type='text' class="form-control" id="dashboard-input" />
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h1 class="page-title">
+    {% block pagetitle %}
+        {{ cont.titulo }} <small>{{ cont.subtitulo }}</small>
+    {% endblock %}
+    </h1>
+
+
+     <img class="img-responsive" src="{% static '/common/images/plano_aerogeneradores.png' %}" alt="Chania">
+
+{% endif %}
+
+
+{% endblock %}
+
+{% block javascript %}
+<!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="{% static 'common/assets/global/scripts/datatable.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/datatables/datatables.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.js' %}" type="text/javascript"></script>
+
+    <script src="{% static 'common/js/moment/moment-with-locales.js' %}" type="text/javascript"></script>
+
+    <script src="{% static 'common/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js' %}" type="text/javascript"></script>
+
+
+    <script src="{% static 'common/js/dashboard.js' %}" type="text/javascript"></script>
+<!-- END PAGE LEVEL PLUGINS -->
+{% endblock %}
+
+{% block jquery %}
+
+
+
+{% endblock %}

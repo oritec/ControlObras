@@ -45,8 +45,22 @@ meses_espanol={"1":"Enero",
 import json
 logger = logging.getLogger('oritec')
 
+@login_required(login_url='ingresar')
+def dashboard(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
+    contenido = ContenidoContainer()
+    contenido.user = request.user
+    contenido.titulo = u'Dashboard Follow Up'
+    contenido.subtitulo = u'Parque Eólico - ' + parque.nombre
+    contenido.menu = ['menu-fu', 'menu2-dashboard']
 
-# Create your views here.
+    return render(request, 'fu/dashboard.html',
+                  {'cont': contenido,
+                   'parque': parque,
+                   'aerogeneradores': aerogeneradores,
+                   })
+
 @login_required(login_url='ingresar')
 def componente(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
@@ -768,7 +782,7 @@ def ingreso(request,slug,slug_ag):
 
     contenido=ContenidoContainer()
     contenido.user=request.user
-    contenido.titulo= u'Planificación Follow Up'
+    contenido.titulo= u'Ingreso Registros Aerogenerador ' + aerogenerador.nombre
     contenido.subtitulo= u'Parque Eólico ' +parque.nombre
     contenido.menu = ['menu-fu', 'menu2-ingreso-'+str(aerogenerador.idx)]
 
