@@ -55,7 +55,10 @@ def serializeGrafico(d):
             s += '{'
             for key, value in v.iteritems():
                 if isinstance(value, (int, long, float, complex)):
-                    s += key + ':'+ str(value) + ','
+                    if isinstance(value, (float)):
+                        s += key + ':'+ "%.1f" % value + ','
+                    else:
+                        s += key + ':' + str(value) + ','
                 elif isinstance(value,(dict,list)):
                     s2 = serializeGrafico(value)
                     s += key + ':' + s2 + ','

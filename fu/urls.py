@@ -4,6 +4,7 @@ from django.conf.urls import url
 from fu import views
 
 urlpatterns = [
+    url(r'^avance', views.avance, name='avance'),
     url(r'^dashboard', views.dashboard, name='dashboard'),
     url(r'^componentes', views.componente, name='componentes'),
     url(r'^actividades/registro/(?P<slug_ag>[-\w\d]+)', views.ingreso, name='ingreso'),

@@ -14,6 +14,10 @@
         .bootstrap-datetimepicker-widget tr:hover {
             background-color: #808080;
         }
+        .dashboard-stat.dashboard-stat-v2 .visual {
+            padding-top: 15px;
+            margin-bottom: 20px;
+        }
     </style>
 {% endblock %}
 
@@ -49,7 +53,7 @@
     <div class="row">
         <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
             <a class="dashboard-stat dashboard-stat-v2 blue" href="#">
-                <div class="visual">
+                <div class="visual" >
                     <i class="fa fa-comments"></i>
                 </div>
                 <div class="details">
@@ -104,12 +108,18 @@
         <div class="col-md-6">
             <div class="imagehotspot-container" style="position: relative; max-width: 1280px; /* max-width: actual width of image */ width: 100%; height: auto; z-index: 101;">
                 <div style="position: relative; height: 0px; padding-bottom: 81.17%; /* padding-bottom: image's height divided by width multiply by 100 */">
-                    <img class="img-responsive" src="{% static '/common/images/plano.png' %}" style="position: absolute; top: 0px; left: 0px; z-index: 102">
+                    <img class="img-responsive" src="{% static '/common/images/plano2.png' %}" style="position: absolute; top: 0px; left: 0px; z-index: 102">
                 </div>
-                <div id="spot15" name="agen" style="position: absolute; z-index: 103; width: 3.3%; height: 6%; top: 16.6%; left: 12.9%;">
-                    <img class="img-responsive" src="{% static 'common/images/ag.png' %}" >
+                {% for ag, valores in pos_ag.items %}{% if valores.width %}
+                <div id="{{ ag }}" name="agen" style="position: absolute; z-index: {{ valores|get_item:'zindex'|safe }}; width:{{ valores|get_item:'width'|safe }}%; top: {{ valores|get_item:'top'|safe }}%; left: {{ valores|get_item:'left'|safe }}%;">
+                    <img class="img-responsive" src="{% static valores|get_item:'img' %}" >
                 </div>
+                {% endif %}{% endfor %}
+
             </div>
+        </div>
+        <div class="col-md-6">
+            <div id="g_avance"></div>
         </div>
     </div>
 
@@ -151,11 +161,15 @@
 {% endblock %}
 
 {% block jquery %}
+    var thisweek = "{{ thisweek|safe }}";
     var g_descarga = {{ graficoDescarga|safe }};
     titulo= 'Descarga en parque';
     DashboardGraficos.showGraficoColumnas(g_descarga,titulo,'#g_descarga');
     var g_montaje = {{ graficoMontaje|safe }};
     titulo= 'Montaje';
     DashboardGraficos.showGraficoColumnas(g_montaje,titulo,'#g_montaje');
+    var g_avance = {{ graficoAvance|safe }};
+    titulo= 'Tasa de Montaje';
+    DashboardGraficos.showGraficosLinea(g_avance,titulo,'#g_avance',thisweek);
 
 {% endblock %}

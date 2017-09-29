@@ -29,6 +29,7 @@ from django.conf import settings
 import os
 from ncr.views import serializeGrafico
 from django.db.models import Sum
+import numpy as np
 
 meses_espanol={"1":"Enero",
        "2":"Febrero",
@@ -52,11 +53,12 @@ def graficoComponentes(componentes_parque,estado,anho,semana):
     # Me entrega el domingo final de esa semana.
     d = str(anho) + '-W' + str(semana)
     r = datetime.strptime(d + '-0', "%Y-W%W-%w")
+    max_aerogeneradores = componentes_parque.parque.no_aerogeneradores
     # Los totales
     data_graficos = []
     for s in componentes_parque.componentes.all():
         if s.estados.all().filter(idx=estado.idx).count() > 0:
-            data_graficos.append({"name": s.nombre, "y": 55})
+            data_graficos.append({"name": s.nombre, "y": max_aerogeneradores})
     data_full.append({"name": "Total", "data": data_graficos})
 
     # Contractual
@@ -92,9 +94,429 @@ def graficoComponentes(componentes_parque,estado,anho,semana):
             data_graficos.append({"name": s.nombre, "y": c.count()})
     data_full.append({"name": "Real", "data": data_graficos})
 
+    datos = serializeGrafico(data_full)
+    return datos
+
+def graficoAvances(componentes_parque,anho,semana,anho2,semana2):
+    data_full = []
+    d = str(anho) + '-W' + str(semana)
+    r = datetime.strptime(d + '-0', "%Y-W%W-%w")
+    d = str(anho2) + '-W' + str(semana2)
+    r2 = datetime.strptime(d + '-0', "%Y-W%W-%w")
+    parque = componentes_parque.parque
+    try:
+        configuracion = ConfiguracionFU.objects.get(parque=parque)
+    except ConfiguracionFU.DoesNotExist:
+        return data_full
+    max_aerogeneradores = parque.no_aerogeneradores
+    aux = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
+                                                      orden_montaje__range=(1,8))
+    componentes_montaje =[]
+    for c in aux:
+        componentes_montaje.append(c.componente.id)
+    estado = EstadoFU.objects.get(idx=3)
+    # Contractual
+    fecha = configuracion.fecha_inicio
+    semana_calculo = fecha.isocalendar()[1]
+    d = str(fecha.year) + '-W' + str(semana_calculo)
+    fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
+    data_graficos = []
+    while fecha_calculo <= r:
+        c = Contractual.objects.filter(parque=parque,
+                                   componente__in = componentes_montaje,
+                                   estado = estado,
+                                   fecha__lte= fecha_calculo).aggregate(Sum('no_aerogeneradores'))
+        fecha_grafico = str(fecha_calculo.year) + '-' + str(semana_calculo)
+        if c['no_aerogeneradores__sum'] is None:
+            valor = 0
+        else:
+            valor = c['no_aerogeneradores__sum']/8
+        data_graficos.append({"name": fecha_grafico, "y": valor})
+        fecha = fecha_calculo + relativedelta.relativedelta(weeks=1)
+        semana_calculo = fecha.isocalendar()[1]
+        d = str(fecha.year) + '-W' + str(semana_calculo)
+        fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
+    data_full.append({"name": "Contractual", "data": data_graficos})
+
+    # Plan
+    fecha = configuracion.fecha_inicio
+    semana_calculo = fecha.isocalendar()[1]
+    d = str(fecha.year) + '-W' + str(semana_calculo)
+    fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
+    data_graficos = []
+    while fecha_calculo <= r:
+        c = Plan.objects.filter(parque=parque,
+                                       componente__in=componentes_montaje,
+                                       estado=estado,
+                                       fecha__lte=fecha_calculo).aggregate(Sum('no_aerogeneradores'))
+        fecha_grafico = str(fecha_calculo.year) + '-' + str(semana_calculo)
+        if c['no_aerogeneradores__sum'] is None:
+            valor = 0
+        else:
+            valor = c['no_aerogeneradores__sum'] / 8
+        data_graficos.append({"name": fecha_grafico, "y": valor})
+        fecha = fecha_calculo + relativedelta.relativedelta(weeks=1)
+        semana_calculo = fecha.isocalendar()[1]
+        d = str(fecha.year) + '-W' + str(semana_calculo)
+        fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
+    data_full.append({"name": "Plan", "data": data_graficos})
+
+    # Real
+    fecha = configuracion.fecha_inicio
+    semana_calculo = fecha.isocalendar()[1]
+    d = str(fecha.year) + '-W' + str(semana_calculo)
+    fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
+    data_graficos = []
+    # Valores a numpy
+    x_values = []
+    y_values = []
+    first = False
+    first_date = None
+    count = 0
+
+    while fecha_calculo <= r2:
+        c = Registros.objects.filter(parque=parque,
+                                componente__in=componentes_montaje,
+                                estado=estado,
+                                fecha__lte=fecha_calculo)
+        fecha_grafico = str(fecha_calculo.year) + '-' + str(semana_calculo)
+        valor = float(c.count())/8
+        if not first:
+            if valor != 0:
+                first = True
+                first_date = fecha_calculo
+        if first:
+            if valor < max_aerogeneradores:
+                x_values.append(count)
+                y_values.append(valor)
+                count += 1
+        data_graficos.append({"name": fecha_grafico, "y": valor})
+        fecha = fecha_calculo + relativedelta.relativedelta(weeks=1)
+        semana_calculo = fecha.isocalendar()[1]
+        d = str(fecha.year) + '-W' + str(semana_calculo)
+        fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
+    data_full.append({"name": "Real", "data": data_graficos})
+
+    # Proyeccion
+    x = np.array(x_values)
+    y = np.array(y_values)
+    z = np.polyfit(x, y, 1)
+    p = np.poly1d(z)
+    fecha = configuracion.fecha_inicio
+    semana_calculo = fecha.isocalendar()[1]
+    d = str(fecha.year) + '-W' + str(semana_calculo)
+    fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
+    data_graficos = []
+    count = 0
+    while fecha_calculo <= r:
+        if fecha_calculo < first_date:
+            valor = 0
+        else:
+            valor = p(count)
+            if valor < 0:
+                valor = 0
+            elif valor > max_aerogeneradores:
+                valor = max_aerogeneradores
+            count += 1
+        fecha_grafico = str(fecha_calculo.year) + '-' + str(semana_calculo)
+        data_graficos.append({"name": fecha_grafico, "y": valor})
+        fecha = fecha_calculo + relativedelta.relativedelta(weeks=1)
+        semana_calculo = fecha.isocalendar()[1]
+        d = str(fecha.year) + '-W' + str(semana_calculo)
+        fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
+    data_full.append({"name": "Proyeccion", "data": data_graficos,"dashStyle" : "Dot"})
+
 
     datos = serializeGrafico(data_full)
     return datos
+
+def posicionAerogeneradores(parque):
+    pos = OrderedDict()
+    for ag in Aerogenerador.objects.filter(parque=parque):
+        pos[ag.nombre]={}
+
+    pos['WTG01']['width'] = 7.0
+    pos['WTG01']['top'] = 57.9
+    pos['WTG01']['left'] = 6.9
+    pos['WTG01']['zindex'] = 403
+
+    pos['WTG02']['width'] = 7.0
+    pos['WTG02']['top'] = 56.2
+    pos['WTG02']['left'] = 12.9
+    pos['WTG02']['zindex'] = 303
+
+    pos['WTG03']['width'] = 7.0
+    pos['WTG03']['top'] = 55
+    pos['WTG03']['left'] = 18.5
+    pos['WTG03']['zindex'] = 303
+
+    pos['WTG04']['width'] = 7.0
+    pos['WTG04']['top'] = 53.4
+    pos['WTG04']['left'] = 24.0
+    pos['WTG04']['zindex'] = 303
+
+    pos['WTG05']['width'] = 7.0
+    pos['WTG05']['top'] = 51.9
+    pos['WTG05']['left'] = 29.5
+    pos['WTG05']['zindex'] = 303
+
+    pos['WTG06']['width'] = 7.0
+    pos['WTG06']['top'] = 50.5
+    pos['WTG06']['left'] = 34.9
+    pos['WTG06']['zindex'] = 303
+
+    pos['WTG07']['width'] = 7.0
+    pos['WTG07']['top'] = 49.0
+    pos['WTG07']['left'] = 40.1
+    pos['WTG07']['zindex'] = 303
+
+    pos['WTG08']['width'] = 7.0
+    pos['WTG08']['top'] = 47.9
+    pos['WTG08']['left'] = 45.5
+    pos['WTG08']['zindex'] = 303
+    #
+    pos['WTG09']['width'] = 7.0
+    pos['WTG09']['top'] = 46.5
+    pos['WTG09']['left'] = 50.3
+    pos['WTG09']['zindex'] = 303
+
+    pos['WTG10']['width'] = 7.0
+    pos['WTG10']['top'] = 45.4
+    pos['WTG10']['left'] = 55.4
+    pos['WTG10']['zindex'] = 303
+
+    pos['WTG11']['width'] = 7.0
+    pos['WTG11']['top'] = 44.3
+    pos['WTG11']['left'] = 60.3
+    pos['WTG11']['zindex'] = 303
+
+    pos['WTG12']['width'] = 7.0
+    pos['WTG12']['top'] = 43.0
+    pos['WTG12']['left'] = 65.4
+    pos['WTG12']['zindex'] = 303
+
+    pos['WTG13']['width'] = 7.0
+    pos['WTG13']['top'] = 41.8
+    pos['WTG13']['left'] = 70.1
+    pos['WTG13']['zindex'] = 303
+
+    pos['WTG14']['width'] = 7.0
+    pos['WTG14']['top'] = 40.6
+    pos['WTG14']['left'] = 74.6
+    pos['WTG14']['zindex'] = 303
+
+    pos['WTG15']['width'] = 7.0
+    pos['WTG15']['top'] = 38.9
+    pos['WTG15']['left'] = 79.2
+    pos['WTG15']['zindex'] = 303
+
+    pos['WTG16']['width'] = 7.0
+    pos['WTG16']['top'] = 38.0
+    pos['WTG16']['left'] = 83.7
+    pos['WTG16']['zindex'] = 303
+
+    pos['WTG17']['width'] = 7.0
+    pos['WTG17']['top'] = 36.6
+    pos['WTG17']['left'] = 88.3
+    pos['WTG17']['zindex'] = 303
+
+    pos['WTG35']['width'] = 7.0
+    pos['WTG35']['top'] = 30.6
+    pos['WTG35']['left'] = 5.2
+    pos['WTG35']['zindex'] = 103
+
+    pos['WTG36']['width'] = 7.0
+    pos['WTG36']['top'] = 29.5
+    pos['WTG36']['left'] = 10.1
+    pos['WTG36']['zindex'] = 103
+
+    pos['WTG37']['width'] = 7.0
+    pos['WTG37']['top'] = 28.5
+    pos['WTG37']['left'] = 14.6
+    pos['WTG37']['zindex'] = 103
+
+    pos['WTG38']['width'] = 7.0
+    pos['WTG38']['top'] = 27.4
+    pos['WTG38']['left'] = 19.2
+    pos['WTG38']['zindex'] = 103
+
+    pos['WTG39']['width'] = 7.0
+    pos['WTG39']['top'] = 26.3
+    pos['WTG39']['left'] = 24.0
+    pos['WTG39']['zindex'] = 103
+
+    pos['WTG40']['width'] = 7.0
+    pos['WTG40']['top'] = 25.5
+    pos['WTG40']['left'] = 28.5
+    pos['WTG40']['zindex'] = 103
+
+    pos['WTG41']['width'] = 7.0
+    pos['WTG41']['top'] = 24.8
+    pos['WTG41']['left'] = 33.0
+    pos['WTG41']['zindex'] = 103
+
+    pos['WTG42']['width'] = 7.0
+    pos['WTG42']['top'] = 23.5
+    pos['WTG42']['left'] = 37.4
+    pos['WTG42']['zindex'] = 103
+    #
+
+    pos['WTG43']['width'] = 7.0
+    pos['WTG43']['top'] = 22.8
+    pos['WTG43']['left'] = 41.7
+    pos['WTG43']['zindex'] = 303
+
+    pos['WTG44']['width'] = 7.0
+    pos['WTG44']['top'] = 22.0
+    pos['WTG44']['left'] = 45.9
+    pos['WTG44']['zindex'] = 303
+
+    pos['WTG45']['width'] = 7.0
+    pos['WTG45']['top'] = 21.0
+    pos['WTG45']['left'] = 50.1
+    pos['WTG45']['zindex'] = 303
+
+    pos['WTG46']['width'] = 7.0
+    pos['WTG46']['top'] = 20.1
+    pos['WTG46']['left'] = 54.3
+    pos['WTG46']['zindex'] = 303
+
+    pos['WTG47']['width'] = 7.0
+    pos['WTG47']['top'] = 19.3
+    pos['WTG47']['left'] = 58.5
+    pos['WTG47']['zindex'] = 303
+
+    pos['WTG48']['width'] = 7.0
+    pos['WTG48']['top'] = 18.2
+    pos['WTG48']['left'] = 62.3
+    pos['WTG48']['zindex'] = 303
+
+    pos['WTG49']['width'] = 7.0
+    pos['WTG49']['top'] = 17.4
+    pos['WTG49']['left'] = 66.3
+    pos['WTG49']['zindex'] = 303
+
+    pos['WTG50']['width'] = 7.0
+    pos['WTG50']['top'] = 16.7
+    pos['WTG50']['left'] = 70.0
+    pos['WTG50']['zindex'] = 303
+
+    pos['WTG51']['width'] = 7.0
+    pos['WTG51']['top'] = 15.8
+    pos['WTG51']['left'] = 74.0
+    pos['WTG51']['zindex'] = 303
+
+    pos['WTG60']['width'] = 7.0
+    pos['WTG60']['top'] = 13.7
+    pos['WTG60']['left'] = 38.4
+    pos['WTG60']['zindex'] = 203
+
+    pos['WTG61']['width'] = 7.0
+    pos['WTG61']['top'] = 13.0
+    pos['WTG61']['left'] = 42.4
+    pos['WTG61']['zindex'] = 203
+
+    pos['WTG62']['width'] = 7.0
+    pos['WTG62']['top'] = 12.1
+    pos['WTG62']['left'] = 46.2
+    pos['WTG62']['zindex'] = 203
+
+    pos['WTG63']['width'] = 7.0
+    pos['WTG63']['top'] = 11.2
+    pos['WTG63']['left'] = 50.0
+    pos['WTG63']['zindex'] = 203
+
+    pos['WTG69']['width'] = 7.0
+    pos['WTG69']['top'] = 11
+    pos['WTG69']['left'] = 3.9
+    pos['WTG69']['zindex'] = 103
+
+    pos['WTG70']['width'] = 7.0
+    pos['WTG70']['top'] = 10.3
+    pos['WTG70']['left'] = 7.9
+    pos['WTG70']['zindex'] = 103
+
+    pos['WTG71']['width'] = 7.0
+    pos['WTG71']['top'] = 9.7
+    pos['WTG71']['left'] = 11.9
+    pos['WTG71']['zindex'] = 103
+
+    pos['WTG72']['width'] = 7.0
+    pos['WTG72']['top'] = 9.0
+    pos['WTG72']['left'] = 16.0
+    pos['WTG72']['zindex'] = 103
+
+    pos['WTG73']['width'] = 7.0
+    pos['WTG73']['top'] = 8.3
+    pos['WTG73']['left'] = 20.0
+    pos['WTG73']['zindex'] = 103
+
+    pos['WTG74']['width'] = 7.0
+    pos['WTG74']['top'] = 7.5
+    pos['WTG74']['left'] = 24.0
+    pos['WTG74']['zindex'] = 103
+
+    pos['WTG75']['width'] = 7.0
+    pos['WTG75']['top'] = 6.8
+    pos['WTG75']['left'] = 27.8
+    pos['WTG75']['zindex'] = 103
+
+    pos['WTG76']['width'] = 7.0
+    pos['WTG76']['top'] = 6.1
+    pos['WTG76']['left'] = 31.6
+    pos['WTG76']['zindex'] = 103
+#
+    pos['WTG77']['width'] = 7.0
+    pos['WTG77']['top'] = 5.3
+    pos['WTG77']['left'] = 35.2
+    pos['WTG77']['zindex'] = 103
+
+    pos['WTG78']['width'] = 7.0
+    pos['WTG78']['top'] = 5
+    pos['WTG78']['left'] = 38.9
+    pos['WTG78']['zindex'] = 103
+
+    pos['WTG79']['width'] = 7.0
+    pos['WTG79']['top'] = 4.3
+    pos['WTG79']['left'] = 42.9
+    pos['WTG79']['zindex'] = 103
+
+    pos['WTG80']['width'] = 7.0
+    pos['WTG80']['top'] = 3.7
+    pos['WTG80']['left'] = 46.3
+    pos['WTG80']['zindex'] = 103
+
+    pos['WTG81']['width'] = 7.0
+    pos['WTG81']['top'] = 3.0
+    pos['WTG81']['left'] = 50.0
+    pos['WTG81']['zindex'] = 103
+
+    pos['WTG82']['width'] = 7.0
+    pos['WTG82']['top'] = 2.3
+    pos['WTG82']['left'] = 53.3
+    pos['WTG82']['zindex'] = 103
+
+    pos['WTG83']['width'] = 7.0
+    pos['WTG83']['top'] = 1.8
+    pos['WTG83']['left'] = 56.8
+    pos['WTG83']['zindex'] = 103
+
+    pos['WTG84']['width'] = 7.0
+    pos['WTG84']['top'] = 1.2
+    pos['WTG84']['left'] = 60.2
+    pos['WTG84']['zindex'] = 103
+
+    pos['WTG85']['width'] = 7.0
+    pos['WTG85']['top'] = 0.6
+    pos['WTG85']['left'] = 63.7
+    pos['WTG85']['zindex'] = 103
+
+
+
+    for ag in Aerogenerador.objects.filter(parque=parque):
+        if ag.nombre in pos:
+            pos[ag.nombre]['img'] = 'common/images/ag/8.png'
+    return pos
 
 @login_required(login_url='ingresar')
 def dashboard(request,slug):
@@ -116,6 +538,9 @@ def dashboard(request,slug):
     graficoDescarga = graficoComponentes(componentes_parque,estado,2017,38)
     estado = EstadoFU.objects.get(idx=3)
     graficoMontaje = graficoComponentes(componentes_parque, estado, 2017, 38)
+    graficoAvance = graficoAvances(componentes_parque, 2017, 44, 2017,38)
+    thisweek = str(2017) + "-" + str(38)
+    pos_ag = posicionAerogeneradores(parque)
 
     return render(request, 'fu/dashboard.html',
                   {'cont': contenido,
@@ -123,6 +548,34 @@ def dashboard(request,slug):
                    'aerogeneradores': aerogeneradores,
                    'graficoDescarga': graficoDescarga,
                    'graficoMontaje': graficoMontaje,
+                   'graficoAvance': graficoAvance,
+                   'thisweek': thisweek,
+                   'pos_ag': pos_ag,
+                   })
+
+@login_required(login_url='ingresar')
+def avance(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
+    try:
+        componentes_parque = ComponentesParque.objects.get(parque=parque)
+    except ComponentesParque.DoesNotExist:
+        componentes_parque = ComponentesParque(parque=parque)
+        componentes_parque.save()
+
+    contenido = ContenidoContainer()
+    contenido.user = request.user
+    contenido.titulo = u'Avance'
+    contenido.subtitulo = u'Parque Eólico - ' + parque.nombre
+    contenido.menu = ['menu-fu', 'menu2-dashboard']
+
+    pos_ag = posicionAerogeneradores(parque)
+
+    return render(request, 'fu/avance.html',
+                  {'cont': contenido,
+                   'parque': parque,
+                   'aerogeneradores': aerogeneradores,
+                   'pos_ag': pos_ag,
                    })
 
 @login_required(login_url='ingresar')
