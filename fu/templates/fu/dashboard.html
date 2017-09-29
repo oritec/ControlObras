@@ -110,7 +110,7 @@
                 <div style="position: relative; height: 0px; padding-bottom: 81.17%; /* padding-bottom: image's height divided by width multiply by 100 */">
                     <img class="img-responsive" src="{% static '/common/images/plano2.png' %}" style="position: absolute; top: 0px; left: 0px; z-index: 102">
                 </div>
-                {% for ag, valores in pos_ag.items %}{% if valores.width %}
+                {% for ag, valores in pos_ag.items %}{% if valores.img %}
                 <div id="{{ ag }}" name="agen" style="position: absolute; z-index: {{ valores|get_item:'zindex'|safe }}; width:{{ valores|get_item:'width'|safe }}%; top: {{ valores|get_item:'top'|safe }}%; left: {{ valores|get_item:'left'|safe }}%;">
                     <img class="img-responsive" src="{% static valores|get_item:'img' %}" >
                 </div>

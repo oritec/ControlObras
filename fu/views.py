@@ -230,7 +230,11 @@ def graficoAvances(componentes_parque,anho,semana,anho2,semana2):
     datos = serializeGrafico(data_full)
     return datos
 
-def posicionAerogeneradores(parque):
+def posicionAerogeneradores(componentes_parque,anho,semana):
+    parque = componentes_parque.parque
+    d = str(anho) + '-W' + str(semana)
+    fecha = datetime.strptime(d + '-0', "%Y-W%W-%w")
+    estado = EstadoFU.objects.get(idx=3)
     pos = OrderedDict()
     for ag in Aerogenerador.objects.filter(parque=parque):
         pos[ag.nombre]={}
@@ -512,10 +516,45 @@ def posicionAerogeneradores(parque):
     pos['WTG85']['zindex'] = 103
 
 
-
     for ag in Aerogenerador.objects.filter(parque=parque):
         if ag.nombre in pos:
-            pos[ag.nombre]['img'] = 'common/images/ag/8.png'
+            pos[ag.nombre]['img'] = ''
+        registros = Registros.objects.filter(parque=parque,
+                                             aerogenerador=ag,
+                                             estado=estado,
+                                             fecha__lte=fecha)
+        if registros.count() > 0:
+            reg_ids = []
+            for r in registros:
+                reg_ids.append(r.componente.id)
+            rel = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
+                                              componente__in=reg_ids).order_by('-orden_montaje')
+            if rel.count() > 0:
+                orden = rel[0].orden_montaje
+                if orden >= 8:
+                    imagen = str(8)
+                elif orden == 3:
+                    imagen = str(orden)
+                    pos[ag.nombre]['width'] = 1.0
+                    pos[ag.nombre]['top'] = pos[ag.nombre]['top'] + 5.3
+                    pos[ag.nombre]['left'] = pos[ag.nombre]['left'] +3.5
+                elif orden == 5:
+                    imagen = str(orden)
+                    pos[ag.nombre]['width'] = 1.3
+                    pos[ag.nombre]['top'] = pos[ag.nombre]['top'] + 4.6
+                    pos[ag.nombre]['left'] = pos[ag.nombre]['left'] +3.1
+                elif orden == 2:
+                    imagen = str(5)
+                    pos[ag.nombre]['width'] = 1.3
+                    pos[ag.nombre]['top'] = pos[ag.nombre]['top'] + 4.6
+                    pos[ag.nombre]['left'] = pos[ag.nombre]['left'] + 3.1
+
+                else:
+                    imagen = str(orden)
+                pos[ag.nombre]['img'] = 'common/images/ag/' + imagen + '.png'
+
+
+
     return pos
 
 @login_required(login_url='ingresar')
@@ -540,7 +579,7 @@ def dashboard(request,slug):
     graficoMontaje = graficoComponentes(componentes_parque, estado, 2017, 38)
     graficoAvance = graficoAvances(componentes_parque, 2017, 44, 2017,38)
     thisweek = str(2017) + "-" + str(38)
-    pos_ag = posicionAerogeneradores(parque)
+    pos_ag = posicionAerogeneradores(componentes_parque,2017,39)
 
     return render(request, 'fu/dashboard.html',
                   {'cont': contenido,
@@ -569,7 +608,7 @@ def avance(request,slug):
     contenido.subtitulo = u'Parque Eólico - ' + parque.nombre
     contenido.menu = ['menu-fu', 'menu2-dashboard']
 
-    pos_ag = posicionAerogeneradores(parque)
+    pos_ag = posicionAerogeneradores(componentes_parque,2017,39)
 
     return render(request, 'fu/avance.html',
                   {'cont': contenido,
