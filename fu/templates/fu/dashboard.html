@@ -2,12 +2,12 @@
 {% load staticfiles %}
 {% load customtags %}
 {% load tz %}
+{% load l10n %}
 {% block css %}
     <!-- BEGIN PAGE LEVEL STYLES -->
     <link href="{% static 'common/assets/global/plugins/datatables/datatables.min.css' %}" rel="stylesheet" type="text/css" />
     <link href="{% static 'common/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css' %}" rel="stylesheet" type="text/css" />
     <link href="{% static 'common/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="{% static 'common/css/Litetooltip/litetooltip.css' %}"/>
     <!-- END PAGE LEVEL STYLES -->
 
     <style>
@@ -18,28 +18,36 @@
             padding-top: 15px;
             margin-bottom: 20px;
         }
+        #ampliar {
+            cursor: pointer;
+        }
     </style>
 {% endblock %}
 
 {% block contenido %}
 
 
-{% if parque.no_aerogeneradores == 0 %}
+{% if not configuracion %}
     <div class="row">
         <div class="col-md-11 col-md-offset-1">
-            <h4>Por favor, ingresar la informaci&oacute;n del parque (Configuraci&oacute;n).</h4>
+            <h4>Por favor, configurar Follow up.</h4>
         </div>
     </div>
 {% else %}
+
     <div class="page-bar">
         <div class="page-toolbar">
+            <div class="pull-right">
             <div class="form-group" style="margin-bottom: 0px;">
-                <div class='input-group date' id="dashboard-report-range">
-                    <input type='text' class="form-control" id="dashboard-input" />
-                    <span class="input-group-addon">
+                <div class='input-group date' id="dashboard">
+                    <input type='text' class="form-control" id="dashboard-show" />
+                    <span class="input-group-addon" id="dashboard-opener">
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
                 </div>
+            </div>
+
+            <input type='hidden' class="form-control" id="dashboard-fecha" style="position:relative"/>
             </div>
         </div>
     </div>
@@ -58,9 +66,9 @@
                 </div>
                 <div class="details">
                     <div class="number">
-                        <span data-counter="counterup" data-value="1349">0</span>
+                        <span name="counter" data-value="{{ montados }}">0</span>
                     </div>
-                    <div class="desc"> New Feedbacks </div>
+                    <div class="desc"> Aerogeneradores montados </div>
                 </div>
             </a>
         </div>
@@ -71,8 +79,8 @@
                 </div>
                 <div class="details">
                     <div class="number">
-                        <span data-counter="counterup" data-value="12,5">0</span>M$ </div>
-                    <div class="desc"> Total Profit </div>
+                        <span name="counter" data-value="{{ avance|floatformat:1|unlocalize }}">0</span>%</div>
+                    <div class="desc"> Porcentaje avance </div>
                 </div>
             </a>
         </div>
@@ -83,9 +91,9 @@
                 </div>
                 <div class="details">
                     <div class="number">
-                        <span data-counter="counterup" data-value="549">0</span>
+                        <span name="counter" data-value="{{ mechanical }}"></span>
                     </div>
-                    <div class="desc"> New Orders </div>
+                    <div class="desc"> Mechanical completion </div>
                 </div>
             </a>
         </div>
@@ -95,9 +103,9 @@
                     <i class="fa fa-globe"></i>
                 </div>
                 <div class="details">
-                    <div class="number"> +
-                        <span data-counter="counterup" data-value="89"></span>% </div>
-                    <div class="desc"> Brand Popularity </div>
+                    <div class="number">
+                        <span name="counter" data-value="{{ ag_ready }}"></span></div>
+                    <div class="desc"> WTG puestos en marcha </div>
                 </div>
             </a>
         </div>
@@ -110,12 +118,10 @@
                 <div style="position: relative; height: 0px; padding-bottom: 81.17%; /* padding-bottom: image's height divided by width multiply by 100 */">
                     <img class="img-responsive" src="{% static '/common/images/plano2.png' %}" style="position: absolute; top: 0px; left: 0px; z-index: 102">
                 </div>
-                {% for ag, valores in pos_ag.items %}{% if valores.img %}
-                <div id="{{ ag }}" name="agen" style="position: absolute; z-index: {{ valores|get_item:'zindex'|safe }}; width:{{ valores|get_item:'width'|safe }}%; top: {{ valores|get_item:'top'|safe }}%; left: {{ valores|get_item:'left'|safe }}%;">
-                    <img class="img-responsive" src="{% static valores|get_item:'img' %}" >
+                {% include "fu/aerogeneradores.html" %}
+                <div id="ampliar" name="ampliar" style="position: absolute; z-index: 500; width:7%; top:68%; left:85%;">
+                    <img class="img-responsive" src="{% static 'common/images/ampliar2.png' %}" >
                 </div>
-                {% endif %}{% endfor %}
-
             </div>
         </div>
         <div class="col-md-6">
@@ -135,6 +141,36 @@
         </div>
     </div>
 
+    <form action="{% url 'fu:dashboard' parque.slug %}" method="post" style="visibility:hidden" id="formSemana">
+        {% csrf_token %}
+        <input type="hidden" name="semana" id="inputSemana"><br>
+    </form>
+
+    <div class="modal fade" id="full" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-full">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-2"></div>
+                        <div class="col-md-8">
+                            <div class="imagehotspot-container" style="position: relative; max-width: 1280px; /* max-width: actual width of image */ width: 100%; height: auto; z-index: 101;">
+                                <div style="position: relative; height: 0px; padding-bottom: 81.17%; /* padding-bottom: image's height divided by width multiply by 100 */">
+                                    <img class="img-responsive" src="{% static '/common/images/plano2.png' %}" style="position: absolute; top: 0px; left: 0px; z-index: 102">
+                                </div>
+                                {% include "fu/aerogeneradores.html" %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn dark btn-outline" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+
 {% endif %}
 
 
@@ -150,9 +186,8 @@
     <script src="{% static 'common/assets/global/plugins/highcharts/js/highcharts-more.js' %}" type="text/javascript"></script>
 
     <script src="{% static 'common/js/moment/moment-with-locales.js' %}" type="text/javascript"></script>
-
     <script src="{% static 'common/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js' %}" type="text/javascript"></script>
-
+    <script src="{% static 'common/js/countUp/countUp.js' %}" type="text/javascript"></script>
 
     <script src="{% static 'common/js/dashboard.js' %}" type="text/javascript"></script>
     <script src="{% static 'common/js/dashboard-charts.js' %}" type="text/javascript"></script>
@@ -161,15 +196,30 @@
 {% endblock %}
 
 {% block jquery %}
+
+    {% if configuracion %}
+    var fecha = moment('{{ fecha|date:"Y-m-d" }} 12:00');
+    var fecha_inicial = moment('{{ fecha_inicial|date:"Y-m-d" }} 12:00');
+    //console.log(fecha);
+    //console.log(fecha_inicial);
+    var semana_str = "{{ week_str|safe }}";
+    Dashboard.init(fecha,semana_str,fecha_inicial);
+
+    $('#ampliar').click(function(){
+        console.log('click');
+        $('#full').modal();
+    });
+
+
     var thisweek = "{{ thisweek|safe }}";
     var g_descarga = {{ graficoDescarga|safe }};
-    titulo= 'Descarga en parque';
+    titulo= 'Descarga en parque, '+semana_str;
     DashboardGraficos.showGraficoColumnas(g_descarga,titulo,'#g_descarga');
     var g_montaje = {{ graficoMontaje|safe }};
-    titulo= 'Montaje';
+    titulo= 'Montaje, '+semana_str;
     DashboardGraficos.showGraficoColumnas(g_montaje,titulo,'#g_montaje');
     var g_avance = {{ graficoAvance|safe }};
-    titulo= 'Tasa de Montaje';
+    titulo= 'Avance de Izado, '+semana_str;
     DashboardGraficos.showGraficosLinea(g_avance,titulo,'#g_avance',thisweek);
-
+    {% endif %}
 {% endblock %}

@@ -67,7 +67,7 @@ var DashboardGraficos = function () {
             },
             yAxis: {
                 title: {
-                    text: 'Nº Aerogeneradores montados'
+                    text: 'Porcentaje de avance (%)'
                 }
             },
             plotOptions: {
@@ -75,9 +75,9 @@ var DashboardGraficos = function () {
                     borderWidth: 0,
                     dataLabels: {
                         enabled: true,
-                        format: '{point.y}',
+                        format: '{point.y}%',
                         style: {
-                            fontSize: "8px"
+                            fontSize: "7px"
                         }
                     }
                 },

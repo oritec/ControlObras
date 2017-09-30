@@ -85,7 +85,8 @@ def configuracion(request,slug):
                         nuevo = Aerogenerador(parque=parque,idx=idx,nombre='WTG'+str(idx).zfill(2))
                         nuevo.save()
                 else:
-                    ag = Aerogenerador.objects.filter(parque=parque,idx__gt=parque.no_aerogeneradores).delete()
+                    Aerogenerador.objects.filter(parque=parque,idx__gt=parque.no_aerogeneradores).delete()
+                parque.prev_no_aerogeneradores = parque.no_aerogeneradores
             ag = Aerogenerador.objects.filter(parque=parque, idx = -1)
             if ag.count() == 0:
                 nuevo = Aerogenerador(parque=parque, idx=-2, nombre='General')

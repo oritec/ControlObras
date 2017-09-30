@@ -40,7 +40,7 @@ def checkValidFile(ws, componentes_parque):
 if __name__ == '__main__':
 
     parque = ParqueSolar.objects.get(slug='cli-001')
-
+    #parque = ParqueSolar.objects.get(slug='lap-003')
     print parque.nombre
     componentes_parque = ComponentesParque.objects.get(parque=parque)
     nombre_archivo = './registros.xlsx'
@@ -52,6 +52,8 @@ if __name__ == '__main__':
         print 'mal mal'
     else:
         print 'archivo válido'
+        # borro los archivos entonces
+        r = Registros.objects.filter(parque=parque).delete()
     print last_row
     last_column = getLastColumn(ws)
     print last_column
@@ -89,6 +91,8 @@ if __name__ == '__main__':
             while columna < last_column:
                 aerogenerador_string = ws.cell(row=3, column=columna).value
                 ag_num = aerogenerador_string.split(" ")[1]
+                if len(ag_num) == 1:
+                    ag_num = '0'+ag_num
                 try:
                     aerogenerador = Aerogenerador.objects.get(parque=parque,nombre='WTG'+ag_num)
                 except Aerogenerador.DoesNotExist:

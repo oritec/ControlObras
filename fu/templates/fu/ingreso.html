@@ -27,7 +27,7 @@
 
 <div class="row">
     <div class="col-md-12" >
-        <div class="table-responsive" style="padding-bottom: 30px">
+        <div class="table-responsive" style="padding-bottom: 10px">
           <table class="table" >
               <tbody>
               {% for titulo,elementos in componentes.items %}
@@ -80,6 +80,59 @@
               </tbody>
           </table>
         </div>
+    </div>
+</div>
+
+<div class="row" style="padding-bottom: 40px">
+    {% if 'img' in pos %}
+    <div class="col-md-3">
+        <div class="imagehotspot-container" style="position: relative; max-width: 1280px; /* max-width: actual width of image */ width: 100%; height: auto; z-index: 101;">
+            <div style="position: relative; height: 0px; padding-bottom: 81.17%; /* padding-bottom: image's height divided by width multiply by 100 */">
+                <img class="img-responsive" src="{% static '/common/images/Dirt_01.png' %}" style="position: absolute; top: 0px; left: 15%; z-index: 102;">
+            </div>
+            <div id="imagen" name="agen" style="position: absolute; z-index: 301; width:{{ pos|get_item:'width'|safe }}%; top: {{ pos|get_item:'top'|safe }}%; left: {{ pos|get_item:'left'|safe }}%;">
+                <img class="img-responsive" src="{% static pos|get_item:'img' %}" >
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="col-md-{% if 'img' in pos %}9{% else %}12{% endif %}">
+        <!-- BEGIN SAMPLE TABLE PORTLET-->
+        <div class="portlet light bordered">
+            <div class="portlet-title" style="padding-bottom: 0px;border-bottom: 0px;">
+                <div class="caption">
+                    <i class="icon-settings font-red"></i>
+                    <span class="caption-subject font-red sbold uppercase">Registros</span>
+                </div>
+            </div>
+            <div class="portlet-body" style="padding-top: 0px;">
+                <div class="table-scrollable">
+                    <table class="table table-hover table-light">
+                        <thead>
+                            <tr>
+                                <th> # </th>
+                                <th> Acci&oacute;n </th>
+                                <th> Componente </th>
+                                <th> Fecha </th>
+                                <th> Nº de serie </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for r in registros %}
+                            <tr>
+                                <td> {{ forloop.counter }} </td>
+                                <td> {{ r.estado.nombre }} </td>
+                                <td> {{ r.componente.nombre }} </td>
+                                <td> {{ r.fecha }} </td>
+                                <td> {% if r.no_serie %}{{ r.no_serie }} {% endif %}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- END SAMPLE TABLE PORTLET-->
     </div>
 </div>
 
@@ -282,6 +335,23 @@
             $('#descarga-titulo').html(titulo);
             $('#registroForm').append('<input type="hidden" name="id" id="componente_id" value="' + id + '">');
             $('#enviarRegistro').attr('name','formMontaje');
+            $('#registro').modal();
+        });
+    });
+
+    $("[name^='puestaenmarcha']").each(function( index ) {
+        $(this).click(function(index){
+            var id = $(this).attr('name').split('-')[1];
+            //console.log(componente_id);
+            //console.log($(this).attr('name'));
+            var element1 = $(this).parent().parent().siblings()[0];
+            var element2 = $(element1).children('div')[0];
+            var componente_name = $(element2).html();
+            //console.log(componente_name);
+            var titulo = 'Registro Puesta en marcha ' + componente_name;
+            $('#descarga-titulo').html(titulo);
+            $('#registroForm').append('<input type="hidden" name="id" id="componente_id" value="' + id + '">');
+            $('#enviarRegistro').attr('name','formPuestaenmarcha');
             $('#registro').modal();
         });
     });

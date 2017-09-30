@@ -91,7 +91,7 @@
 {% endblock %}
 
 {% block jquery %}
-
+    {% if configuracion %}
     $("#id_logo").fileinput({'showUpload':false,
                             'language':'es',
                             'allowedFileTypes' :['image'],
@@ -146,5 +146,5 @@
     var divcontractual_4 = "grafico_contractual_4";
     FUGraficos.showGraficoPlanificacion(xlabels_4,ylabels_4,plan_4,tituloplan_4,divplan_4,thisweek);
     FUGraficos.showGraficoPlanificacion(xlabels_4,ylabels_4,contractual_4,titulocontractual_4,divcontractual_4,thisweek);
-
+    {% endif %}
 {% endblock %}

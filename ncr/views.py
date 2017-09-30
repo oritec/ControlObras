@@ -64,6 +64,7 @@ def serializeGrafico(d):
                     s += key + ':' + s2 + ','
                 else:
                     s +=  key + ':"' + value + '",'
+
             s = s[:-1]
             s += '},'
         s = s[:-1]
