@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import subprocess
-
+import os
+from datetime import date
 if __name__ == '__main__':
     tables = ["auth_group",
               "auth_group_permissions",
@@ -37,6 +38,10 @@ if __name__ == '__main__':
     #tables_str = ' '.join(tables)
     cmd = 'mysqldump -u root -pcntpasscfg controlobras'
     command = cmd.split() + tables
-    with open('controlobras.sql', 'w') as f:
+    fecha = date.today()
+    archivo = fecha.strftime("%Y%m%d")
+    with open('./backups/' + archivo + '.sql', 'w') as f:
         subprocess.call(command, stdout=f)
+
+
 

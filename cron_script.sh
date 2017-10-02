@@ -1,13 +1,8 @@
 #!/bin/bash
 
-cd /home/pi/FlujometrosDMH
+cd /home/andres/ControlObras
 
-if ! pgrep -f "python.*/home/pi/FlujometrosDMH/getData.py"; then
-  echo "FLUJOMETROS GET DATA OFF"
-  python -u /home/pi/FlujometrosDMH/getData.py &
-fi
+workon SaroenGlobal
 
-if ! pgrep -f "python.*/home/pi/FlujometrosDMH/sendDataWeb.py"; then
-  echo "FLUJOMETROS sendDataWeb OFF"
-  python -u /home/pi/FlujometrosDMH/sendDataWeb.py &
-fi
+python dumpDatabase.py
+#find /home/andres/ControlObras/backups/ -mtime +10 -type f -delete
