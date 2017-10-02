@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import subprocess
-import os
 from datetime import date
+
 if __name__ == '__main__':
     tables = ["auth_group",
               "auth_group_permissions",
