@@ -58,11 +58,17 @@ class EstadoRevision(models.Model):
 
 def rev_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
-    return 'fotos/observacion_{0}/revision_{1}/{2}'.format(instance.revision.observacion.id, instance.revision.id, filename)
+    return 'fotos/parque_{0}/observacion_{1}/revision_{2}/{3}'.format(instance.revision.observacion.parque.id,
+                                                                      instance.revision.observacion.id,
+                                                                      instance.revision.id,
+                                                                      filename)
 
 def thumbnails_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
-    return 'thumbnails/observacion_{0}/revision_{1}/{2}'.format(instance.revision.observacion.id, instance.revision.id, filename)
+    return 'thumbnails/parque_{0}/observacion_{1}/revision_{2}/{3}'.format(instance.revision.observacion.parque.id,
+                                                                           instance.revision.observacion.id,
+                                                                           instance.revision.id,
+                                                                           filename)
 
 class Fotos(models.Model):
     revision = models.ForeignKey('Revision', on_delete=models.CASCADE)
@@ -90,7 +96,17 @@ class Fotos(models.Model):
         # Set our max thumbnail size in a tuple (max width, max height)
         THUMBNAIL_SIZE = (120, 120)
 
-        DJANGO_TYPE = self.imagen.file.content_type
+        try:
+            DJANGO_TYPE = self.imagen.file.content_type
+        except Exception as e:
+            if self.imagen.name.lower().endswith(".jpg"):
+                DJANGO_TYPE = 'image/jpeg'
+            elif self.imagen.name.lower().endswith(".png"):
+                DJANGO_TYPE = 'image/png'
+            elif self.imagen.name.lower().endswith(".JPG"):
+                DJANGO_TYPE = 'image/jpeg'
+            elif self.imagen.name.lower().endswith(".PNG"):
+                DJANGO_TYPE = 'image/png'
 
         if DJANGO_TYPE == 'image/jpeg':
             PIL_TYPE = 'jpeg'
@@ -148,6 +164,10 @@ class Fotos(models.Model):
             if self.imagen.name.lower().endswith(".jpg"):
                 DJANGO_TYPE = 'image/jpeg'
             elif self.imagen.name.lower().endswith(".png"):
+                DJANGO_TYPE = 'image/png'
+            elif self.imagen.name.lower().endswith(".JPG"):
+                DJANGO_TYPE = 'image/jpeg'
+            elif self.imagen.name.lower().endswith(".PNG"):
                 DJANGO_TYPE = 'image/png'
 
         if DJANGO_TYPE == 'image/jpeg':
@@ -237,7 +257,19 @@ class Observacion(models.Model):
         return '%s' % (self.nombre)
 
     def save(self, *args, **kwargs):
-        if self.pk is None or self.observacion_id == 0:
+        change_observacion_id = False
+        if self.pk is None:
+            change_observacion_id = True
+        else:
+            aux = self.__class__._default_manager.filter(pk=self.pk)
+            if aux.count() > 0:
+                last_aerogenerador = aux[0].aerogenerador
+                if last_aerogenerador != self.aerogenerador:
+                    change_observacion_id = True
+        if self.observacion_id == 0:
+            change_observacion_id = True
+
+        if change_observacion_id:
             obs=Observacion.objects.filter(parque=self.parque, aerogenerador=self.aerogenerador).order_by('-observacion_id')
             if obs.count()>0:
                 self.observacion_id = obs[0].observacion_id + 1
