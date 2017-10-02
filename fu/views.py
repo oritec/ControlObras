@@ -1294,6 +1294,7 @@ def planificacion(request,slug):
                   {'cont': contenido,
                    'parque': parque,
                    'aerogeneradores': aerogeneradores,
+                   'configuracion': configuracion,
                    'form': form,
                    'x_axis': x_axis,
                    'y_axis': y_axis,
