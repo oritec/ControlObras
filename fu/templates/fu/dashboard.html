@@ -21,6 +21,19 @@
         #ampliar {
             cursor: pointer;
         }
+
+        #tooltip {
+            text-align:center;
+            background:black;
+            color:white;
+            padding:3px 0;
+            width:60px;
+            position:fixed;
+            display:none;
+            white-space:nowrap;
+            z-index:500;
+        }
+
     </style>
 {% endblock %}
 
@@ -221,5 +234,6 @@
     var g_avance = {{ graficoAvance|safe }};
     titulo= 'Avance de Izado, '+semana_str;
     DashboardGraficos.showGraficosLinea(g_avance,titulo,'#g_avance',thisweek);
+
     {% endif %}
 {% endblock %}

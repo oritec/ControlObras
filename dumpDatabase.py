@@ -1,41 +1,21 @@
 # -*- coding: utf-8 -*-
 import subprocess
 from datetime import date
+import os, django
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ControlObras.settings")
+django.setup()
+
+from django.db import connection
+
 
 if __name__ == '__main__':
-    tables = ["auth_group",
-              "auth_group_permissions",
-              "auth_permission",
-              "auth_user",
-              "auth_user_groups",
-              "auth_user_user_permissions",
-              "fu_componente",
-              "fu_componente_estados",
-              "fu_componentesparque",
-              "fu_configuracionfu",
-              "fu_contractual",
-              "fu_estadofu",
-              "fu_paradas",
-              "fu_paradasgrua",
-              "fu_paradastrabajo",
-              "fu_plan",
-              "fu_registros",
-              "fu_relacionesfu",
-              "ncr_componente",
-              "ncr_estadorevision",
-              "ncr_fotos",
-              "ncr_observacion",
-              "ncr_observador",
-              "ncr_revision",
-              "ncr_severidad",
-              "ncr_subcomponente",
-              "ncr_tipo",
-              "usuarios_general",
-              "usuarios_usuario",
-              "vista_aerogenerador",
-              "vista_parquesolar"]
 
-    #tables_str = ' '.join(tables)
+    aux = connection.introspection.table_names()
+    tables = []
+    for t in aux:
+        if not t.startswith("django"):
+            tables.append(t)
+
     cmd = 'mysqldump -u root -pcntpasscfg controlobras'
     command = cmd.split() + tables
     fecha = date.today()

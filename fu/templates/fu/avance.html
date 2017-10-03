@@ -5,16 +5,40 @@
 {% block css %}
     <!-- BEGIN PAGE LEVEL STYLES -->
     <link rel="stylesheet" type="text/css" href="{% static 'common/css/Litetooltip/litetooltip.css' %}"/>
-
     <!-- END PAGE LEVEL STYLES -->
+    <style>
+        .bootstrap-datetimepicker-widget tr:hover {
+            background-color: #808080;
+        }
+        .dashboard-stat.dashboard-stat-v2 .visual {
+            padding-top: 15px;
+            margin-bottom: 20px;
+        }
+        #ampliar {
+            cursor: pointer;
+        }
+
+        #tooltip {
+            text-align:center;
+            background:black;
+            color:white;
+            padding:3px 0;
+            width:120px;
+            position:fixed;
+            display:none;
+            white-space:nowrap;
+            z-index:500;
+        }
+
+    </style>
 {% endblock %}
 
 {% block contenido %}
-    <div class="row">
-        <div class="col-md-12">
+    <div class="row" >
+        <div class="col-md-12" id="fila">
             <div class="imagehotspot-container" style="position: relative; max-width: 1280px; /* max-width: actual width of image */ width: 100%; height: auto; z-index: 101;">
                 <div style="position: relative; height: 0px; padding-bottom: 81.17%; /* padding-bottom: image's height divided by width multiply by 100 */">
-                    <img class="img-responsive" src="{% static '/common/images/plano2.png' %}" style="position: absolute; top: 0px; left: 0px; z-index: 102">
+                    <img class="img-responsive" id="plano" src="{% static '/common/images/plano2.png' %}" style="position: absolute; top: 0px; left: 0px; z-index: 102">
                 </div>
                 {% include "fu/aerogeneradores.html" %}
             </div>
