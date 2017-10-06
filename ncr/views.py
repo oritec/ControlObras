@@ -526,6 +526,7 @@ def informeNCR(request,slug):
             resultados = resultados.filter(componente__in=form.cleaned_data['componente'])
             resultados = resultados.filter(sub_componente__in=form.cleaned_data['subcomponente'])
             resultados = resultados.filter(tipo__in=form.cleaned_data['tipo'])
+            resultados = resultados.filter(fecha_observacion__lte=form.cleaned_data['fecha'])
             if (len(form.cleaned_data['condicion']) == 1):
                 if 'reparadas' in form.cleaned_data['condicion']:
                     condicion = True

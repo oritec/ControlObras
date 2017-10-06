@@ -888,10 +888,13 @@ def getComponentesbyState(componentes_parque, estado):
         return None
 
     lista = OrderedDict()
-    for c in RelacionesFU.objects.filter(componentes_parque=componentes_parque).order_by(orden):
-        for e in c.componente.estados.all():
-            if e.idx == indice:
-                lista[c.id]=c.componente.nombre
+    componentes = componentes_parque.componentes.all()
+    filtro = 'relacionesfu__' + orden
+    karws = {filtro + '__gt': 0}
+    id = 0
+    for c in componentes.filter(**karws).order_by(filtro):
+        lista[id]=c.nombre
+        id += 1
     return lista
 
 def addComponente(componentes_parque, new_componente):
@@ -1425,9 +1428,20 @@ def download_config(request,slug):
     estados['montaje'] = 'Montaje'
     estados['puestaenmarcha'] = 'Puesta en marcha'
     #estados = ['descarga','premontaje','montaje','puestaenmarcha']
+    estados_db = {}
+    estados_db['descarga'] = EstadoFU.objects.get(idx=1)
+    estados_db['premontaje'] = EstadoFU.objects.get(idx=2)
+    estados_db['montaje'] = EstadoFU.objects.get(idx=3)
+    estados_db['puestaenmarcha'] = EstadoFU.objects.get(idx=4)
 
     column = 2
     row = 4
+
+    planExist = False
+    if Plan.objects.filter(parque=parque).count()>0:
+        planExist = True
+    if Contractual.objects.filter(parque=parque).count()>0:
+        planExist = True
 
     for e, titulo in estados.iteritems():
         componentes = getComponentesbyState(componentes_parque,e)
@@ -1461,6 +1475,29 @@ def download_config(request,slug):
                 d2 = ws.cell(row=row+1, column=column + 1, value='Plan')
                 d2.border = borderbottom
                 d2.alignment = alignment3
+                columna_aux = 4
+                if planExist :
+                    for semana in semanas:
+                        d_str = anhos[semana] + "-W" + semana + "-0"
+                        fecha_aux = datetime.strptime(d_str, "%Y-W%W-%w")
+                        try:
+                            plan = Plan.objects.get(parque=parque,
+                                                    componente__nombre=nombre,
+                                                    estado=estados_db[e],
+                                                    fecha=fecha_aux)
+                            ws.cell(row=row+1, column=columna_aux, value=plan.no_aerogeneradores)
+                        except Plan.DoesNotExist:
+                            pass
+                        try:
+                            contractual = Contractual.objects.get(parque=parque,
+                                                                  componente__nombre=nombre,
+                                                                  estado=estados_db[e],
+                                                                  fecha=fecha_aux)
+                            ws.cell(row=row , column=columna_aux, value=contractual.no_aerogeneradores)
+                        except Contractual.DoesNotExist:
+                            pass
+                        columna_aux += 1
+
                 row += 2
             d.border = borderbottom
             ws.merge_cells(start_row=first_row, start_column=1, end_row=row-1, end_column=1)
