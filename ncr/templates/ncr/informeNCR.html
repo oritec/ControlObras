@@ -32,7 +32,7 @@
                     {% csrf_token %}
                         <div class="form-body">
                             {% for field in form %}
-                            {% if field.label != 'Fecha' %}
+                            {% if field|field_type == 'SelectMultiple' %}
                             <div class="form-group">
                                 <label class="control-label col-md-3">{{ field.label }}</label>
                                 <div class="col-md-9">
@@ -58,7 +58,7 @@
                             </div>
                             {% else %}
                             <div class="form-group">
-                                <label class="control-label col-md-3">{{ field.label }}:</label>
+                                <label class="control-label col-md-3">Fecha menor o igual a:</label>
                                 <div class="col-md-9">
                                     <div class="input-group input-medium date date-picker" data-date-format="dd-mm-yyyy" data-date-show-today-button="true">
                                         {{ field }}
@@ -250,7 +250,7 @@
     });
 
     {% for field in form %}
-        {% if field.label != 'Fecha' %}
+        {% if field|field_type == 'SelectMultiple' %}
         $("#{{ field.auto_id }}").multiSelect();
         $("#{{ field.auto_id }}_todo").click(function(){
             $("#{{ field.auto_id }}").multiSelect('select_all');

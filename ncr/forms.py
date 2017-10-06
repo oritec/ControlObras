@@ -124,14 +124,14 @@ class NCR(forms.Form):
                                           required=False, label="Categoría")
     punchlist = forms.MultipleChoiceField(choices=[('0', 'No'), ('1', 'Si')],
                                           required=False, label="Punchlist")
-    fecha = forms.DateField(widget=forms.DateInput(format='%d-%m-%Y'), input_formats=('%d-%m-%Y',), initial=date.today)
+    fecha_filtro = forms.DateField(widget=forms.DateInput(format='%d-%m-%Y'), input_formats=('%d-%m-%Y',), initial=date.today)
 
     def __init__(self, *args, **kwargs):
         parque = kwargs.pop('parque')
         super(NCR, self).__init__(*args, **kwargs)
         self.fields['aerogenerador'].queryset = Aerogenerador.objects.filter(parque=parque).order_by('idx')
-        self.fields['fecha'].widget.attrs['class'] = 'form-control'
-        self.fields['fecha'].widget.attrs['readonly'] = True
+        self.fields['fecha_filtro'].widget.attrs['class'] = 'form-control'
+        self.fields['fecha_filtro'].widget.attrs['readonly'] = True
 
 #        self.fields['aerogenerador'].widget.attrs['class'] = 'form-control'
 
