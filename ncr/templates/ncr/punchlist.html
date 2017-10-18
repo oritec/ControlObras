@@ -54,9 +54,23 @@
                                             <span class="help-block"> {{ field.errors }} </span>
                                         </div>
                                     </div>
+                                {% elif field.name == "fecha_from" %}
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3">Rango de Fechas:</label>
+                                        <div class="col-md-9">
+                                            <div class="input-group input-large date-picker input-daterange" data-date-format="dd-mm-yyyy" data-date-show-today-button="true">
+                                                {{ form.fecha_from }}
+                                                <span class="input-group-addon"> hasta </span>
+                                                {{ form.fecha_to }}
+
+                                            </div>
+                                            <span class="help-block"> {{ form.fecha_from.errors }} {{ form.fecha_to.errors }}</span>
+                                        </div>
+                                    </div>
+                                {% elif field.name == "fecha_to" %}
                                 {% elif field.name == "fecha" %}
                                     <div class="form-group">
-                                        <label class="control-label col-md-3">{{ field.label }}:</label>
+                                        <label class="control-label col-md-3">{{ field.label }}</label>
                                         <div class="col-md-9">
                                             <div class="input-group input-medium date date-picker" data-date-format="dd-mm-yyyy" data-date-show-today-button="true">
                                                 {{ field }}

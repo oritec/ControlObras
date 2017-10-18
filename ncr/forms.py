@@ -145,14 +145,28 @@ class NCR(forms.Form):
 
 class Punchlist(forms.Form):
     aerogenerador = forms.ModelMultipleChoiceField(queryset=Aerogenerador.objects.all().order_by('idx'),required=False)
-    fecha = forms.DateField(widget=forms.DateInput(format='%d-%m-%Y'), input_formats=('%d-%m-%Y',), initial=date.today)
+    fecha_from = forms.DateField(widget=forms.DateInput(format='%d-%m-%Y'), input_formats=('%d-%m-%Y',),
+                                 initial=date.today)
+    fecha_to = forms.DateField(widget=forms.DateInput(format='%d-%m-%Y'), input_formats=('%d-%m-%Y',),
+                               initial=date.today)
+    fecha = forms.DateField(widget=forms.DateInput(format='%d-%m-%Y'),
+                            input_formats=('%d-%m-%Y',),
+                            initial=date.today,
+                            label='Fecha del informe')
     fotos = forms.BooleanField(label='¿Incluir fotos?',required=False)
     reparadas = forms.BooleanField(label='¿Incluir observaciones solucionadas?',required=False)
     colores = forms.BooleanField(label='¿Incluir código de colores?', required=False)
 
+
     def __init__(self, *args, **kwargs):
         parque = kwargs.pop('parque')
         super(Punchlist, self).__init__(*args, **kwargs)
+        try:
+            obj = ConfiguracionFU.objects.get(parque=parque)
+            self.fields['fecha_from'].initial = obj.fecha_inicio
+        except ConfiguracionFU.DoesNotExist:
+            logger.debug("ConfiguracionFU para parque no existe, queda todo igual")
+
         self.fields['aerogenerador'].queryset = Aerogenerador.objects.filter(parque=parque).order_by('idx')
         self.fields['fotos'].widget.attrs['class'] = 'make-switch'
         self.fields['fotos'].widget.attrs['data-size'] = 'small'
@@ -170,3 +184,7 @@ class Punchlist(forms.Form):
         self.fields['colores'].widget.attrs['checked'] = ''
         self.fields['fecha'].widget.attrs['class'] = 'form-control'
         self.fields['fecha'].widget.attrs['readonly'] = True
+        self.fields['fecha_from'].widget.attrs['class'] = 'form-control'
+        self.fields['fecha_from'].widget.attrs['readonly'] = True
+        self.fields['fecha_to'].widget.attrs['class'] = 'form-control'
+        self.fields['fecha_to'].widget.attrs['readonly'] = True

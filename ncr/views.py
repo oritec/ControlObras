@@ -682,9 +682,11 @@ def listFotos(resultados):
             main_fotos[res.id] = results[0].reporte_img.url
     return main_fotos
 
-def punchlistResults(parque, aerogenerador, reparadas):
-
+def punchlistResults(parque, aerogenerador, form):
+    reparadas = form.cleaned_data['reparadas']
     resultados = Observacion.objects.filter(parque=parque, aerogenerador=aerogenerador, punchlist=True)
+    resultados = resultados.filter(fecha_observacion__gte=form.cleaned_data['fecha_from'],
+                                   fecha_observacion__lte=form.cleaned_data['fecha_to'])
     if not reparadas:
         resultados = resultados.exclude(estado__nombre__exact='Solucionado').exclude(cerrado=True)
     main_fotos = listFotos(resultados)
@@ -696,8 +698,8 @@ def punchlistResults(parque, aerogenerador, reparadas):
         titulo = 'LISTADO DE PENDIENTES AEROGENERADOR ' + aerogenerador.nombre
     return [resultados, main_fotos, titulo]
 
-def generateWord(parque, aerogenerador,reparadas):
-    [resultados, main_fotos, titulo] = punchlistResults(parque, aerogenerador, reparadas)
+def generateWord(parque, aerogenerador,form):
+    [resultados, main_fotos, titulo] = punchlistResults(parque, aerogenerador, form)
     if parque.word:
         nombre_archivo = parque.word.file.name
     else:
@@ -789,7 +791,7 @@ def punchlist(request,slug):
                 logger.debug('WORD')
                 if len(form.cleaned_data['aerogenerador']) == 1:
                     ag = form.cleaned_data['aerogenerador'][0]
-                    target_stream = generateWord(parque,ag,form.cleaned_data['reparadas'])
+                    target_stream = generateWord(parque,ag,form)
                     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
                     fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
                     nombre = 'PL_' + parque.codigo + '-' + ag.nombre + '_' + fecha_str + '.docx'
@@ -806,7 +808,7 @@ def punchlist(request,slug):
                     archive = zipfile.ZipFile(buff, 'w', zipfile.ZIP_DEFLATED)
 
                     for ag in form.cleaned_data['aerogenerador']:
-                        target_stream = generateWord(parque, ag, form.cleaned_data['reparadas'])
+                        target_stream = generateWord(parque, ag, form)
                         fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
                         archivo_name = 'PL_' + parque.codigo + '-' + ag.nombre + '_' + fecha_str + '.docx'
                         logger.debug(archivo_name)
@@ -820,7 +822,7 @@ def punchlist(request,slug):
             else:
                 if len(form.cleaned_data['aerogenerador']) == 1:
                     ag = form.cleaned_data['aerogenerador'][0]
-                    [resultados, main_fotos, titulo] = punchlistResults(parque,ag,form.cleaned_data['reparadas'])
+                    [resultados, main_fotos, titulo] = punchlistResults(parque,ag,form)
                     logger.debug(resultados)
                     colores = form.cleaned_data['colores']
                     fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
@@ -839,7 +841,7 @@ def punchlist(request,slug):
                     archive = zipfile.ZipFile(buff, 'w', zipfile.ZIP_DEFLATED)
 
                     for ag in form.cleaned_data['aerogenerador']:
-                        [resultados, main_fotos, titulo] = punchlistResults(parque, ag, form.cleaned_data['reparadas'])
+                        [resultados, main_fotos, titulo] = punchlistResults(parque, ag, form)
                         logger.debug(resultados)
                         colores = form.cleaned_data['colores']
                         fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
