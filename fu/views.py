@@ -893,7 +893,7 @@ def getComponentesbyState(componentes_parque, estado):
     karws = {filtro + '__gt': 0}
     id = 0
     for c in componentes.filter(**karws).order_by(filtro):
-        lista[id]=c.nombre
+        lista[c.id]=c.nombre
         id += 1
     return lista
 
@@ -1019,7 +1019,7 @@ def ordenar_actividades(request, slug, estado):
         for pos, val in datos.iteritems():
             idx = pos +1
             id = int(val['id'])
-            obj = RelacionesFU.objects.get(id=id)
+            obj = RelacionesFU.objects.get(componente__id=id)
             if estado == 'descarga':
                 obj.orden_descarga = idx
             elif estado == 'premontaje':
