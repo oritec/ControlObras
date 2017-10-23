@@ -1668,7 +1668,10 @@ def ingreso(request,slug,slug_ag):
 
 
     componentes['Puesta en marcha']['objetos']  = []
-    for c in componentes_parque.componentes.all().filter(estados__idx=4):
+    filtro = 'relacionesfu__orden_puestaenmarcha'
+    karws = {filtro + '__gt': 0}
+
+    for c in componentes_parque.componentes.all().filter(**karws).order_by(filtro):
         aux = getComponenteStatus(registros, 4, c, relaciones)
         color = 'bg-grey-salt'
         objeto = {}
