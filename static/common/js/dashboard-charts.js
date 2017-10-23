@@ -21,7 +21,10 @@ var DashboardGraficos = function () {
                     borderWidth: 0,
                     dataLabels: {
                         enabled: true,
-                        format: '{point.y}'
+                        format: '{point.y}',
+                        style:{
+                          fontSize:'9px'
+                        }
                     }
                 }
             },

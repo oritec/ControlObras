@@ -18,6 +18,9 @@
         .table-contenido{
             border: 1px solid #e7ecf1;
         }
+        .open > .dropdown-menu {
+            z-index: 1000;
+        }
     </style>
     <!-- END PAGE LEVEL STYLES -->
 {% endblock %}
@@ -27,7 +30,7 @@
 
 <div class="row">
     <div class="col-md-12" >
-        <div class="table-responsive" style="padding-bottom: 10px">
+        <div class="table-responsive" style="padding-bottom: 20px">
           <table class="table" >
               <tbody>
               {% for titulo,elementos in componentes.items %}
@@ -83,7 +86,7 @@
     </div>
 </div>
 
-<div class="row" style="padding-bottom: 40px">
+<div class="row" style="padding-bottom: 40px;z-index: -1;">
     {% if 'img' in pos %}
     <div class="col-md-3">
         <div class="imagehotspot-container" style="position: relative; max-width: 1280px; /* max-width: actual width of image */ width: 100%; height: auto; z-index: 101;">

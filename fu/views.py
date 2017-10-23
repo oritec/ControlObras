@@ -304,7 +304,7 @@ def graficoAvances(componentes_parque,anho,semana,anho2,semana2,data_proyeccion)
     data_full.append({"name": "Real", "data": data_graficos})
 
     if len(data_proyeccion):
-        data_full.append({"name": "Proyeccion", "data": data_proyeccion,"dashStyle" : "Dot"})
+        data_full.append({"name": "Proyección", "data": data_proyeccion,"dashStyle" : "Dot"})
 
 
     datos = serializeGrafico(data_full)
