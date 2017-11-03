@@ -101,9 +101,11 @@
                                     <i class="fa fa-angle-double-left"></i>
                                     Volver a b&uacute;squeda
                                 </button>
+                                {% if perms.usuarios.create_editables %}
                                 <button id="exportExcel" class="btn green" style="padding-left: 10px">
                                     <i class="fa fa-file-excel-o"></i> Exportar a Excel
                                 </button>
+                                {% endif %}
                                 <a href="" id="exportPDF" data-target="#basic1" data-toggle="modal" class="btn blue-soft" style="padding-left: 10px">
                                     <i class="fa fa-file-pdf-o"></i> Exportar a PDF
                                 </a>

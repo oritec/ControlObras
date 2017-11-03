@@ -52,6 +52,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'usuarios.middleware.ChangePasswordMiddleware', # Para obligar a resetear la contrasena
+    'usuarios.middleware.PermissionMiddleware', # Para ayudar un poco con los permisos
 ]
 
 ROOT_URLCONF = 'ControlObras.urls'

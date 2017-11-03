@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.utils.encoding import python_2_unicode_compatible
 from django.db import models
 from vista.models import ParqueSolar,Aerogenerador
+from django.contrib.auth.models import User
 import datetime
 
 import logging
@@ -94,6 +95,7 @@ class Registros(models.Model):
     estado = models.ForeignKey(EstadoFU, on_delete=models.CASCADE)
     fecha = models.DateField(blank=False, null=False)
     no_serie = models.CharField(max_length=100, unique=False, blank=False, null=True)
+    created_by = models.ForeignKey(User)
     def __str__(self):
         return 'Registro, parque=' + self.parque.nombre + ',aerogenerador='+ self.aerogenerador.nombre + \
                ',componente=' + self.componente.nombre + ',estado=' + self.estado.nombre + \
@@ -123,6 +125,7 @@ class Paradas(models.Model):
     viento = models.FloatField(blank=True,null=True)
     grua = models.ForeignKey(ParadasGrua, on_delete=models.CASCADE)
     observaciones = models.CharField(max_length=200,blank=True,null=True)
+    created_by = models.ForeignKey(User)
     def __str__(self):
         return 'Paradas, parque=' + self.parque.nombre + ',aerogenerador='+ self.aerogenerador.nombre + \
                ',componente=' + self.componente.nombre + ',fecha_inicial=' + self.fecha_inicial.strftime("%d-%m-%Y") + \

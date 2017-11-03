@@ -68,13 +68,17 @@
                     </div>
                 </div>
                 <div class="row">
+                    {% if perms.vista.add_parquesolar %}
                     <button type="button" class="btn btn-primary" id="newParque">Crear Nuevo</button>
+                    {% endif %}
+                    {% if perms.vista.delete_parquesolar %}
                     <input type="button" id="delParque" data-target="#basic" data-toggle="modal" class="btn btn-danger" value="Borrar" onclick="$('#modal_parque').val($('#parques').val());"/>
+                    {% endif %}
                     <button type="button" class="btn btn-success" id="irParque">Ir ></button>
-
                 </div>
             </div>
         </div>
+    {% if perms.vista.add_parquesolar %}
         <div class="section">
             <form action="{% url 'vista:index' %}" method="post" role='form' id="addParqueForm">
             {% csrf_token %}
@@ -82,12 +86,9 @@
                     <div class="col-md-6 col-md-offset-3">
                         <h2> Ingresar nombre del proyecto: </h2>
                     </div>
-
                 </div>
                 <div class="row">
-
                     <div class="col-md-6 col-md-offset-3">
-
                             <div class="form-group">
                                 {{ formAddParque.nombre }}
                             </div>
@@ -95,7 +96,6 @@
                                 {{ formAddParque.nombre.errors }}
                             </span>
                     </div>
-
                 </div>
                 <br>
                 <div class="row">
@@ -106,9 +106,7 @@
                 </div>
 
                 <div class="row">
-
                     <div class="col-md-6 col-md-offset-3">
-
                             <div class="form-group">
                                 {{ formAddParque.codigo }}
                             </div>
@@ -116,7 +114,6 @@
                                 {{ formAddParque.codigo.errors }}
                             </span>
                     </div>
-
                 </div>
                 <br>
                 <div class="row">
@@ -126,8 +123,10 @@
                 </div>
             </form>
         </div>
+    {% endif %}
     </div>
 
+    {% if perms.vista.delete_parquesolar %}
     <div class="modal fade" id="basic" tabindex="-1" role="basic" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -157,7 +156,7 @@
         </div>
         <!-- /.modal-dialog -->
     </div>
-
+    {% endif %}
 
     <script src="{% static 'common/assets/global/plugins/jquery.min.js' %}" type="text/javascript"></script>
 	<script src="{% static 'common/assets/global/plugins/bootstrap/js/bootstrap.min.js' %}" type="text/javascript"></script>

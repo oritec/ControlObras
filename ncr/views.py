@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
-from django.shortcuts import render
+import sys
+reload(sys)
+sys.setdefaultencoding("utf-8")
+from django.template.response import TemplateResponse
 from vista.functions import *
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from vista.models import ParqueSolar,Aerogenerador
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
@@ -28,7 +31,8 @@ from openpyxl.worksheet.table import Table, TableStyleInfo
 from datetime import date
 from datetime import datetime
 from django.core.serializers import serialize
-
+from django.core.exceptions import PermissionDenied
+from usuarios.models import Log
 logger = logging.getLogger('oritec')
 
 @login_required(login_url='ingresar')
@@ -41,7 +45,7 @@ def home(request,slug):
     contenido.subtitulo=parque.nombre
     contenido.menu = ['menu-principal', 'menu2-resumen']
 
-    return render(request, 'vista/home.html',
+    return TemplateResponse(request, 'vista/home.html',
         {'cont': contenido,
          'parque': parque,
          'aerogeneradores':aerogeneradores,
@@ -124,7 +128,7 @@ def observaciones_resumen(request,slug):
 
     grafico_aerogenerador = graficoBarrasCompleto(observaciones,'aerogenerador',aerogeneradores, showall=True)
 
-    return render(request, 'ncr/resumen.html',
+    return TemplateResponse(request, 'ncr/resumen.html',
                   {'cont': contenido,
                    'parque': parque,
                    'observaciones': observaciones,
@@ -159,7 +163,7 @@ def observaciones(request,slug,slug_ag):
     grafico_subcomponente = graficoBarrasSimple(observaciones, 'sub_componente', Subcomponente.objects.all())
     grafico_tipo = graficoBarrasSimple(observaciones, 'tipo', Tipo.objects.all())
 
-    return render(request, 'ncr/resumen.html',
+    return TemplateResponse(request, 'ncr/resumen.html',
         {'cont': contenido,
             'parque': parque,
             'observaciones': observaciones,
@@ -173,6 +177,7 @@ def observaciones(request,slug,slug_ag):
         })
 
 @login_required(login_url='ingresar')
+@permission_required('ncr.add_observacion', raise_exception=True)
 def add_observacion(request,slug,observacion_id=0):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
@@ -188,6 +193,8 @@ def add_observacion(request,slug,observacion_id=0):
         ag_readonly = True
         back_url = reverse('ncr:observaciones', args=[parque.slug,request.GET['aerogenerador']])
     elif edit_observacion is not None:
+        if not (request.user.has_perm('ncr.change_observacion') or request.user == edit_observacion.created_by) :
+            raise PermissionDenied
         contenido.titulo = u'Editar Observación'
         contenido.menu = ['menu-ncr', 'menu2-observaciones-' + str(edit_observacion.aerogenerador.idx)]
         ag_readonly = False
@@ -204,6 +211,8 @@ def add_observacion(request,slug,observacion_id=0):
 
     if request.method == 'POST':
         if edit_observacion is not None:
+            if not request.user.has_perm('ncr.change_observacion'):
+                raise PermissionDenied
             observacionForm = ObservacionForm(request.POST,instance=edit_observacion)
             rev = edit_observacion.revision_set.order_by('id')[0]
             revisionForm = RevisionForm(request.POST,instance=rev)
@@ -216,6 +225,11 @@ def add_observacion(request,slug,observacion_id=0):
                 revision = revisionForm.save()
                 # es necesario para actualizar el estado de la observacion
                 observacion.save()
+                log_msg = 'Se edita observación para parque ' + parque.nombre + \
+                          " - Aerogenerador - " + observacion.aerogenerador.nombre + \
+                          " - " + observacion.nombre
+                log = Log(texto=log_msg, tipo=2, user=request.user)
+                log.save()
             else:
                 observacion = observacionForm.save(commit=False)
                 observacion.created_by = request.user
@@ -226,11 +240,16 @@ def add_observacion(request,slug,observacion_id=0):
                 revision.reported_by = observacion.reported_by
                 revision.save()
                 # es necesario para actualizar el estado de la observacion
+
+                log_msg = 'Se crea observación para parque ' + parque.nombre + \
+                          " - Aerogenerador - " + observacion.aerogenerador.nombre + \
+                          " - " + observacion.nombre
+                log = Log(texto=log_msg, tipo=1, user=request.user)
+                log.save()
                 observacion.save()
             return HttpResponseRedirect(reverse('ncr:observaciones-show', args=[parque.slug,observacion.id]))
         else:
             logger.debug('Formulario no es válido...')
-
 
     if observacionForm is None:
         if edit_observacion is not None:
@@ -245,7 +264,7 @@ def add_observacion(request,slug,observacion_id=0):
                 observacionForm = ObservacionForm(initial={"parque": parque})
             revisionForm = RevisionForm()
 
-    return render(request, 'ncr/agregarObservacion.html',
+    return TemplateResponse(request, 'ncr/agregarObservacion.html',
         {'cont': contenido,
          'parque': parque,
          'observacionForm':observacionForm,
@@ -284,7 +303,7 @@ def show_observacion(request,slug,observacion_id):
     if 'printable' in request.GET:
         template_name = 'ncr/showObservacion-printable.html'
 
-    return render(request, template_name,
+    return TemplateResponse(request, template_name,
         {'cont': contenido,
          'parque': parque,
          'observacion': observacion,
@@ -294,21 +313,61 @@ def show_observacion(request,slug,observacion_id):
         })
 
 @login_required(login_url='ingresar')
+@permission_required('ncr.delete_observacion', raise_exception=True)
+def del_observacion(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
+    contenido=ContenidoContainer()
+    contenido.user=request.user
+    contenido.titulo=u'Listado de observadores'
+    contenido.subtitulo='Parque '+ parque.nombre
+    contenido.menu = ['menu-principal', 'menu2-observadores']
+    observadores = Observador.objects.all().order_by('id')
+    response_data = {}
+
+    if request.method == 'POST':
+        logger.debug('POST del_observacion')
+        obs = Observacion.objects.get(id=int(request.POST['del_id']))
+        log_msg = "Se elimina observación para parque " + parque.nombre + \
+                  " - Aerogenerador - " + obs.aerogenerador.nombre + \
+                  " - Nombre" + obs.nombre
+        log = Log(texto=log_msg, tipo=3, user=request.user)
+        log.save()
+        if not (request.user.has_perm('ncr.delete_observacion') or request.user == obs.created_by) :
+            raise PermissionDenied
+        obs.delete()
+        return HttpResponseRedirect(request.POST['back_url'])
+
+@login_required(login_url='ingresar')
 def add_images(request,slug,revision_id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     revision= Revision.objects.get(pk=revision_id)
     logger.debug('Enter add_images')
     response_data = {}
     response_data['files'] = []
+    if not (request.user.has_perm('ncr.change_revision') or request.user == revision.created_by):
+        raise PermissionDenied
     if request.method == 'POST':
         for key, file in request.FILES.items():
             #logger.debug(file)
             primary = False
             instance = Fotos(imagen=file,revision=revision)
             instance.save()
+            log_msg = "Se agrega imagen para parque " + parque.nombre + \
+                      " - Aerogenerador " + revision.observacion.aerogenerador.nombre + \
+                      " - Observacion " + revision.observacion.nombre + \
+                      " - Nombre " + file.name
+            log = Log(texto=log_msg, tipo=1, user=request.user)
+            log.save()
             if request.POST['radio']==file.name:
                 set_primary_photo(foto_id=instance.id)
                 primary = True
+                log_msg = "Se escoge imagen principal para parque " + parque.nombre + \
+                          " - Aerogenerador " + revision.observacion.aerogenerador.nombre + \
+                          " - Observacion " + revision.observacion.nombre + \
+                          " - Nombre " + file.name
+                log = Log(texto=log_msg, tipo=1, user=request.user)
+                log.save()
 
             data={'name': file.name,
                   'size':str(file.size),
@@ -372,6 +431,11 @@ def del_image(request,slug,image_id):
     response_data['files'] = []
     if request.method == 'DELETE':
         foto = Fotos.objects.get(pk=image_id)
+
+        log_msg = "Se elimina imagen "+ foto.imagen.name
+        log = Log(texto=log_msg, tipo=3, user=request.user)
+        log.save()
+
         foto.delete()
         data = {os.path.basename(foto.imagen.name):True}
         response_data['files'].append(data)
@@ -400,6 +464,9 @@ def primary_image(request,slug):
         #logger.debug("post")
         set_primary_photo(foto_id=request.POST['foto_id'])
         foto = Fotos.objects.get(pk=request.POST['foto_id'])
+        log_msg = "Se escoge imagen principal " + foto.imagen.name
+        log = Log(texto=log_msg, tipo=2, user=request.user)
+        log.save()
         return HttpResponse(foto.thumbnail.url)
 
 @login_required(login_url='ingresar')
@@ -413,6 +480,8 @@ def add_revision(request,slug,observacion_id, revision_id = 0):
     contenido.user=request.user
     if edit_revision is not None:
         contenido.titulo = u'Editar Revisión'
+        if not (request.user.has_perm('ncr.change_revision') or request.user == edit_revision.created_by) :
+            raise PermissionDenied
     else:
         contenido.titulo=u'Agregar Revisión'
     contenido.subtitulo=parque.nombre
@@ -430,10 +499,20 @@ def add_revision(request,slug,observacion_id, revision_id = 0):
             logger.debug('Formulario válido.')
             if edit_revision is not None:
                 revision = revisionForm.save()
+                log_msg = "Se edita revisión para parque " + parque.nombre + \
+                          " - Aerogenerador - " + revision.observacion.aerogenerador.nombre + \
+                          " - Observacion " + revision.observacion.nombre
+                log = Log(texto=log_msg, tipo=2, user=request.user)
+                log.save()
             else:
                 revision = revisionForm.save(commit=False)
                 revision.created_by = request.user
                 revision.save()
+                log_msg = "Se agrega revisión para parque " + parque.nombre + \
+                          " - Aerogenerador - " + revision.observacion.aerogenerador.nombre + \
+                          " - Observacion " + revision.observacion.nombre
+                log = Log(texto=log_msg, tipo=1, user=request.user)
+                log.save()
             revision.observacion.save() # Necesario para actualizar campos
             return HttpResponseRedirect(reverse('ncr:observaciones-show', args=[parque.slug,observacion.id]))
         else:
@@ -445,7 +524,7 @@ def add_revision(request,slug,observacion_id, revision_id = 0):
         else:
             revisionForm = RevisionFormFull(initial={"observacion":observacion})
 
-    return render(request, 'ncr/agregarRevision.html',
+    return TemplateResponse(request, 'ncr/agregarRevision.html',
         {'cont': contenido,
          'parque': parque,
          'observacion': observacion,
@@ -575,6 +654,8 @@ def informeNCR(request,slug):
                 graficos.append('tipo')
 
             if 'excel' in request.POST:
+                if not request.user.has_perm('usuarios.create_editables') :
+                    raise PermissionDenied
                 logger.debug('Excel')
                 target_stream = generateExcelNCR(resultados)
                 response = HttpResponse(
@@ -607,7 +688,7 @@ def informeNCR(request,slug):
                 respuesta['Content-Disposition'] = 'attachment; filename="' + nombre + '"'
                 return respuesta
 
-    return render(request, 'ncr/informeNCR.html',
+    return TemplateResponse(request, 'ncr/informeNCR.html',
         {'cont': contenido,
          'parque': parque,
          'aerogeneradores':aerogeneradores,
@@ -788,6 +869,8 @@ def punchlist(request,slug):
             logger.debug("Form Valid")
             show_fotos = form.cleaned_data['fotos']
             if 'word' in request.POST:
+                if not request.user.has_perm('usuarios.create_editables') :
+                    raise PermissionDenied
                 logger.debug('WORD')
                 if len(form.cleaned_data['aerogenerador']) == 1:
                     ag = form.cleaned_data['aerogenerador'][0]
@@ -862,7 +945,7 @@ def punchlist(request,slug):
                     return response
 
 
-    return render(request, 'ncr/punchlist.html',
+    return TemplateResponse(request, 'ncr/punchlist.html',
         {'cont': contenido,
          'parque': parque,
          'aerogeneradores':aerogeneradores,
@@ -914,29 +997,12 @@ def observadores(request,slug):
             response,
             content_type="application/json"
         )
-    return render(request, 'ncr/agregarObservador.html',
+    return TemplateResponse(request, 'ncr/agregarObservador.html',
         {'cont': contenido,
          'parque': parque,
          'observadores': observadores,
          'aerogeneradores':aerogeneradores,
         })
-
-@login_required(login_url='ingresar')
-def del_observacion(request,slug):
-    parque = get_object_or_404(ParqueSolar, slug=slug)
-    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
-    contenido=ContenidoContainer()
-    contenido.user=request.user
-    contenido.titulo=u'Listado de observadores'
-    contenido.subtitulo='Parque '+ parque.nombre
-    contenido.menu = ['menu-principal', 'menu2-observadores']
-    observadores = Observador.objects.all().order_by('id')
-    response_data = {}
-
-    if request.method == 'POST':
-        logger.debug('POST del_observacion')
-        Observacion.objects.get(id=int(request.POST['del_id'])).delete()
-        return HttpResponseRedirect(request.POST['back_url'])
 
 @login_required(login_url='ingresar')
 def del_revision(request,slug):
@@ -953,7 +1019,14 @@ def del_revision(request,slug):
     if request.method == 'POST':
         logger.debug('POST del_observacion')
         revision=Revision.objects.get(id=int(request.POST['del_id']))
+        if not (request.user.has_perm('ncr.delete_revision') or request.user == revision.created_by) :
+            raise PermissionDenied
         observacion = revision.observacion
+        log_msg = "Se elimina revisión para parque " + parque.nombre + \
+                  " - Aerogenerador - " + revision.observacion.aerogenerador.nombre + \
+                  " - Observacion " + revision.observacion.nombre
+        log = Log(texto=log_msg, tipo=3, user=request.user)
+        log.save()
         revision.delete()
         observacion.save()  # Necesario para actualizar campos
         return HttpResponseRedirect(request.POST['back_url'])
@@ -973,11 +1046,23 @@ def close_observacion(request,slug):
     if request.method == 'POST':
         logger.debug('POST del_observacion')
         observacion=Observacion.objects.get(id=int(request.POST['del_id']))
+        if not (request.user.has_perm('ncr.change_observacion') or request.user == observacion.created_by) :
+            raise PermissionDenied
         if request.POST['cerrar'] == '1':
             observacion.msg_cerrado = request.POST['cierre_msg']
             observacion.cerrado = True
+            log_msg = "Se cierra observacion para parque " + parque.nombre + \
+                      " - Aerogenerador - " + observacion.aerogenerador.nombre + \
+                      " - Observacion " + observacion.nombre
+            log = Log(texto=log_msg, tipo=2, user=request.user)
+            log.save()
         else:
             observacion.msg_cerrado = ''
             observacion.cerrado = False
+            log_msg = "Se abre observacion para parque " + parque.nombre + \
+                      " - Aerogenerador - " + observacion.aerogenerador.nombre + \
+                      " - Observacion " + observacion.nombre
+            log = Log(texto=log_msg, tipo=2, user=request.user)
+            log.save()
         observacion.save()
         return HttpResponseRedirect(request.POST['back_url'])

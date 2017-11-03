@@ -1,0 +1,172 @@
+{% extends "usuarios/base.html" %}
+{% load staticfiles %}
+{% load customtags %}
+{% load tz %}
+{% block css %}
+    <!-- BEGIN PAGE LEVEL STYLES -->
+    <!-- END PAGE LEVEL STYLES -->
+{% endblock %}
+
+{% block contenido %}
+
+    <div class="row">
+    <div class="col-md-12">
+    <h3>Bienvenido {{ cont.user }}!</h3>
+    </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <!-- BEGIN PORTLET -->
+            <div class="portlet light ">
+                <div class="portlet-title">
+                    <div class="caption caption-md">
+                        <i class="icon-bar-chart theme-font hide"></i>
+                        <span class="caption-subject font-blue-madison bold uppercase">Tus proyectos</span>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="table-scrollable table-scrollable-borderless">
+                        <table class="table table-hover table-light">
+                            {% for p in proyectos %}
+                                <tr><td> {{ p.nombre }} </td></tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <!-- BEGIN PORTLET -->
+            <div class="portlet light ">
+                <div class="portlet-title">
+                    <div class="caption caption-md">
+                        <i class="icon-globe theme-font hide"></i>
+                        <span class="caption-subject font-blue-madison bold uppercase">Últimas actividades</span>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="scroller" style="height: 320px;padding-right:20px" data-always-visible="1" data-rail-visible1="0" data-handle-color="#D7DCE2">
+                        {% if logs %}
+                        <ul class="feeds">
+                            {% for log in logs %}
+                            <li>
+                                <div class="col1">
+                                    <div class="cont">
+                                        <div class="cont-col1">
+                                            {% if log.tipo == 0 %}
+                                            <div class="label label-sm label-warning">
+                                                <i class="fa fa-bell-o"></i>
+                                            </div>
+                                            {% elif log.tipo == 1 %}
+                                            <div class="label label-sm label-success">
+                                                <i class="fa fa-plus"></i>
+                                            </div>
+                                            {% elif log.tipo == 2 %}
+                                            <div class="label label-sm label-info">
+                                                <i class="fa fa-pencil-square-o"></i>
+                                            </div>
+                                            {% elif log.tipo == 3 %}
+                                            <div class="label label-sm label-danger">
+                                                <i class="fa fa-minus"></i>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="cont-col2">
+                                            <div class="desc">
+                                                {{ log.texto }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col2">
+                                    <div class="date"> {{ log.created_at|date:"d/M/Y" }}  </div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                            No existen actividades.
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <!-- BEGIN PORTLET -->
+            <div class="portlet light ">
+                <div class="portlet-title">
+                    <div class="caption caption-md">
+                        <i class="icon-globe theme-font hide"></i>
+                        <span class="caption-subject font-blue-madison bold uppercase">Últimas actividades (todos los usuarios) </span>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="scroller" style="height: 320px;padding-right:20px" data-always-visible="1" data-rail-visible1="0" data-handle-color="#D7DCE2">
+                        {% if logs_all %}
+                        <ul class="feeds">
+                            {% for log in logs_all %}
+                            <li>
+                                <div class="col1">
+                                    <div class="cont">
+                                        <div class="cont-col1">
+                                            {% if log.tipo == 0 %}
+                                            <div class="label label-sm label-warning">
+                                                <i class="fa fa-bell-o"></i>
+                                            </div>
+                                            {% elif log.tipo == 1 %}
+                                            <div class="label label-sm label-success">
+                                                <i class="fa fa-plus"></i>
+                                            </div>
+                                            {% elif log.tipo == 2 %}
+                                            <div class="label label-sm label-info">
+                                                <i class="fa fa-pencil-square-o"></i>
+                                            </div>
+                                            {% elif log.tipo == 3 %}
+                                            <div class="label label-sm label-danger">
+                                                <i class="fa fa-minus"></i>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="cont-col2">
+                                            <div class="desc">
+                                                {{ log.texto }}
+                                                <span class="label label-sm label-info">
+                                                    {{ log.user.username }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col2">
+                                    <div class="date"> {{ log.created_at|date:"d/M/Y" }}  </div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                            No existen actividades.
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block javascript %}
+<!-- BEGIN PAGE LEVEL PLUGINS -->
+
+<!-- END PAGE LEVEL PLUGINS -->
+{% endblock %}
+
+{% block jquery %}
+
+
+{% endblock %}

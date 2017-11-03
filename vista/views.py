@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from django.shortcuts import render
+from django.template.response import TemplateResponse
 from vista.functions import *
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from forms import ParqueForm, ParqueFormFull
 from models import ParqueSolar, Aerogenerador
 from django.http import HttpResponse, HttpResponseRedirect
@@ -12,24 +12,31 @@ from django.shortcuts import redirect
 import json
 import logging
 from django.db import IntegrityError
+from usuarios.views import check_password, check_permisos
+from usuarios.models import Usuario, Log
 logger = logging.getLogger('oritec')
 
 @login_required(login_url='ingresar')
 def index(request):
-    parques=ParqueSolar.objects.all()
+    usuario = Usuario.objects.get(user=request.user)
+    parques=usuario.parques.all()
     formAddParque = ParqueForm()
     if request.method == 'POST':
         if 'addParque' in request.POST:
             formParque = ParqueForm(request.POST)
             if formParque.is_valid():
-                formParque.save()
+                p=formParque.save()
+                log_msg = "Se crea parque " + p.nombre
+                log = Log(texto=log_msg,tipo=1,user=request.user)
+                log.save()
             else:
                 logger.debug('error')
                 mensaje = 'Código de parque ya existe!'
                 messages.add_message(request, messages.ERROR, mensaje)
-    return render(request, 'vista/index.html',
+    return TemplateResponse(request, 'vista/index.html',
                   {'parques': parques,
-                   'formAddParque': formAddParque})
+                   'formAddParque': formAddParque,
+                   'user':request.user})
 
 @login_required(login_url='ingresar')
 def home(request,slug):
@@ -41,21 +48,26 @@ def home(request,slug):
     contenido.subtitulo=parque.nombre
     contenido.menu = ['menu-principal', 'menu2-resumen']
 
-    return render(request, 'vista/home.html',
+    return TemplateResponse(request, 'vista/home.html',
         {'cont': contenido,
          'parque': parque,
          'aerogeneradores':aerogeneradores
         })
 
 @login_required(login_url='ingresar')
+@permission_required('vista.delete_parquesolar', raise_exception=True)
 def del_parque(request):
     if request.method == 'POST':
         if 'parque' in request.POST:
             aux = ParqueSolar.objects.get(slug__exact=request.POST['parque'])
+            log_msg = "Se elimina parque " + aux.nombre
             aux.delete()
+            log = Log(texto=log_msg, tipo=3, user=request.user)
+            log.save()
     return HttpResponseRedirect(reverse('vista:index'))
 
 @login_required(login_url='ingresar')
+@permission_required('vista.change_parquesolar', raise_exception=True)
 def configuracion(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque)
@@ -70,6 +82,9 @@ def configuracion(request,slug):
         if form.is_valid():
             logger.debug("Formulario es válido")
             parque = form.save()
+            log_msg = "Se cambia configuración de parque " + parque.nombre
+            log = Log(texto=log_msg, tipo=2, user=request.user)
+            log.save()
             mensaje = 'Información modificada con éxito'
             messages.add_message(request, messages.SUCCESS, mensaje)
             response = redirect('vista:home', slug=parque.slug)
@@ -103,7 +118,7 @@ def configuracion(request,slug):
     if form is None:
         form = ParqueFormFull(instance=parque)
 
-    return render(request, 'vista/configuracion.html',
+    return TemplateResponse(request, 'vista/configuracion.html',
         {'cont': contenido,
          'parque': parque,
          'form': form,
@@ -111,6 +126,7 @@ def configuracion(request,slug):
         })
 
 @login_required(login_url='ingresar')
+@permission_required('vista.change_parquesolar', raise_exception=True)
 def aerogeneradores(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque)
@@ -129,17 +145,20 @@ def aerogeneradores(request,slug):
         editar.nombre = request.POST['nombre']
         try:
             editar.save()
+            log_msg = "Se edita Aerogenerador - " + editar.nombre + " - idx=" + str(editar.idx)
+            log = Log(texto=log_msg, tipo=2, user=request.user)
+            log.save()
         except IntegrityError as e:
             logger.debug(e)
             return HttpResponse(status=409)
-        response_data['id'] = str(editar.id)
+        response_data['id'] = str(editar.idx)
         response = json.dumps(response_data)
         return HttpResponse(
             response,
             content_type="application/json"
         )
 
-    return render(request, 'vista/agregarAerogenerador.html',
+    return TemplateResponse(request, 'vista/agregarAerogenerador.html',
         {'cont': contenido,
          'parque': parque,
          'observadores': observadores,

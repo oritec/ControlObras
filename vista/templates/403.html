@@ -1,0 +1,69 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<!--
+Template Name: Metronic - Responsive Admin Dashboard Template build with Twitter Bootstrap 3.3.7
+Version: 4.7.1
+Author: KeenThemes
+Website: http://www.keenthemes.com/
+Contact: support@keenthemes.com
+Follow: www.twitter.com/keenthemes
+Dribbble: www.dribbble.com/keenthemes
+Like: www.facebook.com/keenthemes
+Purchase: http://themeforest.net/item/metronic-responsive-admin-dashboard-template/4021469?ref=keenthemes
+Renew Support: http://themeforest.net/item/metronic-responsive-admin-dashboard-template/4021469?ref=keenthemes
+License: You must have a valid license purchased only from themeforest(the above link) in order to legally use the theme for your project.
+-->
+<!--[if IE 8]> <html lang="en" class="ie8 no-js"> <![endif]-->
+<!--[if IE 9]> <html lang="en" class="ie9 no-js"> <![endif]-->
+<!--[if !IE]><!-->
+<html lang="en">
+    <!--<![endif]-->
+    <!-- BEGIN HEAD -->
+<head>
+<meta charset="utf-8"/>
+<title>Saroen Global | Sistema </title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+
+<!-- BEGIN GLOBAL MANDATORY STYLES -->
+<link href="{% static 'common/fonts/OpenSans.css' %}" rel="stylesheet" type="text/css"/>
+<link href="{% static 'common/assets/global/plugins/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'common/assets/global/plugins/simple-line-icons/simple-line-icons.min.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'common/assets/global/plugins/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'common/assets/global/plugins/bootstrap-switch/css/bootstrap-switch.min.css' %}" rel="stylesheet" type="text/css" />
+<!-- END GLOBAL MANDATORY STYLES -->
+
+<!-- BEGIN THEME STYLES -->
+<link href="{% static 'common/assets/global/css/components.min.css' %}" rel="stylesheet" id="style_components" type="text/css" />
+<link href="{% static 'common/assets/global/css/plugins.min.css' %}" rel="stylesheet" type="text/css" />
+<!-- END THEME STYLES -->
+<!-- BEGIN THEME LAYOUT STYLES -->
+<link href="{% static 'common/assets/layouts/layout/css/layout.min.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'common/assets/layouts/layout/css/themes/light.css' %}" rel="stylesheet" type="text/css" id="style_color" />
+<!-- END THEME LAYOUT STYLES -->
+
+<link href="{% static 'common/assets/pages/css/lock.min.css' %}" rel="stylesheet" type="text/css" />
+
+<link rel="stylesheet" type="text/css" href="{% static 'common/assets/global/plugins/bootstrap-toastr/toastr.min.css' %}"/>
+<link rel="shortcut icon" href="{% static 'common/images/icono-top.png' %}"/>
+
+{% block css %}
+
+{% endblock %}
+
+</head>
+
+    <body class="">
+        <div class="page-lock">
+            <div class="page-logo">
+                <a class="brand" href="/">
+                    <img src="{% static 'common/images/saroenfull.png' %}" alt="logo" class="logo-default" style="margin-top:7px" height="30px"/>
+                </a>
+            </div>
+            <div class="page-body">
+                <div class="lock-head"> 403 - Usuario no autorizado! </div>
+            </div>
+        </div>
+    </body>
+</html>

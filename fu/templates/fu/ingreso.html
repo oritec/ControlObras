@@ -47,12 +47,14 @@
                                     <i class="fa {{ elementos|get_item:'icon' }}"></i>
                                     <div style=" padding-left: 5px;padding-right: 5px;"> {{ objeto|get_item:"componente"|get_attr:"nombre" }} </div>
                                     </a>
+                                    {% if perms.fu.add_registros %}
                                     <ul class="dropdown-menu">
                                         <li>
                                             <a href="javascript:;" name="{{ elementos|get_item:'id' }}-{{ objeto|get_item:"componente"|get_attr:"id" }}"> Registrar
                                             </a>
                                         </li>
                                     </ul>
+                                    {% endif %}
                               </div>
                               {% elif objeto|get_item:"status" == 2 %}
                               <div class="btn-group">
@@ -60,12 +62,14 @@
                                     <i class="fa {{ elementos|get_item:'icon' }}"></i>
                                     <div style=" padding-left: 5px;padding-right: 5px;"> {{ objeto|get_item:"componente"|get_attr:"nombre" }} </div>
                                     </a>
+                                    {% if perms.fu.delete_registros or user.id == objeto|get_item:"created_by"  %}
                                     <ul class="dropdown-menu">
                                         <li>
                                             <a href="javascript:;" name="eliminar-{{ objeto|get_item:"componente"|get_attr:"id" }}-{{ objeto|get_item:"estado" }}"> Eliminar
                                             </a>
                                         </li>
                                     </ul>
+                                    {% endif %}
                               </div>
                               {% elif objeto|get_item:"status" == 1 %}
                               <div class="btn-group">
@@ -139,6 +143,7 @@
     </div>
 </div>
 
+{% if perms.fu.add_registros %}
 <div class="modal fade bs-modal-lg" id="descarga" tabindex="-1" role="basic" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -243,6 +248,7 @@
     </div>
     <!-- /.modal-dialog -->
 </div>
+{% endif %}
 
 <div class="modal fade" id="delete" tabindex="-1" role="basic" aria-hidden="true">
     <div class="modal-dialog">
@@ -307,7 +313,7 @@
             html: true,
         });
     });
-
+    {% if perms.fu.add_registros %}
     $("[name^='descarga']").each(function( index ) {
         $(this).click(function(index){
             var id = $(this).attr('name').split('-')[1];
@@ -358,6 +364,7 @@
             $('#registro').modal();
         });
     });
+    {% endif %}
 
     $("[name^='eliminar']").each(function( index ) {
         $(this).click(function(index){
@@ -386,6 +393,7 @@
         });
     });
 
+    {% if perms.fu.add_registros %}
     $('#descarga').on('hidden.bs.modal', function (e) {
         $('#descargaForm > #componente_id').remove();
     });
@@ -393,5 +401,5 @@
     $('#registro').on('hidden.bs.modal', function (e) {
         $('#registroForm > #componente_id').remove();
     });
-
+    {% endif %}
 {% endblock %}

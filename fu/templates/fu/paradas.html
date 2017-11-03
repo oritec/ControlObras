@@ -58,13 +58,14 @@
                                 <td> {{ parada.duracion|floatformat:1 }} </td>
                                 <td> {{ parada.viento }} </td>
                                 <td> {{ parada.grua.nombre }} </td>
-                                <td> {{ parada.observaciones }} </td>
+                                <td> {% if parada.observaciones %}{{ parada.observaciones }} {% else %} - {% endif %}</td>
                                 <td>
                                     <a href="{% url 'fu:editar-paradas' parque.slug parada.id %}" class="btn btn-circle btn-xs grey-cascade">
                                         Ver <i class="fa fa-search"></i>
                                     </a>
+                                    {% if perms.fu.delete_paradas or user == parada.created_by %}
                                     <input type="button" id="del_observacion{{ parada.id }}" data-target="#basic" data-toggle="modal" class="btn btn-xs btn-circle red" value="Borrar" onclick="$('#del_id').val({{ parada.id }})"/>
-
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}
@@ -77,6 +78,7 @@
             </div>
         </div>
     </div>
+    {% if perms.fu.add_paradas  %}
     <div class="row">
         <div class="col-md-12">
             <a href="{% url 'fu:agregar-paradas' parque.slug %}{{ url_append }}" class="btn green-steel">
@@ -85,6 +87,7 @@
             </a>
         </div>
     </div>
+    {% endif %}
 
 {% endif %}
 

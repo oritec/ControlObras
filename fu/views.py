@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from django.shortcuts import render
+from django.template.response import TemplateResponse
 import logging
-
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import get_object_or_404
 from vista.models import ParqueSolar, Aerogenerador
 from vista.functions import *
@@ -30,6 +29,8 @@ import os
 from ncr.views import serializeGrafico
 from django.db.models import Sum
 import numpy as np
+from django.core.exceptions import PermissionDenied
+from usuarios.models import Log
 
 meses_espanol={"1":"Enero",
        "2":"Febrero",
@@ -689,7 +690,7 @@ def dashboard(request,slug):
     try:
         configuracion = ConfiguracionFU.objects.get(parque=parque)
     except ConfiguracionFU.DoesNotExist:
-        return render(request, 'fu/dashboard.html',
+        return TemplateResponse(request, 'fu/dashboard.html',
                       {'cont': contenido,
                        'parque': parque,
                        'aerogeneradores': aerogeneradores,
@@ -762,7 +763,7 @@ def dashboard(request,slug):
         ag_ready = 0
 
 
-    return render(request, 'fu/dashboard.html',
+    return TemplateResponse(request, 'fu/dashboard.html',
                   {'cont': contenido,
                    'parque': parque,
                    'aerogeneradores': aerogeneradores,
@@ -799,7 +800,7 @@ def avance(request,slug):
 
     pos_ag = posicionAerogeneradores(componentes_parque,2017,39)
 
-    return render(request, 'fu/avance.html',
+    return TemplateResponse(request, 'fu/avance.html',
                   {'cont': contenido,
                    'parque': parque,
                    'aerogeneradores': aerogeneradores,
@@ -807,6 +808,7 @@ def avance(request,slug):
                    })
 
 @login_required(login_url='ingresar')
+@permission_required('fu.add_componente', raise_exception=True)
 def componente(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
@@ -820,6 +822,10 @@ def componente(request,slug):
         if 'delete' in request.POST:
             logger.debug('Componente a eliminar id=' + request.POST['del_id'])
             c = get_object_or_404(Componente, id=int(request.POST['del_id']))
+            log_msg = "Se elimina componente para parque " + parque.nombre + \
+                      " - Nombre " + c.nombre
+            log = Log(texto=log_msg, tipo=3, user=request.user)
+            log.save()
             c.delete()
             messages.add_message(request, messages.SUCCESS, 'Componente eliminado.')
         elif 'id' in request.POST:
@@ -832,6 +838,10 @@ def componente(request,slug):
                 for e in inputForm.cleaned_data['estadofu']:
                     c.estados.add(e)
                 c.save()
+                log_msg = "Se edita componente para parque " + parque.nombre + \
+                          " - Nombre " + c.nombre
+                log = Log(texto=log_msg, tipo=2, user=request.user)
+                log.save()
         else:
             inputForm = ComponenteForm(request.POST)
             if inputForm.is_valid():
@@ -841,13 +851,17 @@ def componente(request,slug):
                 for e in inputForm.cleaned_data['estadofu']:
                     c.estados.add(e)
                 c.save()
+                log_msg = "Se agrega componente para parque " + parque.nombre + \
+                          " - Nombre " + c.nombre
+                log = Log(texto=log_msg, tipo=1, user=request.user)
+                log.save()
                 messages.add_message(request, messages.SUCCESS, 'Componente Creado con éxito!')
             else:
                 messages.add_message(request, messages.ERROR, 'Componente no pudo ser creado.')
 
     componenteForm = ComponenteForm()
     componentes = Componente.objects.all().order_by('id')
-    return render(request, 'fu/componentes.html',
+    return TemplateResponse(request, 'fu/componentes.html',
         {'cont': contenido,
          'parque': parque,
          'aerogeneradores':aerogeneradores,
@@ -952,6 +966,7 @@ def deleteComponente(componentes_parque, del_componente):
     aux.delete()
 
 @login_required(login_url='ingresar')
+@permission_required('fu.add_componentesparque', raise_exception=True)
 def actividades(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     try:
@@ -971,11 +986,22 @@ def actividades(request,slug):
         if 'delComponente' in request.POST:
             deleteComponentesForm = DeleteComponentesForm(request.POST, parque=parque)
             if deleteComponentesForm.is_valid():
+                log_msg = "Se elimina componente del proyecto (actividad) para parque " + parque.nombre + \
+                          " - Nombre " + deleteComponentesForm.cleaned_data['componente'].nombre
+
                 deleteComponente(componentes_parque,deleteComponentesForm.cleaned_data['componente'])
+
+                log = Log(texto=log_msg, tipo=3, user=request.user)
+                log.save()
         elif 'addComponente' in request.POST:
             choicesComponentesForm = AddComponentesForm(request.POST, parque=parque)
             if choicesComponentesForm.is_valid():
+                log_msg = "Se agrega componente al proyecto (actividad) para parque " + parque.nombre + \
+                          " - Nombre " + choicesComponentesForm.cleaned_data['componente'].nombre
+
                 addComponente(componentes_parque,choicesComponentesForm.cleaned_data['componente'])
+                log = Log(texto=log_msg, tipo=1, user=request.user)
+                log.save()
 
     choicesComponentesForm = AddComponentesForm(parque = parque)
     deleteComponentesForm = DeleteComponentesForm(parque = parque)
@@ -997,7 +1023,7 @@ def actividades(request,slug):
         'puestaenmarcha': 'Puesta en marcha'
     }
 
-    return render(request, 'fu/actividades.html',
+    return TemplateResponse(request, 'fu/actividades.html',
         {'cont': contenido,
          'parque': parque,
          'aerogeneradores':aerogeneradores,
@@ -1029,6 +1055,9 @@ def ordenar_actividades(request, slug, estado):
             elif estado == 'puestaenmarcha':
                 obj.orden_puestaenmarcha = idx
             obj.save()
+        log_msg = "Cambio en orden de componentes para parque " + parque.nombre
+        log = Log(texto=log_msg, tipo=2, user=request.user)
+        log.save()
         return HttpResponse(
             response,
             content_type="application/json"
@@ -1059,6 +1088,7 @@ def getLastColumn(ws):
     return columna
 
 @login_required(login_url='ingresar')
+@permission_required('fu.add_configuracionfu', raise_exception=True)
 def configuracion(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     try:
@@ -1085,6 +1115,9 @@ def configuracion(request,slug):
                 conf = form.save(commit=False)
                 conf.parque = parque
                 conf.save()
+                log_msg = "Se cambia configuración Follow Up para parque " + parque.nombre
+                log = Log(texto=log_msg, tipo=2, user=request.user)
+                log.save()
             else:
                 form.save()
             messages.add_message(request, messages.SUCCESS, 'Configuración guardada con éxito')
@@ -1096,7 +1129,7 @@ def configuracion(request,slug):
             form = ConfiguracionFUForm()
         else:
             form = ConfiguracionFUForm(instance=configuracion)
-    return render(request, 'fu/configuracion.html',
+    return TemplateResponse(request, 'fu/configuracion.html',
                   {'cont': contenido,
                    'parque': parque,
                    'aerogeneradores': aerogeneradores,
@@ -1267,6 +1300,8 @@ def planificacion(request,slug):
     form = None
 
     if request.method == 'POST':
+        if not request.user.has_perm('fu.add_plan'):
+            raise PermissionDenied
         form = PlanificacionForm(request.POST, request.FILES, instance=configuracion)
         if form.is_valid():
             configuracion = form.save()
@@ -1274,6 +1309,9 @@ def planificacion(request,slug):
         if configuracion.plan:
             if configuracion.plan != configuracion.prev_plan:
                 readPlanFile(configuracion,componentes_parque)
+                log_msg = "Se agrega planificación para parque " + parque.nombre
+                log = Log(texto=log_msg, tipo=1, user=request.user)
+                log.save()
             else:
                 logger.debug('Se sube configuración, pero se mantiene igual.')
 
@@ -1293,7 +1331,7 @@ def planificacion(request,slug):
     anho = aux.year
     thisweek = str(anho) + "-" + semana
 
-    return render(request, 'fu/planificacion.html',
+    return TemplateResponse(request, 'fu/planificacion.html',
                   {'cont': contenido,
                    'parque': parque,
                    'aerogeneradores': aerogeneradores,
@@ -1588,6 +1626,8 @@ def ingreso(request,slug,slug_ag):
     if request.method == 'POST':
         registro = None
         if 'formDescarga' in request.POST:
+            if not request.user.has_perm('fu.add_registros'):
+                raise PermissionDenied
             formDescarga= RegistroDescargaForm(request.POST)
             if formDescarga.is_valid():
                 registro = formDescarga.save(commit=False)
@@ -1595,6 +1635,8 @@ def ingreso(request,slug,slug_ag):
             else:
                 messages.add_message(request, messages.ERROR, 'Registro no pudo realizarse')
         elif 'formMontaje' in request.POST:
+            if not request.user.has_perm('fu.add_registros'):
+                raise PermissionDenied
             form = RegistroForm(request.POST)
             if form.is_valid():
                 registro = form.save(commit=False)
@@ -1602,6 +1644,8 @@ def ingreso(request,slug,slug_ag):
             else:
                 messages.add_message(request, messages.ERROR, 'Registro no pudo realizarse')
         elif 'formPuestaenmarcha' in request.POST:
+            if not request.user.has_perm('fu.add_registros'):
+                raise PermissionDenied
             form = RegistroForm(request.POST)
             if form.is_valid():
                 registro = form.save(commit=False)
@@ -1613,6 +1657,12 @@ def ingreso(request,slug,slug_ag):
             estado_id = int(request.POST['del_estado_id'])
             c = Componente.objects.get(id=componente_id)
             reg = Registros.objects.get(parque=parque, aerogenerador=aerogenerador,componente=c, estado__idx=estado_id)
+            if not (request.user.has_perm('fu.delete_registros') or reg.created_by == request.user):
+                raise PermissionDenied
+            log_msg = "Se elimina registro para parque " + parque.nombre + \
+                      " - Aerogenerador " + reg.aerogenerador.nombre
+            log = Log(texto=log_msg, tipo=3, user=request.user)
+            log.save()
             reg.delete()
             messages.add_message(request, messages.SUCCESS, 'Registro eliminado con éxito!')
         if registro is not None:
@@ -1622,7 +1672,12 @@ def ingreso(request,slug,slug_ag):
             componente = Componente.objects.get(id=componente_id)
             registro.componente = componente
             registro.estado = estado
+            registro.created_by = request.user
             registro.save()
+            log_msg = "Se agrega registro para parque " + parque.nombre + \
+                      " - Aerogenerador " + registro.aerogenerador.nombre
+            log = Log(texto=log_msg, tipo=1, user=request.user)
+            log.save()
             messages.add_message(request, messages.SUCCESS, 'Registro realizado con éxito!')
 
     componentes = OrderedDict()
@@ -1643,6 +1698,7 @@ def ingreso(request,slug,slug_ag):
             color = 'bg-green-meadow'
             reg = registros.get(componente=c,estado__idx=1)
             objeto['tooltip'] = reg.fecha.strftime("%d/%m/%Y") + '<br>' + reg.no_serie
+            objeto['created_by'] = reg.created_by.id
         objeto['componente'] = c
         objeto['color'] = color
         objeto['status'] = aux
@@ -1658,6 +1714,7 @@ def ingreso(request,slug,slug_ag):
             color = 'bg-green-meadow'
             reg = registros.get(componente=c, estado__idx=3)
             objeto['tooltip'] = reg.fecha.strftime("%d/%m/%Y")
+            objeto['created_by'] = reg.created_by.id
         elif aux == 0:
             color = 'bg-yellow-crusta'
         objeto['componente'] = c
@@ -1679,6 +1736,7 @@ def ingreso(request,slug,slug_ag):
             color = 'bg-green-meadow'
             reg = registros.get(componente=c, estado__idx=4)
             objeto['tooltip'] = reg.fecha.strftime("%d/%m/%Y")
+            objeto['created_by'] = reg.created_by.id
         elif aux == 0:
             color = 'bg-yellow-crusta'
         objeto['componente'] = c
@@ -1754,7 +1812,7 @@ def ingreso(request,slug,slug_ag):
                 pos['top'] = 55
                 pos['left'] = 2
             pos['img'] = 'common/images/ag/' + imagen + '.png'
-    return render(request, 'fu/ingreso.html',
+    return TemplateResponse(request, 'fu/ingreso.html',
                   {'cont': contenido,
                    'parque': parque,
                    'aerogeneradores': aerogeneradores,
@@ -1782,12 +1840,18 @@ def paradas(request,slug):
         if 'del_id' in request.POST:
             id = int(request.POST['del_id'])
             parada = Paradas.objects.get(id=id)
+            if not (request.user.has_perm('fu.delete_paradas') or request.user == parada.created_by):
+                raise PermissionDenied
+            log_msg = "Se elimina parada para parque " + parque.nombre + \
+                      " - Aerogenerador - " + parada.aerogenerador.nombre
+            log = Log(texto=log_msg, tipo=3, user=request.user)
+            log.save()
             parada.delete()
             messages.add_message(request, messages.SUCCESS, 'Registro eliminado con éxito!')
         else:
             messages.add_message(request, messages.ERROR, 'Error al eliminar registro')
 
-    return render(request, 'fu/paradas.html',
+    return TemplateResponse(request, 'fu/paradas.html',
         {'cont': contenido,
             'parque': parque,
             'aerogeneradores': aerogeneradores,
@@ -1795,6 +1859,7 @@ def paradas(request,slug):
         })
 
 @login_required(login_url='ingresar')
+@permission_required('fu.add_paradas', raise_exception=True)
 def add_paradas(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
@@ -1809,9 +1874,17 @@ def add_paradas(request,slug):
     if request.method == 'POST':
         form = ParadasForm(request.POST,initial={'parque':parque})
         if form.is_valid():
+            if not request.user.has_perm('fu.add_paradas'):
+                raise PermissionDenied
             parada = form.save(commit=False)
             parada.parque = parque
+            parada.created_by = request.user
             parada.save()
+            log_msg = "Se agrega parada para parque " + parque.nombre + \
+                      " - Aerogenerador - " + parada.aerogenerador.nombre
+            log = Log(texto=log_msg, tipo=1, user=request.user)
+            log.save()
+            parada.delete()
             messages.add_message(request, messages.SUCCESS, 'Registro agregado con éxito!')
             return HttpResponseRedirect(reverse('fu:paradas', args=[parque.slug]))
         else:
@@ -1821,7 +1894,7 @@ def add_paradas(request,slug):
     if form is None:
         form = ParadasForm(initial={'parque':parque})
     back_url = reverse('fu:paradas', args=[parque.slug])
-    return render(request, 'fu/agregarParada.html',
+    return TemplateResponse(request, 'fu/agregarParada.html',
         {'cont': contenido,
             'parque': parque,
             'form': form,
@@ -1845,7 +1918,13 @@ def edit_paradas(request,slug,id):
     if request.method == 'POST':
         form = ParadasForm(request.POST, instance=parada)
         if form.is_valid():
+            if not (request.user.has_perm('fu.edit_paradas') or request.user == parada.created_by):
+                raise PermissionDenied
             parada = form.save()
+            log_msg = "Se edita parada para parque " + parque.nombre + \
+                      " - Aerogenerador - " + parada.aerogenerador.nombre
+            log = Log(texto=log_msg, tipo=2, user=request.user)
+            log.save()
             messages.add_message(request, messages.SUCCESS, 'Registro editado con éxito!')
             return HttpResponseRedirect(reverse('fu:paradas', args=[parque.slug]))
         else:
@@ -1855,7 +1934,7 @@ def edit_paradas(request,slug,id):
         form = ParadasForm(instance=parada)
     back_url = reverse('fu:paradas', args=[parque.slug])
     edit_parada = parada
-    return render(request, 'fu/agregarParada.html',
+    return TemplateResponse(request, 'fu/agregarParada.html',
         {'cont': contenido,
             'parque': parque,
             'form': form,

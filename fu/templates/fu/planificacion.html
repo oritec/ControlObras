@@ -10,8 +10,10 @@
 
 {% block contenido %}
 
+{% if perms.fu.add_plan %}
 <div class="row">
     <div class="col-md-12">
+
         {% if form %}
 
         <div class="row">
@@ -54,7 +56,7 @@
         {% endif %}
     </div>
 </div>
-
+{% endif %}
 <div class="row">
     <div class="col-md-12">
         <div id="grafico_plan_1"></div>

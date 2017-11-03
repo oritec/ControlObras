@@ -42,6 +42,7 @@
 							</a>
 						</li>
                     <!--El resto de los menú solo se muestran si la configuración existe...-->
+                    {% if perms.vista.change_parquesolar %}
                     {% if parque.no_aerogeneradores > 0 %}
                         <li class="nav-item " id="menu2-observadores">
 							<a href="{% url 'ncr:observadores' parque.slug %}" class="nav-link ">
@@ -65,9 +66,10 @@
 
 							</a>
 						</li>
+                    {% endif %}
 					</ul>
-
 				</li>
+
                 {% if parque.no_aerogeneradores > 0 %}
                 <!--<li class="start ">-->
                 <li class="nav-item" id="menu-ncr">
@@ -120,25 +122,30 @@
 								<span class="title">Dashboard</span>
 							</a>
 						</li>
-
+                        {% if perms.fu.add_componente %}
                         <li class="nav-item " id="menu2-componentes">
 							<a href="{% url 'fu:componentes' parque.slug %}" class="nav-link ">
 								<i class="fa fa-caret-right"></i>
 								<span class="title">Componentes</span>
 							</a>
 						</li>
+                        {% endif %}
+                        {% if perms.fu.add_componentesparque %}
                         <li class="nav-item " id="menu2-actividades">
 							<a href="{% url 'fu:actividades' parque.slug %}" class="nav-link ">
 								<i class="fa fa-caret-right"></i>
 								<span class="title">Actividades</span>
 							</a>
 						</li>
+                        {% endif %}
+                        {% if perms.fu.add_configuracionfu %}
                         <li class="nav-item " id="menu2-configuracionfu">
 							<a href="{% url 'fu:configuracion' parque.slug %}" class="nav-link ">
 								<i class="fa fa-caret-right"></i>
 								<span class="title">Configuraci&oacute;n</span>
 							</a>
 						</li>
+                        {% endif %}
                         <li class="nav-item " id="menu2-planificacion">
 							<a href="{% url 'fu:planificacion' parque.slug %}" class="nav-link ">
 								<i class="fa fa-caret-right"></i>

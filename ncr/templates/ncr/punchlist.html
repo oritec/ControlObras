@@ -100,10 +100,12 @@
                                     <button type="submit" class="btn green">
                                         <i class="fa fa-file-pdf-o" style="padding-right: 5px"></i>  Generar PDF </button>
                                 </div>
-                                <div col-md-3">
+                                {% if perms.usuarios.create_editables %}
+                                <div class="col-md-3">
                                     <button type="submit" class="btn green" name="word">
                                         <i class="fa fa-file-word-o" style="padding-right: 5px"></i>  Generar Word </button>
                                 </div>
+                                {% endif %}
                             </div>
                         </div>
                     </form>

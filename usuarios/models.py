@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
+from vista.models import ParqueSolar
 
 import logging
 # Get an instance of a logger
@@ -17,6 +18,7 @@ class General(models.Model):
             ("vista", "Permiso de lectura"),
             ("revision", "Permiso de revision"),
             ("escritura", "Permiso para escribir"),
+            ("create_editables", "Generar archivos editables"),
         )
 
 
@@ -42,7 +44,14 @@ class GlobalPermission(Permission):
         
 class Usuario(models.Model):
     user = models.OneToOneField(User)
-    foto=models.ImageField(upload_to='photos/%Y/%m/%d', null=True,blank=True,verbose_name=u'Foto')
+    parques = models.ManyToManyField(ParqueSolar)
+    changed_pass = models.BooleanField(default=False)
+
+class Log(models.Model):
+    user = models.ForeignKey(User)
+    created_at = models.DateTimeField(auto_now_add=True)
+    tipo = models.IntegerField(default=0) # 1: Add, 2: Change, 3: Delete, 0: Sin tipo
+    texto = models.TextField(max_length=200)
 
 
 

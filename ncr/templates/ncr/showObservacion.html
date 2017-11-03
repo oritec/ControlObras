@@ -42,9 +42,11 @@
                         {% endif %}
                     </a>
                     <row>
+                        {% if perms.ncr.change_revision or user == observacion.created_by %}
                         <a data-toggle="modal" href="#long" class="btn btn-sm green" id="addPhotoModal-{{ revision.id }}" name="addPhoto" onclick="$('#fileupload').attr('action','{% url 'ncr:imagenes-agregar' parque.slug revision.id %}');">
                             Agregar Foto <i class="fa fa-plus"></i>
                         </a>
+                        {% endif %}
                         <a  class="btn btn-sm grey" name="galeria" id="galeria-{{ revision.id }}">
                             Galer&iacute;a <i class="fa fa-image"></i>
                         </a>
@@ -54,10 +56,14 @@
                 {% if forloop.first %}
                     <div class="col-md-9">
                         <h4 class="block">Revisi&oacute;n {{ forloop.counter }} - Fecha: {{ revision.fecha_revision }}
+                            {% if perms.ncr.change_observacion or user == observacion.created_by %}
                             <a href="{% url 'ncr:observaciones-editar' parque.slug observacion.id %}" class="btn btn-circle btn-xs blue" style="margin-left: 10px"> Editar
                                 <i class="fa fa-edit"></i>
                             </a>
+                            {% endif %}
+                            {% if perms.ncr.delete_observacion or user == observacion.created_by %}
                             <input type="button" id="del_observacion{{ observacion.id }}" data-target="#basic1" data-toggle="modal" class="btn btn-xs btn-circle red" value="Borrar" onclick="$('#del_id').val({{ observacion.id }})"/>
+                            {% endif %}
                         </h4>
                         <ul>
                             <li> <b>Aerogenerador:</b> {{ observacion.aerogenerador }} </li>
@@ -77,10 +83,14 @@
                 {% else %}
                     <div class="col-md-9">
                         <h4 class="block">Revisi&oacute;n {{ forloop.counter }} - Fecha: {{ revision.fecha_revision }}
+                        {% if perms.ncr.change_revision or user == revision.created_by %}
                         <a href="{% url 'ncr:revisiones-editar' parque.slug observacion.id revision.id %}" class="btn btn-circle btn-xs blue" style="margin-left: 10px"> Editar
                             <i class="fa fa-edit"></i>
                         </a>
+                        {% endif %}
+                        {% if perms.ncr.delete_revision or user == revision.created_by %}
                         <input type="button" id="del_revision{{ revision.id }}" data-target="#basic2" data-toggle="modal" class="btn btn-xs btn-circle red" value="Borrar" onclick="$('#del_id_rev').val({{ revision.id }})"/>
+                        {% endif %}
                         </h4>
                         <ul>
                             <li> <b>Estado:</b> {{ revision.estado }}</li>
@@ -98,9 +108,12 @@
             {% if not observacion.cerrado %}
                 <div class="row">
                     <div class="col-md-12">
+                        {% if perms.ncr.add_revision %}
                         <a href="{% url 'ncr:revisiones-add' parque.slug observacion.id %}" class="btn btn-sm blue" style="margin-left:10px;">
                             Agregar Revisi&oacute;n <i class="fa fa-plus"></i>
                         </a>
+                        {% endif %}
+                        {% if perms.ncr.change_observacion or user == observacion.created_by %}
                         {% if observacion.estado.nombre == 'Solucionado' %}
                         <a id="closeSafe" class="btn btn-sm grey-mint" style="margin-left:10px;margin-right:10px;">
                             Cerrar Observaci&oacute;n <i class="fa fa-check-square-o"></i>
@@ -109,6 +122,7 @@
                         <a href="" id="close_{{ observacion.id }}" data-target="#basic3" data-toggle="modal" class="btn btn-sm grey-mint" style="margin-left:10px;margin-right:10px;" onclick="$('#del_id_obs').val({{ observacion.id }});$('#cierre_msg').val('');">
                             Cerrar Observaci&oacute;n <i class="fa fa-check-square-o"></i>
                         </a>
+                        {% endif %}
                         {% endif %}
                         <a href="{% url 'ncr:observaciones-show' parque.slug observacion.id %}?printable=true" class="btn btn-sm grey-salt" target="_blank">
                             Vista Impresi&oacute;n <i class="fa fa-print"></i>
@@ -643,7 +657,7 @@
         $("table tbody.files").empty();
     })
 
-    $("#formDelObservacion > #back_url").val("{% url 'ncr:observaciones' parque.slug observacion.aerogenerador.id %}");
+    $("#formDelObservacion > #back_url").val("{% url 'ncr:observaciones' parque.slug observacion.aerogenerador.slug %}");
     $("#formDelRevision > #back_url").val(window.location.href);
     $("#formCloseObs > #back_url").val(window.location.href);
     $("#formOpenObs > #back_url").val(window.location.href);

@@ -51,8 +51,9 @@
                                         <a href="{% url 'ncr:observaciones-show' parque.slug observacion.id %}" class="btn btn-circle btn-xs grey-cascade">
                                             Ver <i class="fa fa-search"></i>
                                         </a>
+                                        {% if perms.ncr.delete_observacion or user == observacion.created_by %}
                                         <input type="button" id="del_observacion{{ observacion.id }}" data-target="#basic" data-toggle="modal" class="btn btn-xs btn-circle red" value="Borrar" onclick="$('#del_id').val({{ observacion.id }})"/>
-
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -65,6 +66,7 @@
                 </div>
             </div>
         </div>
+        {% if perms.ncr.add_observacion %}
         <div class="row">
             <div class="col-md-12">
                 <a href="{% url 'ncr:observaciones-agregar' parque.slug %}{{ url_append }}" class="btn green-steel"> Agregar Observaci&oacute;n
@@ -72,6 +74,7 @@
                 </a>
             </div>
         </div>
+        {% endif %}
         <div class="clearfix">
 
         </div>

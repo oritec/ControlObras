@@ -9,6 +9,7 @@ from django.utils.dateparse import parse_datetime
 from django.template.defaultfilters import stringfilter
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
+from django.contrib.auth.models import Group
 import re
 
 import logging
@@ -212,3 +213,45 @@ def get_column_width(lista):
 def filter_ag_fu(value):
     f=value.filter(idx__gt=0)
     return f
+
+@register.filter()
+def has_group(user, group_name):
+    group =  Group.objects.get(name=group_name)
+    return group in user.groups.all()
+
+@register.filter()
+def get_group(user):
+    if user.groups.count() >= 1:
+        return user.groups.all()[0].name
+    else:
+        return 'No tiene perfil definido'
+
+@register.filter()
+def check_user_permissions(user_system,user2mod):
+    user = user_system
+    if user.is_superuser:
+        return True
+
+    group = Group.objects.get(name='Usuario 1')
+    # Primer check, el unico otro usuario que puede hacer algo es el Usuario 1.
+    if not group in user.groups.all():
+        return False
+
+    if user2mod.user.is_superuser:
+        return False  # No puede Editar una caracteristica de un superusuario
+    if group in user2mod.user.groups.all():
+        return False  # No puede Editar a un usuario de su mismo nivel
+    return True
+
+@register.filter()
+def check_index_permissions(user_system):
+    user = user_system
+    if user.is_superuser:
+        return True
+
+    group = Group.objects.get(name='Usuario 1')
+    # Primer check, el unico otro usuario que puede hacer algo es el Usuario 1.
+    if group in user.groups.all():
+        return True
+
+    return False

@@ -230,7 +230,6 @@ class Fotos(models.Model):
         # Force an UPDATE SQL query if we're editing the image to avoid integrity exception
         super(Fotos, self).save(force_update=force_update)
 
-
 @python_2_unicode_compatible
 class Observacion(models.Model):
     parque = models.ForeignKey('vista.ParqueSolar', on_delete=models.CASCADE)

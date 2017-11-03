@@ -15,16 +15,18 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from usuarios.views import ingresar, salir
+from usuarios.views import ingresar, salir, usuario_forbidden
 from django.conf.urls.static import static
 from django.conf import settings
 
 
 urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += [
-    url(r'^admin/', admin.site.urls),
+    url(r'^admin/', include('usuarios.urls',namespace='usuarios',app_name="usuarios")),
+    url(r'^admin2/', admin.site.urls),
     url(r'^login/$', ingresar, {'homepage':'vista:index'}, name='ingresar'),
     url(r'^logout/$', salir, name='salir'),
+    url(r'^403/$', usuario_forbidden, name='forbidden'),
     url(r'^(?P<slug>[-\w\d]+)/ncr/',include('ncr.urls', namespace='ncr', app_name="ncr")),
     url(r'^(?P<slug>[-\w\d]+)/followup/',include('fu.urls', namespace='fu', app_name="fu")),
     url(r'^',include('vista.urls', namespace='vista', app_name="vista")),
