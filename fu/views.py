@@ -964,6 +964,20 @@ def deleteComponente(componentes_parque, del_componente):
             c.orden_puestaenmarcha += -1
             c.save()
     aux.delete()
+    fixOrdenComponentes()
+
+def fixOrdenComponentes():
+    relaciones = ComponentesParque.objects.all()
+    filter_values = ['orden_descarga','orden_premontaje','orden_montaje','orden_puestaenmarcha']
+    for relacion in relaciones:
+        for f in filter_values:
+            karws = {f + '__gt': 0}
+            componentes = relacion.relacionesfu_set.filter(**karws).order_by(f)
+            pos = 1
+            for c in componentes:
+                setattr(c, f, pos)
+                c.save()
+                pos += 1
 
 @login_required(login_url='ingresar')
 @permission_required('fu.add_componentesparque', raise_exception=True)
