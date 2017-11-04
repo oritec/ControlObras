@@ -154,6 +154,12 @@
         </div>
     </div>
 
+    <div class="row">
+        <div class="col-md-12">
+            <div id="g_puestaenmarcha"></div>
+        </div>
+    </div>
+
     <form action="{% url 'fu:dashboard' parque.slug %}" method="post" style="visibility:hidden" id="formSemana">
         {% csrf_token %}
         <input type="hidden" name="semana" id="inputSemana"><br>
@@ -231,6 +237,9 @@
     var g_montaje = {{ graficoMontaje|safe }};
     titulo= 'Montaje, '+semana_str;
     DashboardGraficos.showGraficoColumnas(g_montaje,titulo,'#g_montaje');
+    var g_puestaenmarcha = {{ graficoPuestaenMarcha|safe }};
+    titulo= 'Puesta en marcha, '+semana_str;
+    DashboardGraficos.showGraficoColumnas(g_puestaenmarcha,titulo,'#g_puestaenmarcha');
     var g_avance = {{ graficoAvance|safe }};
     titulo= 'Avance de Izado, '+semana_str;
     DashboardGraficos.showGraficosLinea(g_avance,titulo,'#g_avance',thisweek);

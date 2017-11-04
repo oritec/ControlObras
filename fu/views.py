@@ -59,6 +59,8 @@ def graficoComponentes(componentes_parque,estado,anho,semana):
         filtro = 'relacionesfu__orden_descarga'
     elif estado.idx == 3:
         filtro = 'relacionesfu__orden_montaje'
+    elif estado.idx == 4:
+        filtro = 'relacionesfu__orden_puestaenmarcha'
     karws = {filtro+'__gt': 0}
     componentes = componentes_parque.componentes.all()
 
@@ -713,6 +715,8 @@ def dashboard(request,slug):
     graficoDescarga = graficoComponentes(componentes_parque,estado,anho,semana)
     estado = EstadoFU.objects.get(idx=3)
     graficoMontaje = graficoComponentes(componentes_parque, estado, anho, semana)
+    estado = EstadoFU.objects.get(idx=4)
+    graficoPuestaenMarcha = graficoComponentes(componentes_parque, estado, anho, semana)
     [proyeccion, last_week] = calcularProyeccion(componentes_parque, anho, semana)
     if last_week is not None:
         graficoAvance = graficoAvances(componentes_parque, last_week.year, last_week.isocalendar()[1], anho,semana,proyeccion)
@@ -769,6 +773,7 @@ def dashboard(request,slug):
                    'aerogeneradores': aerogeneradores,
                    'graficoDescarga': graficoDescarga,
                    'graficoMontaje': graficoMontaje,
+                   'graficoPuestaenMarcha':graficoPuestaenMarcha,
                    'graficoAvance': graficoAvance,
                    'thisweek': thisweek,
                    'week_str': week_str,
