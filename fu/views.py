@@ -49,11 +49,11 @@ meses_espanol={"1":"Enero",
 import json
 logger = logging.getLogger('oritec')
 
-def graficoComponentes(componentes_parque,estado,anho,semana):
+def graficoComponentes(componentes_parque,estado,fecha_calculo):
     data_full = []
     # Me entrega el domingo final de esa semana.
-    d = str(anho) + '-W' + str(semana)
-    r = datetime.strptime(d + '-0', "%Y-W%W-%w")
+
+    r = fecha_calculo
     max_aerogeneradores = componentes_parque.parque.no_aerogeneradores
     if estado.idx == 1:
         filtro = 'relacionesfu__orden_descarga'
@@ -126,7 +126,7 @@ def calcularProyeccion(componentes_parque,anho,semana):
     for c in aux:
         componentes_montaje.append(c.componente.id)
     estado = EstadoFU.objects.get(idx=3)
-    # Calculo
+    # Calculo de avance
     fecha = configuracion.fecha_inicio
     semana_calculo = fecha.isocalendar()[1]
     d = str(fecha.year) + '-W' + str(semana_calculo)
@@ -225,11 +225,12 @@ def porcentajeAvance(componentes_parque,fecha,componentes_montaje=None):
     valor = valor / max_aerogeneradores * 100
     return valor
 
-def graficoAvances(componentes_parque,anho,semana,anho2,semana2,data_proyeccion):
+def graficoAvances(componentes_parque,anho,semana,actual_date,data_proyeccion):
     data_full = []
     d = str(anho) + '-W' + str(semana)
     r = datetime.strptime(d + '-0', "%Y-W%W-%w")
-    d = str(anho2) + '-W' + str(semana2)
+    s = actual_date.isocalendar()[1]
+    d = str(actual_date.year) + '-W' + str(s)
     r2 = datetime.strptime(d + '-0', "%Y-W%W-%w")
     parque = componentes_parque.parque
     try:
@@ -297,7 +298,10 @@ def graficoAvances(componentes_parque,anho,semana,anho2,semana2,data_proyeccion)
     data_graficos = []
 
     while fecha_calculo <= r2:
-        valor = porcentajeAvance(componentes_parque,fecha_calculo,componentes_montaje=componentes_montaje)
+        if fecha_calculo == r2:
+            valor = porcentajeAvance(componentes_parque, actual_date, componentes_montaje=componentes_montaje)
+        else:
+            valor = porcentajeAvance(componentes_parque,fecha_calculo,componentes_montaje=componentes_montaje)
         fecha_grafico = str(fecha_calculo.year) + '-' + str(semana_calculo)
         data_graficos.append({"name": fecha_grafico, "y": valor})
         fecha = fecha_calculo + relativedelta.relativedelta(weeks=1)
@@ -313,9 +317,9 @@ def graficoAvances(componentes_parque,anho,semana,anho2,semana2,data_proyeccion)
     datos = serializeGrafico(data_full)
     return datos
 
-def posicionAerogeneradores(componentes_parque,anho,semana):
+def posicionAerogeneradores(componentes_parque,fecha_calculo):
     parque = componentes_parque.parque
-    d = str(anho) + '-W' + str(semana)
+    d = str(fecha_calculo.year) + '-W' + str(fecha_calculo.isocalendar()[1])
     fecha = datetime.strptime(d + '-0', "%Y-W%W-%w")
     estado = EstadoFU.objects.get(idx=3)
     pos = OrderedDict()
@@ -606,63 +610,29 @@ def posicionAerogeneradores(componentes_parque,anho,semana):
                                              aerogenerador=ag,
                                              estado=estado,
                                              fecha__lte=fecha)
+
+        found = False
         if registros.count() > 0:
             reg_ids = []
             for r in registros:
                 reg_ids.append(r.componente.id)
             rel = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
                                               componente__in=reg_ids).order_by('-orden_montaje')
-            if rel.count() > 0:
-                orden = rel[0].orden_montaje
-                if orden >= 8:
-                    imagen = str(8)
-                    pos[ag.nombre]['width'] = 4.5
-                    pos[ag.nombre]['top'] = pos[ag.nombre]['top'] + 5.4
-                    pos[ag.nombre]['left'] = pos[ag.nombre]['left'] +1.4
-                elif orden == 1:
-                    imagen = str(orden)
-                    pos[ag.nombre]['width'] = 0.5
-                    pos[ag.nombre]['top'] = pos[ag.nombre]['top'] + 12.7
-                    pos[ag.nombre]['left'] = pos[ag.nombre]['left'] + 3.7
-                elif orden == 2:
-                    imagen = str(orden)
-                    pos[ag.nombre]['width'] = 0.6
-                    pos[ag.nombre]['top'] = pos[ag.nombre]['top'] + 11.1
-                    pos[ag.nombre]['left'] = pos[ag.nombre]['left'] + 3.7
-                elif orden == 3:
-                    imagen = str(orden)
-                    pos[ag.nombre]['width'] = 0.5
-                    pos[ag.nombre]['top'] = pos[ag.nombre]['top'] + 10.1
-                    pos[ag.nombre]['left'] = pos[ag.nombre]['left'] +3.7
-                elif orden == 4:
-                    imagen = str(orden)
-                    pos[ag.nombre]['width'] = 0.65
-                    pos[ag.nombre]['top'] = pos[ag.nombre]['top'] + 8.8
-                    pos[ag.nombre]['left'] = pos[ag.nombre]['left'] +3.6
-                elif orden == 5:
-                    imagen = str(orden)
-                    pos[ag.nombre]['width'] = 0.8
-                    pos[ag.nombre]['top'] = pos[ag.nombre]['top'] + 8.7
-                    pos[ag.nombre]['left'] = pos[ag.nombre]['left'] +3.7
-                elif orden == 6:
-                    imagen = str(orden)
-                    pos[ag.nombre]['width'] = 1.1
-                    pos[ag.nombre]['top'] = pos[ag.nombre]['top'] + 5.8
-                    pos[ag.nombre]['left'] = pos[ag.nombre]['left'] +3.4
-                elif orden == 7:
-                    imagen = str(orden)
-                    pos[ag.nombre]['width'] = 4.2
-                    pos[ag.nombre]['top'] = pos[ag.nombre]['top'] + 8.4
-                    pos[ag.nombre]['left'] = pos[ag.nombre]['left'] +1.4
-                else:
-                    imagen = str(orden)
-                pos[ag.nombre]['img'] = 'common/images/ag/' + imagen + '.png'
-            else:
-                pos[ag.nombre]['width'] = 0.5
-                pos[ag.nombre]['top'] = pos[ag.nombre]['top'] + 12.7
-                pos[ag.nombre]['left'] = pos[ag.nombre]['left'] + 3.7
-                pos[ag.nombre]['img'] = 'common/images/ag/0.png'
-        else:
+            for r in rel:
+                path = os.path.join(settings.BASE_DIR,'static/common/images/ag')
+                filename = path + '/' + r.componente.nombre + '.png'
+                if os.path.isfile(filename):
+                    found = True
+                    [nombre, width, top, left] = get_image_data(os.path.basename(filename),
+                                                        pos[ag.nombre]['top'] ,
+                                                        pos[ag.nombre]['left'])
+                    pos[ag.nombre]['width'] = width
+                    pos[ag.nombre]['top'] = top
+                    pos[ag.nombre]['left'] = left
+                    pos[ag.nombre]['img'] = nombre
+                    break
+
+        if not found:
             pos[ag.nombre]['width'] = 0.5
             try:
                 pos[ag.nombre]['top'] = pos[ag.nombre]['top'] + 12.7
@@ -672,6 +642,57 @@ def posicionAerogeneradores(componentes_parque,anho,semana):
             pos[ag.nombre]['img'] = 'common/images/ag/0.png'
 
     return pos
+
+def get_image_data(filename, top_i, left_i):
+    name = '0.png'
+    try:
+        top = top_i + 12.7
+    except:
+        pass;
+    left = left_i + 3.7
+    width = 0.5
+
+    if filename == 'Pala 3.png':
+        name = filename
+        width = 4.5
+        top = top_i + 5.4
+        left = left_i + 1.4
+    elif filename == 'T1.png':
+        name = filename
+        width = 0.5
+        top = top_i + 12.7
+        left = left_i + 3.7
+    elif filename == 'T2.png':
+        name = filename
+        width = 0.6
+        top = top_i + 11.1
+        left = left_i + 3.7
+    elif filename == 'T3.png':
+        name = filename
+        width = 0.5
+        top = top_i + 10.1
+        left = left_i + 3.7
+    elif filename == 'Nacelle.png':
+        name = filename
+        width = 0.65
+        top = top_i + 8.8
+        left = left_i + 3.6
+    elif filename == 'Buje.png':
+        name = filename
+        width = 0.8
+        top = top_i + 8.7
+        left = left_i + 3.7
+    elif filename == 'Pala 1.png':
+        name = filename
+        width = 1.1
+        top = top_i + 5.8
+        left = left_i + 3.4
+    elif filename == 'Pala 2.png':
+        name = filename
+        width = 4.2
+        top = top_i + 8.4
+        left = left_i + 1.4
+    return ['common/images/ag/'+name, width,top,left]
 
 @login_required(login_url='ingresar')
 def dashboard(request,slug):
@@ -712,20 +733,20 @@ def dashboard(request,slug):
     last_day_week = datetime.strptime(d + '-0', "%Y-W%W-%w")
 
     estado = EstadoFU.objects.get(idx=1)
-    graficoDescarga = graficoComponentes(componentes_parque,estado,anho,semana)
+    graficoDescarga = graficoComponentes(componentes_parque,estado,last_day_week)
     estado = EstadoFU.objects.get(idx=3)
-    graficoMontaje = graficoComponentes(componentes_parque, estado, anho, semana)
+    graficoMontaje = graficoComponentes(componentes_parque, estado, last_day_week)
     estado = EstadoFU.objects.get(idx=4)
-    graficoPuestaenMarcha = graficoComponentes(componentes_parque, estado, anho, semana)
+    graficoPuestaenMarcha = graficoComponentes(componentes_parque, estado, last_day_week)
     [proyeccion, last_week] = calcularProyeccion(componentes_parque, anho, semana)
     if last_week is not None:
-        graficoAvance = graficoAvances(componentes_parque, last_week.year, last_week.isocalendar()[1], anho,semana,proyeccion)
+        graficoAvance = graficoAvances(componentes_parque, last_week.year, last_week.isocalendar()[1], last_day_week,proyeccion)
     else:
         fecha_aux = configuracion.fecha_final
         semana_calculo = fecha_aux.isocalendar()[1]
         d = str(fecha_aux.year) + '-W' + str(semana_calculo)
         fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
-        graficoAvance = graficoAvances(componentes_parque, fecha_calculo.year, fecha_calculo.isocalendar()[1], anho, semana,
+        graficoAvance = graficoAvances(componentes_parque, fecha_calculo.year, fecha_calculo.isocalendar()[1], last_day_week,
                                        proyeccion)
 
     thisweek = str(anho) + "-" + str(semana)
@@ -735,7 +756,7 @@ def dashboard(request,slug):
     else:
         d = str(anho) + '-W' + str(semana)
         fecha = datetime.strptime(d + '-0', "%Y-W%W-%w")
-    pos_ag = posicionAerogeneradores(componentes_parque,anho,semana)
+    pos_ag = posicionAerogeneradores(componentes_parque,last_day_week)
 
     fecha_aux= configuracion.fecha_inicio #+ relativedelta.relativedelta(weeks=1)
     semana_calculo = fecha_aux.isocalendar()[1]
@@ -768,6 +789,113 @@ def dashboard(request,slug):
 
 
     return TemplateResponse(request, 'fu/dashboard.html',
+                  {'cont': contenido,
+                   'parque': parque,
+                   'aerogeneradores': aerogeneradores,
+                   'graficoDescarga': graficoDescarga,
+                   'graficoMontaje': graficoMontaje,
+                   'graficoPuestaenMarcha':graficoPuestaenMarcha,
+                   'graficoAvance': graficoAvance,
+                   'thisweek': thisweek,
+                   'week_str': week_str,
+                   'fecha': fecha,
+                   'pos_ag': pos_ag,
+                   'configuracion': configuracion,
+                   'fecha_inicial' : fecha_inicial,
+                   'avance':avance,
+                   'montados':montados,
+                   'mechanical': mechanical,
+                   'ag_ready': ag_ready,
+                   })
+
+@login_required(login_url='ingresar')
+def dashboard_diario(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
+    try:
+        componentes_parque = ComponentesParque.objects.get(parque=parque)
+    except ComponentesParque.DoesNotExist:
+        componentes_parque = ComponentesParque(parque=parque)
+        componentes_parque.save()
+
+    contenido = ContenidoContainer()
+    contenido.user = request.user
+    contenido.titulo = u'Dashboard Follow Up'
+    contenido.subtitulo = u'Parque Eólico - ' + parque.nombre
+    contenido.menu = ['menu-fu', 'menu2-dashboard-diario']
+
+    try:
+        configuracion = ConfiguracionFU.objects.get(parque=parque)
+    except ConfiguracionFU.DoesNotExist:
+        return TemplateResponse(request, 'fu/dashboard-diario.html',
+                      {'cont': contenido,
+                       'parque': parque,
+                       'aerogeneradores': aerogeneradores,
+                       'configuracion': None,
+                       })
+
+    t = datetime.now()
+    semana_today = t.isocalendar()[1]
+    if request.method == 'POST':
+        if 'fecha' in request.POST:
+            t = datetime.strptime(request.POST['fecha'],"%d-%m-%Y")
+    anho = t.year
+    semana = t.isocalendar()[1]
+    last_day_week = t
+
+    estado = EstadoFU.objects.get(idx=1)
+    graficoDescarga = graficoComponentes(componentes_parque,estado,t)
+    estado = EstadoFU.objects.get(idx=3)
+    graficoMontaje = graficoComponentes(componentes_parque, estado, t)
+    estado = EstadoFU.objects.get(idx=4)
+    graficoPuestaenMarcha = graficoComponentes(componentes_parque, estado, t)
+    [proyeccion, last_week] = calcularProyeccion(componentes_parque, anho, semana)
+    if last_week is not None:
+        graficoAvance = graficoAvances(componentes_parque, last_week.year, last_week.isocalendar()[1], t,proyeccion)
+    else:
+        fecha_aux = configuracion.fecha_final
+        semana_calculo = fecha_aux.isocalendar()[1]
+        d = str(fecha_aux.year) + '-W' + str(semana_calculo)
+        fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
+        graficoAvance = graficoAvances(componentes_parque, fecha_calculo.year, fecha_calculo.isocalendar()[1], t,
+                                       proyeccion)
+
+    thisweek = str(anho) + "-" + str(semana)
+    week_str = 'Semana ' + str(semana)
+    fecha = t
+    pos_ag = posicionAerogeneradores(componentes_parque,t)
+
+    fecha_aux= configuracion.fecha_inicio #+ relativedelta.relativedelta(weeks=1)
+    semana_calculo = fecha_aux.isocalendar()[1]
+    d = str(fecha_aux.year) + '-W' + str(semana_calculo)
+    fecha_inicial = datetime.strptime(d + '-0', "%Y-W%W-%w")
+
+    avance = porcentajeAvance(componentes_parque,last_day_week)
+    montados = aerogeneradoresMontados(componentes_parque,last_day_week)
+    try:
+        componente = Componente.objects.get(nombre="Mechanical Completion")
+        estado = EstadoFU.objects.get(idx=3)
+        c = Registros.objects.filter(parque=parque,
+                                     componente=componente,
+                                     estado=estado,
+                                     fecha__lte=last_day_week)
+        mechanical = c.count()
+    except Componente.DoesNotExist:
+        mechanical = 0
+
+    try:
+        componente = Componente.objects.get(nombre="Commisioning")
+        estado = EstadoFU.objects.get(idx=4)
+        c = Registros.objects.filter(parque=parque,
+                                     componente=componente,
+                                     estado=estado,
+                                     fecha__lte=last_day_week)
+        ag_ready = c.count()
+    except Componente.DoesNotExist:
+        ag_ready = 0
+
+
+    return TemplateResponse(request, 'fu/dashboard-diario.html',
                   {'cont': contenido,
                    'parque': parque,
                    'aerogeneradores': aerogeneradores,
