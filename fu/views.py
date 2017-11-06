@@ -1916,49 +1916,19 @@ def ingreso(request,slug,slug_ag):
             reg_ids.append(r.componente.id)
         rel = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
                                           componente__in=reg_ids).order_by('-orden_montaje')
-        if rel.count() > 0:
-            orden = rel[0].orden_montaje
-            if orden >= 8:
-                imagen = str(8)
-                pos['width'] = 75
-                pos['top'] =  10
-                pos['left'] = 4 # OK
-            elif orden == 1:
-                imagen = str(orden)
-                pos['width'] = 7
-                pos['top'] =  136
-                pos['left'] = 43 #OK
-            elif orden == 2:
-                imagen = str(orden)
-                pos['width'] = 10
-                pos['top'] = 110
-                pos['left'] = 42 #OK
-            elif orden == 3:
-                imagen = str(orden)
-                pos['width'] = 11
-                pos['top'] = 64
-                pos['left'] = 41 #OK
-            elif orden == 4:
-                imagen = str(orden)
-                pos['width'] = 11
-                pos['top'] = 63
-                pos['left'] = 42 #OK
-            elif orden == 5:
-                imagen = str(orden)
-                pos['width'] = 14
-                pos['top'] =  60
-                pos['left'] = 38 #OK
-            elif orden == 6:
-                imagen = str(orden)
-                pos['width'] = 20
-                pos['top'] = 3
-                pos['left'] = 36 # OK
-            elif orden == 7:
-                imagen = str(orden)
-                pos['width'] = 73
-                pos['top'] = 55
-                pos['left'] = 2
-            pos['img'] = 'common/images/ag/' + imagen + '.png'
+
+        for r in rel:
+            path = os.path.join(settings.BASE_DIR, 'static/common/images/ag')
+            filename = path + '/' + r.componente.nombre + '.png'
+            if os.path.isfile(filename):
+                [width, top, left] = get_image_data_ingreso(os.path.basename(filename))
+                pos['width'] = width
+                pos['top'] = top
+                pos['left'] = left
+                pos['img'] = 'common/images/ag/' + r.componente.nombre + '.png'
+                break
+
+
     return TemplateResponse(request, 'fu/ingreso.html',
                   {'cont': contenido,
                    'parque': parque,
@@ -1970,6 +1940,42 @@ def ingreso(request,slug,slug_ag):
                    'registros':registros.order_by('fecha'),
                    'pos':pos,
                    })
+
+def get_image_data_ingreso(filename):
+    if filename == 'Pala 3.png':
+        width = 75
+        top = 10
+        left = 4  # OK
+    elif filename == 'T1.png':
+        width = 7
+        top = 136
+        left = 43  # OK
+    elif filename == 'T2.png':
+        width = 10
+        top = 110
+        left = 42  # OK
+    elif filename == 'T3.png':
+        width = 11
+        top = 64
+        left = 41  # OK
+    elif filename == 'Nacelle.png':
+        width = 11
+        top = 63
+        left = 42  # OK
+    elif filename == 'Buje.png':
+        width = 14
+        top = 60
+        left = 38  # OK
+    elif filename == 'Pala 1.png':
+        width = 20
+        top = 3
+        left = 36  # OK
+    elif filename == 'Pala 2.png':
+        width = 73
+        top = 55
+        left = 2
+
+    return [width,top,left]
 
 @login_required(login_url='ingresar')
 def paradas(request,slug):
