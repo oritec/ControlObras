@@ -609,7 +609,7 @@ def posicionAerogeneradores(componentes_parque,fecha_calculo):
         registros = Registros.objects.filter(parque=parque,
                                              aerogenerador=ag,
                                              estado=estado,
-                                             fecha__lte=fecha)
+                                             fecha__lte=fecha_calculo)
 
         found = False
         if registros.count() > 0:
