@@ -1736,9 +1736,9 @@ def getComponenteStatus(registros,idx,componente,relaciones):
                 return 1
     elif idx == 4: # Estado puesta en marcha
         c_ids = []
-        for c in relaciones.filter(orden_montaje__gt=0):
+        for c in relaciones.filter(orden_montaje__gt=0).exclude(componente__nombre='Mechanical Completion'):
             c_ids.append(c.componente.id)
-        aux3 = registros.filter(componente_id__in=c_ids, estado__idx=3)
+        aux3 = registros.filter(componente_id__in=c_ids, estado__idx=3).exclude(componente__nombre='Mechanical Completion')
         if aux3.count() == len(c_ids):
             return 0
         else:
