@@ -620,7 +620,7 @@ def posicionAerogeneradores(componentes_parque,fecha_calculo):
                                               componente__in=reg_ids).order_by('-orden_montaje')
             for r in rel:
                 path = os.path.join(settings.BASE_DIR,'static/common/images/ag')
-                filename = path + '/' + r.componente.nombre + '.png'
+                filename = path + '/' + unicode(r.componente.nombre) + '.png'
                 if os.path.isfile(filename):
                     found = True
                     [nombre, width, top, left] = get_image_data(os.path.basename(filename),
