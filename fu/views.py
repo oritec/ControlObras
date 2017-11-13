@@ -1920,7 +1920,7 @@ def ingreso(request,slug,slug_ag):
         for r in rel:
             path = os.path.join(settings.BASE_DIR, 'static/common/images/ag')
             filename = path + '/' + r.componente.nombre + '.png'
-            if os.path.isfile(filename):
+            if os.path.isfile(unicode(filename).encode('utf-8')):
                 [width, top, left] = get_image_data_ingreso(os.path.basename(filename))
                 pos['width'] = width
                 pos['top'] = top
