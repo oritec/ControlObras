@@ -621,7 +621,7 @@ def posicionAerogeneradores(componentes_parque,fecha_calculo):
             for r in rel:
                 path = os.path.join(settings.BASE_DIR,'static/common/images/ag')
                 filename = path + '/' + unicode(r.componente.nombre) + '.png'
-                if os.path.isfile(filename):
+                if os.path.isfile(unicode(filename).encode('utf-8')):
                     found = True
                     [nombre, width, top, left] = get_image_data(os.path.basename(filename),
                                                         pos[ag.nombre]['top'] ,
