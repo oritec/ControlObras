@@ -1710,6 +1710,8 @@ def getComponenteStatus(registros,idx,componente,relaciones):
     if idx == 1: # Estado descarga
         return 0
     elif idx == 3: # Estado montaje
+        if registros.filter(estado__idx=3,componente__nombre='Izado Cable HV').count() > 0:
+            return 0
         if componente.estados.all().filter(idx__lt=3).count() > 0:
             aux2 = registros.filter(componente=componente, estado__idx=1) # Si está abierto el componente en descarga
             if aux2.count()>0:
