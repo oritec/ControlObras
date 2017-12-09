@@ -74,6 +74,16 @@
 			<div class="page-content-wrapper">
 				<div class="page-content">
 					<!-- BEGIN PAGE HEADER-->
+                    <!-- BEGIN PAGE BAR -->
+                    {% if breadcrumbs %}
+                    <div class="page-bar">
+                        <ul class="page-breadcrumb">
+                            {% block breadcrumb %}
+                            {% endblock %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
 					<h1 class="page-title">
 					{% block pagetitle %}
 						{{ cont.titulo }} <small>{{ cont.subtitulo }}</small>

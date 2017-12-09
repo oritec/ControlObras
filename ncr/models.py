@@ -76,6 +76,7 @@ class Fotos(models.Model):
     thumbnail = models.ImageField(upload_to=thumbnails_directory_path,max_length=500, null=True, blank=True)
     reporte_img = models.ImageField(upload_to=thumbnails_directory_path, null=True, blank=True)
     principal = models.BooleanField(default=False)
+    orden = models.SmallIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

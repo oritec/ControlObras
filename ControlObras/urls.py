@@ -20,7 +20,9 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 
-urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if settings.DEBUG is True:
+    urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 urlpatterns += [
     url(r'^admin/', include('usuarios.urls',namespace='usuarios',app_name="usuarios")),
     url(r'^admin2/', admin.site.urls),
@@ -31,3 +33,4 @@ urlpatterns += [
     url(r'^(?P<slug>[-\w\d]+)/followup/',include('fu.urls', namespace='fu', app_name="fu")),
     url(r'^',include('vista.urls', namespace='vista', app_name="vista")),
 ]
+

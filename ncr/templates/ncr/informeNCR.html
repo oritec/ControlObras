@@ -122,6 +122,7 @@
                                 <th> Subcomponente </th>
                                 <th> Tipo </th>
                                 <th> Descripci&oacute;n </th>
+                                <th> Acci&oacute;n </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -134,6 +135,11 @@
                                 <td> {{ r.sub_componente }}</td>
                                 <td> {{ r.tipo }}</td>
                                 <td> {{ r.nombre }}</td>
+                                <td>
+                                    <a href="{% url 'ncr:observaciones-show' parque.slug r.id %}" class="btn btn-circle btn-xs grey-cascade">
+                                        Ver <i class="fa fa-search"></i>
+                                    </a>
+                                </td>
                             </tr>
                         {% endfor %}
                         </tbody>

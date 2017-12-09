@@ -33,6 +33,8 @@ from datetime import datetime
 from django.core.serializers import serialize
 from django.core.exceptions import PermissionDenied
 from usuarios.models import Log
+from django.db import transaction
+
 logger = logging.getLogger('oritec')
 
 @login_required(login_url='ingresar')
@@ -291,7 +293,7 @@ def show_observacion(request,slug,observacion_id):
     for r in observacion.revision_set.all():
         #logger.debug(r)
         fotos[r.id]=[]
-        results = Fotos.objects.filter(revision=r,principal=True)
+        results = Fotos.objects.filter(revision=r,principal=True).order_by('orden')
         if results.count() > 0:
             main_fotos[r.id]=results[0].thumbnail.url
         results = Fotos.objects.filter(revision=r)
@@ -300,8 +302,12 @@ def show_observacion(request,slug,observacion_id):
 
     template_name = 'ncr/showObservacion.html'
 
+
     if 'printable' in request.GET:
         template_name = 'ncr/showObservacion-printable.html'
+        breadcrumbs = False
+    else:
+        breadcrumbs = True
 
     return TemplateResponse(request, template_name,
         {'cont': contenido,
@@ -309,7 +315,8 @@ def show_observacion(request,slug,observacion_id):
          'observacion': observacion,
          'main_fotos': main_fotos,
          'fotos': fotos,
-         'aerogeneradores':aerogeneradores
+         'aerogeneradores':aerogeneradores,
+         'breadcrumbs': breadcrumbs
         })
 
 @login_required(login_url='ingresar')
@@ -347,22 +354,38 @@ def add_images(request,slug,revision_id):
     response_data['files'] = []
     if not (request.user.has_perm('ncr.change_revision') or request.user == revision.created_by):
         raise PermissionDenied
+
+    results = Fotos.objects.filter(revision=revision).order_by('orden')
+    if results.count() > 0:
+        last_orden = results.reverse()[0].orden
+    else:
+        last_orden = 0
+
     if request.method == 'POST':
         for key, file in request.FILES.items():
             #logger.debug(file)
             primary = False
-            instance = Fotos(imagen=file,revision=revision)
-            instance.save()
+            with transaction.atomic():
+                results = Fotos.objects.filter(revision=revision).order_by('orden')
+                if results.count() > 0:
+                    last_orden = results.reverse()[0].orden
+                else:
+                    last_orden = 0
+                instance = Fotos(imagen=file,revision=revision,orden=last_orden+1)
+                last_orden += 1
+                instance.save()
+            logger.debug('Imagen:'+ file.name + ', orden=' + str(instance.orden))
             log_msg = "Se agrega imagen para parque " + parque.nombre + \
                       " - Aerogenerador " + revision.observacion.aerogenerador.nombre + \
                       " - Observacion " + revision.observacion.nombre + \
                       " - Nombre " + file.name
             log = Log(texto=log_msg, tipo=1, user=request.user)
             log.save()
-            if request.POST['radio']==file.name:
+            principales =request.POST.getlist('radio')
+            if file.name in principales:
                 set_primary_photo(foto_id=instance.id)
                 primary = True
-                log_msg = "Se escoge imagen principal para parque " + parque.nombre + \
+                log_msg = "Se agrega imagen principal para parque " + parque.nombre + \
                           " - Aerogenerador " + revision.observacion.aerogenerador.nombre + \
                           " - Observacion " + revision.observacion.nombre + \
                           " - Nombre " + file.name
@@ -394,35 +417,56 @@ def list_fotos(request,slug):
     response_data['files'] = []
     if request.method == 'POST':
         revision = Revision.objects.get(pk=request.POST['revision_id'])
-        results = Fotos.objects.filter(revision=revision)
+        results = Fotos.objects.filter(revision=revision).order_by('orden')
         for foto in results:
-            if foto.principal:
-                data={'name': os.path.basename(foto.imagen.name),
-                      'size':str(foto.imagen.size),
-                      'url':foto.imagen.url,
-                      'thumbnailUrl':foto.thumbnail.url,
-                      'deleteUrl':reverse('ncr:imagenes-delete',args=[parque.slug,foto.id]),
-                      "deleteType": "DELETE",
-                      "mainPhoto": foto.principal,
-                      "photoId" : str(foto.id)}
-                response_data['files'].append(data)
-        for foto in results:
-            if not foto.principal:
-                data={'name': os.path.basename(foto.imagen.name),
-                      'size':str(foto.imagen.size),
-                      'url':foto.imagen.url,
-                      'thumbnailUrl':foto.thumbnail.url,
-                      'deleteUrl':reverse('ncr:imagenes-delete',args=[parque.slug,foto.id]),
-                      "deleteType": "DELETE",
-                      "mainPhoto": foto.principal,
-                      "photoId" : str(foto.id)}
-                response_data['files'].append(data)
+            data={'name': os.path.basename(foto.imagen.name),
+                  'size':str(foto.imagen.size),
+                  'url':foto.imagen.url,
+                  'thumbnailUrl':foto.thumbnail.url,
+                  'deleteUrl':reverse('ncr:imagenes-delete',args=[parque.slug,foto.id]),
+                  "deleteType": "DELETE",
+                  "mainPhoto": foto.principal,
+                  "photoId" : str(foto.id)}
+            response_data['files'].append(data)
+
         response=json.dumps(response_data)
 
         return HttpResponse(
             response,
             content_type="application/json"
         )
+
+@login_required(login_url='ingresar')
+def table_fotos(request,slug,revision_id):
+    logger.debug("Enter list_fotos")
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    response_data = {}
+    response_data['data'] = []
+    revision = Revision.objects.get(pk=revision_id)
+    results = Fotos.objects.filter(revision=revision).order_by('orden')
+    if results.count()> 0:
+        last_orden = results.reverse()[0].orden
+    else:
+        last_orden = 0
+    fotos = []
+    for foto in results:
+        if foto.orden == 0:
+            foto.orden = last_orden + 1
+            last_orden += 1
+            fotos.append(foto)
+        data = [foto.orden,
+                foto.thumbnail.url,
+                foto.principal,
+                foto.id
+                ]
+        response_data['data'].append(data)
+    for foto in fotos:
+        foto.save(update_fields=['orden'])
+    response = json.dumps(response_data)
+    return HttpResponse(
+        response,
+        content_type="application/json"
+    )
 
 @login_required(login_url='ingresar')
 def del_image(request,slug,image_id):
@@ -435,8 +479,17 @@ def del_image(request,slug,image_id):
         log_msg = "Se elimina imagen "+ foto.imagen.name
         log = Log(texto=log_msg, tipo=3, user=request.user)
         log.save()
-
+        curr_orden = foto.orden
+        revision = foto.revision
         foto.delete()
+        siguientes = Fotos.objects.filter(revision=revision,orden__gt=curr_orden).order_by('orden')
+        lista = []
+        for siguiente in siguientes:
+            siguiente.orden = curr_orden
+            curr_orden += 1
+            lista.append(siguiente)
+        for l in lista:
+            l.save()
         data = {os.path.basename(foto.imagen.name):True}
         response_data['files'].append(data)
         response=json.dumps(response_data)
@@ -446,28 +499,59 @@ def del_image(request,slug,image_id):
             content_type="application/json"
         )
 
-def set_primary_photo(foto_id):
+def set_primary_photo(foto_id, estado = True):
     foto = Fotos.objects.get(pk=foto_id)
-    logger.debug("Enter set_primary_photo: " + foto.imagen.name)
-    revision = foto.revision
-    results = Fotos.objects.filter(revision=revision)
-    for f in results:
-        #logger.debug(f)
-        f.principal = False
-        f.save(update_fields=["principal"])
-    foto.principal = True
+    #logger.debug("Enter set_primary_photo: " + foto.imagen.name + ', estado = '+primary_image)
+    foto.principal = estado
     foto.save(update_fields=["principal"])
 
 @login_required(login_url='ingresar')
 def primary_image(request,slug):
     if request.method == 'POST':
-        #logger.debug("post")
-        set_primary_photo(foto_id=request.POST['foto_id'])
+        #logger.debug("primary image")
+        if request.POST['estado'] == 'true':
+            estado = True
+        else:
+            estado = False
+        set_primary_photo(foto_id=request.POST['foto_id'], estado = estado)
         foto = Fotos.objects.get(pk=request.POST['foto_id'])
-        log_msg = "Se escoge imagen principal " + foto.imagen.name
+        logger.debug('foto actualizada')
+        if estado:
+            log_msg = "Se escoge imagen hacia reporte " + foto.imagen.name
+        else:
+            log_msg = "Se extrae imagen de reporte " + foto.imagen.name
         log = Log(texto=log_msg, tipo=2, user=request.user)
         log.save()
-        return HttpResponse(foto.thumbnail.url)
+        fotos = Fotos.objects.filter(principal=True,revision=foto.revision).order_by('orden')
+        if fotos.count() > 0:
+            foto2 = fotos[0]
+        else:
+            foto2 = Fotos.objects.filter(revision=foto.revision).order_by('orden')[0]
+        return HttpResponse(foto2.thumbnail.url)
+
+@login_required(login_url='ingresar')
+def set_orden(request,slug):
+    if request.method == 'POST':
+        #logger.debug("primary image")
+        revision_id = int(request.POST['revision_id'])
+        old = request.POST.getlist('old[]')
+        new = request.POST.getlist('new[]')
+        fotos = []
+        for idx,val in enumerate(old):
+            foto = Fotos.objects.get(revision_id=revision_id,orden=int(val))
+            foto.orden = int(new[idx])
+            fotos.append(foto)
+        for foto in fotos:
+            foto.save(update_fields=['orden'])
+
+        fotos = Fotos.objects.filter(principal=True,revision_id=revision_id).order_by('orden')
+        if fotos.count() > 0:
+            return HttpResponse(fotos[0].thumbnail.url)
+        else:
+            return HttpResponse(Fotos.objects.filter(revision_id=revision_id).order_by('orden')[0].thumbnail.url)
+        #return HttpResponse('ok')
+    else:
+        return HttpResponse('fail')
 
 @login_required(login_url='ingresar')
 def add_revision(request,slug,observacion_id, revision_id = 0):
@@ -668,7 +752,7 @@ def informeNCR(request,slug):
                 return response
             if 'pdf' in request.POST:
                 logger.debug('PDF')
-                imagenes = listFotos(resultados)
+                imagenes = listFotos_v2(resultados)
                 if "colores" in request.POST:
                     colores = True
                 else:
@@ -708,17 +792,18 @@ def generatePdf(parque,resultados,imagenes, titulo,
                 colores = True,
                 fecha = date.today,
                 nombre = ''):
+
+    with open(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo.png'), "rb") as image_file:
+        logo_saroen = base64.b64encode(image_file.read())
     with open(os.path.join(settings.BASE_DIR, 'static/common/images/check-mark-3-64.gif'), "rb") as image_file:
         img_solucionado = base64.b64encode(image_file.read())
     with open(os.path.join(settings.BASE_DIR, 'static/common/images/x-mark-64-amarillo.gif'), "rb") as image_file:
         img_parcialsolucionado = base64.b64encode(image_file.read())
     with open(os.path.join(settings.BASE_DIR, 'static/common/images/x-mark-64.gif'), "rb") as image_file:
         img_nosolucionado = base64.b64encode(image_file.read())
-    with open(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo.png'), "rb") as image_file:
-        logo_saroen = base64.b64encode(image_file.read())
 
     if request is not None:
-        return render_to_pdf_response(request, 'ncr/punchlistPDF.html',
+        return render_to_pdf_response(request, 'ncr/punchlistPDF_v2.html',
                                            {'pagesize': 'LETTER',
                                             'title': 'Reporte Punchlist',
                                             'resultados': resultados,
@@ -736,7 +821,7 @@ def generatePdf(parque,resultados,imagenes, titulo,
                                             }, content_type='application/pdf',
                                            response_class=HttpResponse)
     else:
-        pdf = render_to_pdf('ncr/punchlistPDF.html',
+        pdf = render_to_pdf('ncr/punchlistPDF_v2.html',
                             {'pagesize': 'LETTER',
                              'title': 'Reporte Punchlist',
                              'resultados': resultados,
@@ -758,9 +843,27 @@ def listFotos(resultados):
     main_fotos = {}
     for res in resultados:
         r=res.revision_set.all().order_by('-id')[0]
-        results = Fotos.objects.filter(revision=r, principal=True)
+        results = Fotos.objects.filter(revision=r, principal=True).order_by('orden')
         if results.count() > 0:
             main_fotos[res.id] = results[0].reporte_img.url
+    return main_fotos
+
+def listFotos_v2(resultados):
+    main_fotos = []
+    for observacion in resultados:
+        r=observacion.revision_set.all().order_by('-id')[0]
+        results = Fotos.objects.filter(revision=r, principal=True).order_by('orden')
+        count = 1
+        for f in results:
+            cuadro_foto = {}
+            cuadro_foto['url'] = f.reporte_img.url
+            cuadro_foto['texto'] = 'OBS_' + observacion.parque.codigo + '-' + observacion.aerogenerador.nombre + \
+                                    '-' + str(observacion.observacion_id)
+            if results.count() > 1:
+                cuadro_foto['texto'] += ' (' + str(count) + ')'
+                count += 1
+            cuadro_foto['status'] = observacion.estado.nombre
+            main_fotos.append(cuadro_foto)
     return main_fotos
 
 def punchlistResults(parque, aerogenerador, form):
@@ -770,7 +873,7 @@ def punchlistResults(parque, aerogenerador, form):
                                    fecha_observacion__lte=form.cleaned_data['fecha_to'])
     if not reparadas:
         resultados = resultados.exclude(estado__nombre__exact='Solucionado').exclude(cerrado=True)
-    main_fotos = listFotos(resultados)
+    main_fotos = listFotos_v2(resultados)
     if aerogenerador.nombre == u'General':
         titulo = 'LISTADO DE OBSERVACIONES GENERALES'
     elif aerogenerador.nombre == u'Puerto':
@@ -816,7 +919,7 @@ def generateWord(parque, aerogenerador,form):
     table = document.add_table(rows=1, cols=2, style="Fotos")
     first = True
     idx = 0
-    for r in resultados:
+    for r in main_fotos:
         if not first:
             if idx % 2 == 0:
                 row_cells = table.add_row().cells
@@ -828,21 +931,24 @@ def generateWord(parque, aerogenerador,form):
             first = False
             celda = 0
         idx = idx + 1
-        logger.debug(main_fotos[r.id])
-        archivo = settings.BASE_DIR + main_fotos[r.id]
+
+        archivo = settings.BASE_DIR + r['url']
         c = row_cells[celda].paragraphs[0]
         aux = c.add_run()
-        aux.add_picture(archivo, width=Cm(7.5))
-        p = row_cells[celda].add_paragraph()
-        p.text = 'OBS_' + parque.codigo + '-' + r.aerogenerador.nombre + '-' + str(r.observacion_id) + ' '
-        aux2 = p.add_run()
-        if r.estado.nombre == 'Solucionado':
-            status_img = os.path.join(settings.BASE_DIR, 'static/common/images/check-mark-3-64.gif')
-        elif r.estado.nombre == 'Parcialmente Solucionado':
-            status_img = os.path.join(settings.BASE_DIR, 'static/common/images/x-mark-64-amarillo.gif')
-        elif r.estado.nombre == 'No Solucionado':
-            status_img = os.path.join(settings.BASE_DIR, 'static/common/images/x-mark-64.gif')
-        aux2.add_picture(status_img, width=Cm(0.4))
+        try:
+            aux.add_picture(archivo, width=Cm(7.5))
+            p = row_cells[celda].add_paragraph()
+            p.text = r['texto']
+            aux2 = p.add_run()
+            if r['status'] == 'Solucionado':
+                status_img = os.path.join(settings.BASE_DIR, 'static/common/images/check-mark-3-64.gif')
+            elif r['status'] == 'Parcialmente Solucionado':
+                status_img = os.path.join(settings.BASE_DIR, 'static/common/images/x-mark-64-amarillo.gif')
+            elif r['status'] == 'No Solucionado':
+                status_img = os.path.join(settings.BASE_DIR, 'static/common/images/x-mark-64.gif')
+            aux2.add_picture(status_img, width=Cm(0.4))
+        except IOError:
+            logger.debug('No se encontró imagen')
     target_stream = StringIO.StringIO()
     document.save(target_stream)
     return target_stream
