@@ -164,6 +164,12 @@
 								<span class="title">Listado de paradas</span>
 							</a>
 						</li>
+                        <li class="nav-item " id="menu2-reportes">
+							<a href="{% url 'fu:reportes' parque.slug %}" class="nav-link ">
+								<i class="fa fa-caret-right"></i>
+								<span class="title">Reportes</span>
+							</a>
+						</li>
                         {% for wtg in aerogeneradores|filter_ag_fu %}
 						<li class="nav-item " id="menu2-ingreso-{{ wtg.idx }}">
 							<a href="{% url 'fu:ingreso' parque.slug wtg.slug %}" class="nav-link ">

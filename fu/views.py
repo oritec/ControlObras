@@ -2099,3 +2099,28 @@ def edit_paradas(request,slug,id):
             'back_url':back_url,
             'edit_parada': edit_parada,
         })
+
+@login_required(login_url='ingresar')
+def reportes(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
+    contenido=ContenidoContainer()
+    contenido.user=request.user
+    contenido.titulo=u'Reportes Follow Up '
+    contenido.subtitulo='Parque '+ parque.nombre
+    contenido.menu = ['menu-fu', 'menu2-reportes']
+
+    form = None
+
+    if request.method == 'POST':
+        pass
+
+    if form is None:
+        pass
+
+    return TemplateResponse(request, 'fu/reportes.html',
+        {'cont': contenido,
+            'parque': parque,
+            'form': form,
+            'aerogeneradores': aerogeneradores,
+        })

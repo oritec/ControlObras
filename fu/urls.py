@@ -18,5 +18,6 @@ urlpatterns = [
     url(r'^paradas/agregar', views.add_paradas, name='agregar-paradas'),
     url(r'^paradas/(?P<id>[0-9]+)/editar', views.edit_paradas, name='editar-paradas'),
     url(r'^paradas', views.paradas, name='paradas'),
+    url(r'^reportes', views.reportes, name='reportes'),
     #url(r'^componente/crear', views.create_componente, name='componente-create')
 ]
