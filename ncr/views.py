@@ -287,7 +287,7 @@ def show_observacion(request,slug,observacion_id):
     contenido.menu = ['menu-ncr', 'menu2-observaciones-'+str(observacion.aerogenerador.idx)]
     main_fotos = {}
     fotos = {}
-    for r in observacion.revision_set.all():
+    for r in observacion.revision_set.all().order_by('id'):
         #logger.debug(r)
         fotos[r.id]=[]
         results = Fotos.objects.filter(revision=r,principal=True).order_by('orden')
@@ -603,7 +603,7 @@ def add_revision(request,slug,observacion_id, revision_id = 0):
         if edit_revision is not None:
             revisionForm = RevisionFormFull(instance=edit_revision)
         else:
-            revisionForm = RevisionFormFull(initial={"observacion":observacion})
+            revisionForm = RevisionFormFull(initial={"observacion":observacion,"nombre":observacion.nombre})
 
     return TemplateResponse(request, 'ncr/agregarRevision.html',
         {'cont': contenido,

@@ -156,7 +156,7 @@
                         OBS_{{ parque.codigo }}-{{ observacion.aerogenerador.nombre }}-{{ observacion.observacion_id }}
                     </td>
                     <td align="center" class="{% cycle 'row1' 'row2' %}"> {{ observacion.componente }} </td>
-                    <td align="left" class="{% cycle 'row1' 'row2' %}"> {{ observacion.nombre }} </td>
+                    <td align="left" class="{% cycle 'row1' 'row2' %}"> {{ observacion|get_ncr_description }} </td>
                 </tr>
             {% endfor %}
             </tbody>

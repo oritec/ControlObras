@@ -75,6 +75,14 @@
                             </div>
 
                             <div class="form-group">
+                                <label class="control-label col-md-3">{{ revisionForm.nombre.label }}</label>
+                                <div class="col-md-9">
+                                    {{ revisionForm.nombre }}
+                                    <span class="help-block"> {{ revisionForm.nombre.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
                                 <label class="control-label col-md-3">{{ revisionForm.descripcion.label }}</label>
                                 <div class="col-md-9">
                                     {{ revisionForm.descripcion }}

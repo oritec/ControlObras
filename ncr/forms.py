@@ -73,8 +73,9 @@ class RevisionForm(forms.ModelForm):
                                         input_formats=('%d-%m-%Y',))
     class Meta:
         model = Revision
-        fields = ['fecha_revision','severidad','descripcion']
+        fields = ['fecha_revision','severidad','nombre','descripcion']
         labels = {
+            'nombre': 'Descripción',
             'descripcion': 'Detalle',
         }
     def __init__(self, *args, **kwargs):
@@ -83,6 +84,7 @@ class RevisionForm(forms.ModelForm):
         self.fields['severidad'].widget.attrs['class'] = 'bs-select form-control'
         self.fields['severidad'].widget.attrs['data-live-search'] = 'true'
         self.fields['severidad'].widget.attrs['data-size'] = '8'
+        self.fields['nombre'].widget.attrs['class'] = 'form-control'
         self.fields['descripcion'].widget = forms.Textarea()
         self.fields['descripcion'].widget.attrs['class'] = 'form-control'
         self.fields['descripcion'].widget.attrs['row'] = '3'
@@ -92,8 +94,9 @@ class RevisionFormFull(forms.ModelForm):
                                  input_formats=('%d-%m-%Y',))
     class Meta:
         model = Revision
-        fields = ['observacion','fecha_revision','severidad','descripcion', 'estado','reported_by']
+        fields = ['observacion','fecha_revision','severidad','nombre','descripcion', 'estado','reported_by']
         labels = {
+            'nombre': 'Descripción',
             'fecha_revision' : 'Fecha revisión',
             'descripcion': 'Detalle',
             'reported_by': 'Reportado por'
@@ -112,6 +115,7 @@ class RevisionFormFull(forms.ModelForm):
         self.fields['reported_by'].widget.attrs['class'] = 'bs-select form-control'
         self.fields['reported_by'].widget.attrs['data-live-search'] = 'true'
         self.fields['reported_by'].widget.attrs['data-size'] = '8'
+        self.fields['nombre'].widget.attrs['class'] = 'form-control'
 
 class NCR(forms.Form):
     aerogenerador = forms.ModelMultipleChoiceField(queryset=Aerogenerador.objects.all(),required=False)

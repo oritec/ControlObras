@@ -272,3 +272,11 @@ def get_item_safe(dictionary, key):
 @register.filter
 def index(List, i):
     return List[int(i)]
+
+@register.filter
+def get_ncr_description(ncr):
+    if ncr.revision_set.all().count() > 1:
+        r = ncr.revision_set.all().order_by('-id')[0]
+        return r.nombre
+    else:
+        return ncr.nombre
