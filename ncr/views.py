@@ -23,14 +23,11 @@ import base64
 from docx import Document
 from docx.shared import Mm, Inches, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.enum.shape import WD_INLINE_SHAPE
 from django.conf import settings
 from openpyxl import Workbook
-from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from datetime import date
 from datetime import datetime
-from django.core.serializers import serialize
 from django.core.exceptions import PermissionDenied
 from usuarios.models import Log
 from django.db import transaction

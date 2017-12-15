@@ -11,6 +11,7 @@ from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 from django.contrib.auth.models import Group
 import re
+from anytree import Node, Resolver
 
 import logging
 logger = logging.getLogger('oritec')
@@ -255,3 +256,19 @@ def check_index_permissions(user_system):
         return True
 
     return False
+
+@register.filter()
+def getNode(parent,name):
+    r = Resolver('name')
+    return r.get(parent, name)
+
+@register.filter
+def get_item_safe(dictionary, key):
+    try:
+        return dictionary.get(key)
+    except:
+        pass
+
+@register.filter
+def index(List, i):
+    return List[int(i)]

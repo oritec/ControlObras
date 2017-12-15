@@ -7,20 +7,20 @@ from django.shortcuts import get_object_or_404
 from vista.models import ParqueSolar, Aerogenerador
 from vista.functions import *
 from fu.forms import ComponenteForm, AddComponentesForm, ConfiguracionFUForm,PlanificacionForm,DeleteComponentesForm
-from fu.forms import RegistroDescargaForm, RegistroForm, ParadasForm
+from fu.forms import RegistroDescargaForm, RegistroForm, ParadasForm,ReporteForm
 from fu.models import Componente, ComponentesParque, RelacionesFU, ConfiguracionFU, Contractual, Plan, EstadoFU
 from fu.models import Registros, Paradas
 from django.contrib import messages
 from django.db.models import Max
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from django.http import HttpResponse, HttpResponseRedirect
 from querystring_parser import parser
 from dateutil import relativedelta
-from datetime import datetime
+from datetime import datetime, date
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
-from openpyxl.worksheet.table import Table, TableStyleInfo
-from openpyxl.styles import PatternFill, Border, Side, Alignment, Protection, Font, Color
+from openpyxl.drawing.image import Image
+from openpyxl.styles import PatternFill, Border, Side, Alignment, Font, Color
 from openpyxl import load_workbook
 from django.core.urlresolvers import reverse
 import StringIO
@@ -31,6 +31,22 @@ from django.db.models import Sum
 import numpy as np
 from django.core.exceptions import PermissionDenied
 from usuarios.models import Log
+from anytree import Node, Resolver
+import zipfile
+from openpyxl.chart import BarChart, LineChart, Reference
+from openpyxl.chart.label import DataLabelList
+from openpyxl.chart.shapes import GraphicalProperties
+
+
+from openpyxl.drawing.fill import PatternFillProperties, ColorChoice
+from openpyxl.drawing.line import LineProperties
+from openpyxl.drawing.text import Paragraph, ParagraphProperties, CharacterProperties
+from openpyxl.drawing.text import Font as TextFont
+from openpyxl.chart.text import RichText
+from openpyxl.drawing.colors import ColorChoiceDescriptor
+import base64
+from easy_pdf.rendering import render_to_pdf_response, render_to_pdf
+from PyPDF2 import PdfFileMerger, PdfFileReader
 
 meses_espanol={"1":"Enero",
        "2":"Febrero",
@@ -48,6 +64,34 @@ meses_espanol={"1":"Enero",
 
 import json
 logger = logging.getLogger('oritec')
+
+def getContractual(parque,componente,estado,fecha):
+    c = Contractual.objects.filter(parque=parque,
+                                   componente=componente,
+                                   estado=estado,
+                                   fecha__lte=fecha).aggregate(Sum('no_aerogeneradores'))
+    if c['no_aerogeneradores__sum'] is None:
+        return 0
+    else:
+        return c['no_aerogeneradores__sum']
+
+def getPlan(parque,componente,estado,fecha):
+    c = Plan.objects.filter(parque=parque,
+                            componente=componente,
+                            estado=estado,
+                            fecha__lte=fecha).aggregate(Sum('no_aerogeneradores'))
+
+    if c['no_aerogeneradores__sum'] is None:
+        return 0
+    else:
+        return c['no_aerogeneradores__sum']
+
+def getReal(parque,componente,estado,fecha):
+    c = Registros.objects.filter(parque=parque,
+                                 componente=componente,
+                                 estado=estado,
+                                 fecha__lte=fecha)
+    return c.count()
 
 def graficoComponentes(componentes_parque,estado,fecha_calculo):
     data_full = []
@@ -74,43 +118,113 @@ def graficoComponentes(componentes_parque,estado,fecha_calculo):
     data_graficos = []
 
     for s in componentes.filter(**karws).order_by(filtro):
-        c = Contractual.objects.filter(parque=componentes_parque.parque,
-                                       componente=s,
-                                       estado=estado,
-                                       fecha__lte=r).aggregate(Sum('no_aerogeneradores'))
-        if c['no_aerogeneradores__sum'] is None:
-            data_graficos.append({"name": s.nombre, "y": 0})
-        else:
-            data_graficos.append({"name": s.nombre, "y": c['no_aerogeneradores__sum']})
+        value = getContractual(componentes_parque.parque, s, estado, r)
+        data_graficos.append({"name": s.nombre, "y": value})
+
     data_full.append({"name": "Contractual", "data": data_graficos})
 
     # Plan
     data_graficos = []
     for s in componentes.filter(**karws).order_by(filtro):
-        c = Plan.objects.filter(parque=componentes_parque.parque,
-                                       componente=s,
-                                       estado=estado,
-                                       fecha__lte=r).aggregate(Sum('no_aerogeneradores'))
-        if c['no_aerogeneradores__sum'] is None:
-            data_graficos.append({"name": s.nombre, "y": 0})
-        else:
-            data_graficos.append({"name": s.nombre, "y": c['no_aerogeneradores__sum']})
-    data_full.append({"name": "Plan", "data": data_graficos})
-    # Real
+        value = getPlan(componentes_parque.parque, s, estado, r)
+        data_graficos.append({"name": s.nombre, "y": value})
 
+    data_full.append({"name": "Plan", "data": data_graficos})
+
+    # Real
     data_graficos = []
     for s in componentes.filter(**karws).order_by(filtro):
-        c = Registros.objects.filter(parque=componentes_parque.parque,
-                                componente=s,
-                                estado=estado,
-                                fecha__lte=r)
-        data_graficos.append({"name": s.nombre, "y": c.count()})
+        value = getReal(componentes_parque.parque, s, estado, r)
+        data_graficos.append({"name": s.nombre, "y": value})
     data_full.append({"name": "Real", "data": data_graficos})
 
     datos = serializeGrafico(data_full)
     return datos
 
 def calcularProyeccion(componentes_parque,anho,semana):
+    d = str(anho) + '-W' + str(semana)
+    # Se calcula solo con los datos de hasta la semana pasada
+    r = datetime.strptime(d + '-0', "%Y-W%W-%w") - relativedelta.relativedelta(weeks=1)
+    parque = componentes_parque.parque
+    try:
+        configuracion = ConfiguracionFU.objects.get(parque=parque)
+    except ConfiguracionFU.DoesNotExist:
+        return [[], None]
+    max_aerogeneradores = parque.no_aerogeneradores
+    aux = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
+                                      orden_montaje__range=(1, 8))
+    componentes_montaje = []
+    for c in aux:
+        componentes_montaje.append(c.componente.id)
+    estado = EstadoFU.objects.get(idx=3)
+    # Calculo de avance
+    fecha = configuracion.fecha_inicio
+    semana_calculo = fecha.isocalendar()[1]
+    d = str(fecha.year) + '-W' + str(semana_calculo)
+    fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
+    # Valores a numpy
+    x_values = []
+    y_values = []
+    first = False
+    first_date = None
+    count = 0
+
+    while fecha_calculo <= r:
+        c = Registros.objects.filter(parque=parque,
+                                     componente__in=componentes_montaje,
+                                     estado=estado,
+                                     fecha__lte=fecha_calculo)
+        valor = float(c.count()) / 8
+        if not first:
+            if valor != 0:
+                first = True
+                first_date = fecha_calculo
+        if first:
+            if valor < max_aerogeneradores:
+                x_values.append(count)
+                y_values.append(valor)
+                count += 1
+
+        fecha = fecha_calculo + relativedelta.relativedelta(weeks=1)
+        semana_calculo = fecha.isocalendar()[1]
+        d = str(fecha.year) + '-W' + str(semana_calculo)
+        fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
+
+    if len(x_values) < 2:
+        return [[], None]
+    # Proyeccion
+    x = np.array(x_values)
+    y = np.array(y_values)
+    z = np.polyfit(x, y, 1)
+    p = np.poly1d(z)
+    fecha = configuracion.fecha_inicio
+    semana_calculo = fecha.isocalendar()[1]
+    d = str(fecha.year) + '-W' + str(semana_calculo)
+    fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
+    data_graficos = []
+    count = 0
+    valor = 0
+    while valor < max_aerogeneradores:
+        if fecha_calculo < first_date:
+            valor = 0
+        else:
+            valor = p(count)
+            if valor < 0:
+                valor = 0
+            elif valor > max_aerogeneradores:
+                valor = max_aerogeneradores
+            count += 1
+        fecha_grafico = str(fecha_calculo.year) + '-' + str(semana_calculo)
+        valor_porcentaje = valor / max_aerogeneradores * 100
+        data_graficos.append(valor_porcentaje)
+        if valor < max_aerogeneradores:
+            fecha = fecha_calculo + relativedelta.relativedelta(weeks=1)
+            semana_calculo = fecha.isocalendar()[1]
+            d = str(fecha.year) + '-W' + str(semana_calculo)
+            fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
+    return [data_graficos,fecha_calculo]
+
+def calcularProyeccionGrafico(componentes_parque,anho,semana):
     d = str(anho) + '-W' + str(semana)
     # Se calcula solo con los datos de hasta la semana pasada
     r = datetime.strptime(d + '-0', "%Y-W%W-%w") - relativedelta.relativedelta(weeks=1)
@@ -738,7 +852,7 @@ def dashboard(request,slug):
     graficoMontaje = graficoComponentes(componentes_parque, estado, last_day_week)
     estado = EstadoFU.objects.get(idx=4)
     graficoPuestaenMarcha = graficoComponentes(componentes_parque, estado, last_day_week)
-    [proyeccion, last_week] = calcularProyeccion(componentes_parque, anho, semana)
+    [proyeccion, last_week] = calcularProyeccionGrafico(componentes_parque, anho, semana)
     if last_week is not None:
         graficoAvance = graficoAvances(componentes_parque, last_week.year, last_week.isocalendar()[1], last_day_week,proyeccion)
     else:
@@ -849,7 +963,7 @@ def dashboard_diario(request,slug):
     graficoMontaje = graficoComponentes(componentes_parque, estado, t)
     estado = EstadoFU.objects.get(idx=4)
     graficoPuestaenMarcha = graficoComponentes(componentes_parque, estado, t)
-    [proyeccion, last_week] = calcularProyeccion(componentes_parque, anho, semana)
+    [proyeccion, last_week] = calcularProyeccionGrafico(componentes_parque, anho, semana)
     if last_week is not None:
         graficoAvance = graficoAvances(componentes_parque, last_week.year, last_week.isocalendar()[1], t,proyeccion)
     else:
@@ -2100,6 +2214,1044 @@ def edit_paradas(request,slug,id):
             'edit_parada': edit_parada,
         })
 
+def nested_dict(n, type):
+    if n == 1:
+        return defaultdict(type)
+    else:
+        return defaultdict(lambda: nested_dict(n-1, type))
+
+def dataPlanificacion(parque):
+    datos = nested_dict(2, int)
+    filas = Node("Filas")
+    columnas = Node("Columnas")
+    estados = EstadoFU.objects.filter(idx__gt=0).order_by('id')
+    componentes_parque = ComponentesParque.objects.get(parque=parque).componentes.all()
+    filtros = {}
+    filtros[2] = 'relacionesfu__orden_descarga'
+    filtros[4] = 'relacionesfu__orden_montaje'
+    filtros[5] = 'relacionesfu__orden_puestaenmarcha'
+    datos2 = OrderedDict()
+    configuracion = ConfiguracionFU.objects.get(parque=parque)
+    final = configuracion.fecha_final
+    last_anho = 0
+    last_mes = 0
+    r = Resolver('name')
+    fila = 0
+
+    for e in estados:
+        if e.id in filtros:
+            karws = {filtros[e.id] + '__gt': 0}
+            componentes = componentes_parque.filter(**karws).order_by(filtros[e.id])
+            if componentes.count() > 0:
+                n_fila = Node(e.nombre, filas)
+                for c in componentes:
+                    n2_fila = Node(c.nombre, n_fila)
+                    n_contractual = Node('Contractual', n2_fila)
+                    n_plan = Node('Plan', n2_fila)
+                    aux = configuracion.fecha_inicio
+                    columna = 0
+                    datos2[fila]=OrderedDict()
+                    datos2[fila +1 ] = OrderedDict()
+                    filtro_contractual = Contractual.objects.filter(parque=parque,
+                                                                  componente__nombre=c.nombre,
+                                                                  estado=e)
+                    filtro_plan = Plan.objects.filter(parque=parque,
+                                                    componente__nombre=c.nombre,
+                                                    estado=e)
+                    while aux < final:
+                        if last_anho != aux.year:
+                            try:
+                                n_anho =r.get(columnas, str(aux.year))
+                            except:
+                                n_anho = Node(str(aux.year),columnas)
+                            last_anho = aux.year
+                        if last_mes != aux.month:
+                            try:
+                                n_mes = r.get(n_anho, meses_espanol[str(aux.month)])
+                            except:
+                                n_mes = Node(meses_espanol[str(aux.month)],n_anho)
+                            last_mes = aux.month
+                        try:
+                            n_semana = r.get(n_mes,str(aux.isocalendar()[1]))
+                        except:
+                            n_semana = Node(str(aux.isocalendar()[1]), n_mes)
+                        d_str = str(aux.year) + "-W" + str(aux.isocalendar()[1]) + "-0"
+                        fecha_aux = datetime.strptime(d_str, "%Y-W%W-%w")
+                        try:
+                            plan = filtro_plan.get(fecha=fecha_aux)
+                            #datos[n_plan][n_semana] = plan.no_aerogeneradores
+                            datos2[fila+1][columna] = plan.no_aerogeneradores
+                        except Plan.DoesNotExist:
+                            pass
+                        try:
+                            contractual = filtro_contractual.get(fecha=fecha_aux)
+                            #datos[n_contractual][n_semana] = contractual.no_aerogeneradores
+                            datos2[fila][columna] = contractual.no_aerogeneradores
+                        except Contractual.DoesNotExist:
+                            pass
+
+                        aux = aux + relativedelta.relativedelta(weeks=1)
+                        columna += 1
+                    fila += 2
+    return [filas,columnas,datos2]
+
+def printFilasHeader(ws,node,row,column,deep,alignment1=None):
+    deep +=1
+    bgColor = Color(rgb="283861")
+    bg = PatternFill(patternType='solid', fgColor=bgColor)
+    font = Font(color="FFFFFF")
+    alignments = {}
+    if alignment1 is None:
+        alignments[1] = Alignment(horizontal="center", vertical="center", text_rotation=90)
+    else:
+        alignments[1] = alignment1
+    alignments[2] = Alignment(vertical="center")
+    alignments[3] = Alignment(horizontal="center")
+    thin = Side(border_style="thin", color="000000")
+    borderfull = Border(top=thin, left=thin, right=thin, bottom=thin)
+
+    for level in node.children:
+        d = ws.cell(row=row, column=column+deep-1, value=level.name)
+        d.alignment = alignments[deep]
+        d.fill = bg
+        d.font = font
+
+        first_row = row
+
+        if len(level.children) > 0:
+            row = printFilasHeader(ws,level,row,column,deep)
+        else:
+            #d.border = borderfull
+            row += 1
+        #d.border = borderbottom
+        if (first_row != (row - 1)):
+            ws.merge_cells(start_row=first_row, start_column=column+deep-1, end_row=row - 1, end_column=column+deep-1)
+        else:
+            d.border = borderfull
+
+    return row
+
+def printColumnasHeader(ws,node,row,column,deep):
+    deep +=1
+    bgColor = Color(rgb="283861")
+    bg = PatternFill(patternType='solid', fgColor=bgColor)
+    font = Font(color="FFFFFF")
+    alignments = {}
+    alignments[1] = Alignment(horizontal="center", vertical="center", text_rotation=90)
+    alignments[2] = Alignment(vertical="center")
+    alignments[3] = Alignment(horizontal="center")
+    thin = Side(border_style="thin", color="000000")
+    borderfull = Border(top=thin, left=thin, right=thin, bottom=thin)
+
+    for level in node.children:
+        d = ws.cell(row=row+deep-1, column=column, value=level.name)
+        d.fill = bg
+        d.font = font
+        d.border = borderfull
+        d.alignment = alignments[3]
+        start_column = column
+        if len(level.children) > 0:
+            column = printColumnasHeader(ws,level,row,column,deep)
+        else:
+            column += 1
+        if (start_column != (column-1)):
+            ws.merge_cells(start_row=row + deep -1, start_column=start_column, end_row=row+deep -1,
+                       end_column=column  - 1)
+    return column
+
+def getHojas(node, hojas):
+    if len(node.children) == 0:
+        hojas.append(node)
+    else:
+        for level in node.children:
+            getHojas(level,hojas)
+
+def printDataExcel(ws,datos, initial_row,initial_col,alignment = None, column_width = None):
+    thin = Side(border_style="thin", color="000000")
+    borderbottom = Border(left=thin, right=thin, bottom=thin)
+
+    max_row = 0
+    max_col = 0
+    for fila, aux in datos.iteritems():
+        if fila > max_row:
+            max_row = fila
+        for columna, value in aux.iteritems():
+            if columna > max_col:
+                max_col = columna
+            d = ws.cell(row=initial_row + fila, column=initial_col + columna, value=value)
+            if alignment is not None:
+                d.alignment = alignment
+
+    rango = get_column_letter(initial_col) + str(initial_row) + ':' + \
+            get_column_letter(initial_col + max_col) + str(initial_row + max_row)
+
+    rows = ws[rango]
+    for row in rows:
+        for cell in row:
+            cell.border = borderbottom
+
+    if column_width is not None:
+        for columna in range(initial_col,initial_col+max_col+1):
+            ws.column_dimensions[get_column_letter(columna)].width = column_width
+
+def planificacionExcel(parque, wb):
+    [filas,columnas,datos] = dataPlanificacion(parque)
+    if 'Planificacion'  in wb.sheetnames:
+        ws = wb['Planificacion']
+    else:
+        ws = wb.create_sheet("Planificacion")
+
+    bgColor = Color(rgb="283861")
+    bg = PatternFill(patternType='solid', fgColor=bgColor)
+    font = Font(color="FFFFFF")
+    thin = Side(border_style="thin", color="000000")
+    borderfull = Border(top=thin, left=thin, right=thin, bottom=thin)
+    borderbottom = Border(left=thin, right=thin, bottom=thin)
+    borderside = Border(left=thin, right=thin)
+    alignment3 = Alignment(horizontal="center")
+
+    row = 3
+
+    d = ws.cell(row=row, column=1, value='Actividad')
+    d.fill = bg
+    d.font = font
+    d.border = borderfull
+    d.alignment = alignment3
+    d = ws.cell(row=row, column=2, value='Componente')
+    d.fill = bg
+    d.font = font
+    d.border = borderfull
+    d.alignment = alignment3
+    d = ws.cell(row=row, column=3, value='Semana')
+    d.fill = bg
+    d.font = font
+    d.border = borderfull
+    d.alignment = alignment3
+
+    ws.column_dimensions["A"].width = 11.0
+    ws.column_dimensions["B"].width = 25.0
+    ws.column_dimensions["C"].width = 11.0
+
+    printColumnasHeader(ws,columnas,1,4,0)
+    printFilasHeader(ws, filas, 4, 1, 0)
+    for cell_range in ws.merged_cell_ranges:
+        rows = ws[cell_range]
+        for cell in rows[0]:
+            cell.border = borderside
+            cell.border = borderbottom
+        for cell in rows[-1]:
+            cell.border = borderside
+            cell.border = borderbottom
+
+    printDataExcel(ws,datos,4,4)
+
+    return wb
+
+def addUniqueNodo(nombre,padre,html = None):
+    r = Resolver('name')
+    try:
+        nodo = r.get(padre, nombre)
+    except:
+        nodo = Node(nombre, padre)
+    if html is not None:
+        if nombre not in html:
+            html.append(nombre)
+
+    return nodo
+
+def dataSeriesfechas(parque, html = None):
+    datos = OrderedDict()
+    filas = Node("Filas")
+    columnas = Node("Columnas")
+    estados = EstadoFU.objects.filter(idx__gt=0).order_by('id')
+    componentes_parque = ComponentesParque.objects.get(parque=parque).componentes.all()
+    filtros = {}
+    filtros[2] = 'relacionesfu__orden_descarga'
+    filtros[4] = 'relacionesfu__orden_montaje'
+    filtros[5] = 'relacionesfu__orden_puestaenmarcha'
+    configuracion = ConfiguracionFU.objects.get(parque=parque)
+    final = configuracion.fecha_final
+    last_anho = 0
+    last_mes = 0
+    r = Resolver('name')
+    ags = Aerogenerador.objects.filter(parque=parque,nombre__istartswith='WTG').order_by('idx')
+    fila = 0
+    filas_html = []
+    columnas_html = []
+    suma_filas = [0] * (parque.no_aerogeneradores + 1)
+
+    for e in estados:
+        if e.id in filtros:
+            karws = {filtros[e.id] + '__gt': 0}
+            componentes = componentes_parque.filter(**karws).order_by(filtros[e.id])
+            if componentes.count() > 0:
+                n_fila = Node(e.nombre, filas)
+                for c in componentes:
+                    filtro_registros = Registros.objects.filter(parque=parque,componente=c,estado=e)
+                    n2_fila = Node(c.nombre, n_fila)
+                    datos[fila] = OrderedDict()
+                    n_fecha = Node('Fecha', n2_fila)
+                    filas_html.append(
+                        {'Estado': e.nombre, 'Componente': c.nombre, 'Item': 'Fecha', 'Fila': fila})
+                    if e.id == 2:
+                        n_serie = Node('Serie', n2_fila)
+                        filas_html.append(
+                            {'Estado': e.nombre, 'Componente': c.nombre, 'Item': 'Serie', 'Fila': fila+1})
+                        datos[fila+1] = OrderedDict()
+                    columna = 0
+                    for ag in ags:
+                        addUniqueNodo(ag.nombre,columnas,columnas_html)
+                        try:
+                            r = filtro_registros.get(aerogenerador = ag)
+                            datos[fila][columna] = r.fecha.strftime('%d-%m-%Y')
+                            try:
+                                suma_filas[fila] += 1
+                            except:
+                                suma_filas[fila] = 1
+                            if e.id == 2:
+                                datos[fila+1][columna] = r.no_serie
+                                try:
+                                    suma_filas[fila+1] += 1
+                                except:
+                                    suma_filas[fila+1] = 1
+                        except Registros.DoesNotExist:
+                            pass
+                        columna += 1
+                    addUniqueNodo('Total', columnas, columnas_html)
+                    datos[fila][columna] = suma_filas[fila]
+                    if e.id == 2:
+                        datos[fila+1][columna] = suma_filas[fila+1]
+                        fila += 2
+                    else:
+                        fila += 1
+
+    if html is None:
+        return [filas,columnas,datos]
+    else:
+        return [filas_html,columnas_html,datos]
+
+def seriesfechasExcel(parque,wb):
+    [filas, columnas, datos] = dataSeriesfechas(parque)
+    sheet_name = 'Número de series y fecha'
+    if sheet_name in wb.sheetnames:
+        ws = wb[sheet_name]
+    else:
+        ws = wb.create_sheet(sheet_name)
+
+    bgColor = Color(rgb="283861")
+    bg = PatternFill(patternType='solid', fgColor=bgColor)
+    font = Font(color="FFFFFF")
+    thin = Side(border_style="thin", color="000000")
+    borderfull = Border(top=thin, left=thin, right=thin, bottom=thin)
+    borderbottom = Border(left=thin, right=thin, bottom=thin)
+    borderside = Border(left=thin, right=thin)
+    alignment3 = Alignment(horizontal="center")
+
+    row = 2
+
+    d = ws.cell(row=row, column=1, value='Actividad')
+    d.fill = bg
+    d.font = font
+    d.border = borderfull
+    d.alignment = alignment3
+    d = ws.cell(row=row, column=2, value='Componente')
+    d.fill = bg
+    d.font = font
+    d.border = borderfull
+    d.alignment = alignment3
+    d = ws.cell(row=row, column=3, value='Elemento')
+    d.fill = bg
+    d.font = font
+    d.border = borderfull
+    d.alignment = alignment3
+
+    ws.column_dimensions["A"].width = 11.0
+    ws.column_dimensions["B"].width = 25.0
+    ws.column_dimensions["C"].width = 11.0
+
+    printColumnasHeader(ws, columnas, 2, 4, 0)
+    printFilasHeader(ws, filas, 3, 1, 0)
+    for cell_range in ws.merged_cell_ranges:
+        rows = ws[cell_range]
+        if len(rows) > 1:
+            for row in rows:
+                row[0].border = borderside
+                row[0].border = borderbottom
+        else:
+            for cell in rows[0]:
+                cell.border = borderside
+                cell.border = borderbottom
+
+    printDataExcel(ws, datos, 3, 4,alignment3,14)
+
+    img1 = Image(parque.logo)
+    img2 = Image(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo-excel.png'))
+    ws.add_image(img1, 'A1')
+    ws.add_image(img2, 'K1')
+
+    return wb
+
+def dataSeguimiento(parque,t, html = None):
+    datos = OrderedDict()
+    filas = Node("Filas")
+    columnas = Node("Columnas")
+    estados = EstadoFU.objects.filter(idx__gt=0).order_by('id')
+    componentes_parque = ComponentesParque.objects.get(parque=parque).componentes.all()
+    filtros = {}
+    filtros[2] = 'relacionesfu__orden_descarga'
+    filtros[4] = 'relacionesfu__orden_montaje'
+    filtros[5] = 'relacionesfu__orden_puestaenmarcha'
+    configuracion = ConfiguracionFU.objects.get(parque=parque)
+    final = configuracion.fecha_final
+
+    ags = Aerogenerador.objects.filter(parque=parque, nombre__istartswith='WTG').order_by('idx')
+    fila = 0
+
+    anho = t.year
+    semana = t.isocalendar()[1]
+    d = str(anho) + '-W' + str(semana)
+    fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
+
+    filas_html = []
+    columnas_html = []
+
+    for e in estados:
+        if e.id in filtros:
+            karws = {filtros[e.id] + '__gt': 0}
+            componentes = componentes_parque.filter(**karws).order_by(filtros[e.id])
+            if componentes.count() > 0:
+                n_fila = Node(e.nombre, filas)
+                for c in componentes:
+                    n2_fila = Node(c.nombre, n_fila)
+                    filas_html.append(
+                        {'Estado': e.nombre, 'Componente': c.nombre, 'Fila': fila})
+                    filtro_registros = Registros.objects.filter(parque=parque, componente=c, estado=e)
+                    columna = 0
+                    datos[fila] = OrderedDict()
+                    # Estadisticas primero
+                    addUniqueNodo('Total', columnas, columnas_html)
+                    datos[fila][columna] = parque.no_aerogeneradores
+                    columna += 1
+                    addUniqueNodo('Contractual', columnas, columnas_html)
+                    datos[fila][columna] = getContractual(parque,c,e,fecha_calculo)
+                    columna += 1
+                    addUniqueNodo('Plan', columnas, columnas_html)
+                    datos[fila][columna] = getPlan(parque,c,e,fecha_calculo)
+                    columna += 1
+                    addUniqueNodo('Real', columnas, columnas_html)
+                    datos[fila][columna] = getReal(parque,c,e,t)
+                    columna += 1
+
+                    for ag in ags:
+                        addUniqueNodo(ag.nombre,columnas, columnas_html)
+                        try:
+                            r = filtro_registros.get(aerogenerador = ag)
+                            datos[fila][columna] = 'X'
+                        except Registros.DoesNotExist:
+                            pass
+                        columna += 1
+                    fila += 1
+
+    if html is None:
+        return [filas,columnas,datos]
+    else:
+        return [filas_html,columnas_html,datos]
+
+def seguimientoExcel(parque,wb,t):
+    [filas, columnas, datos] = dataSeguimiento(parque,t)
+    sheet_name = 'Seguimiento'
+    if sheet_name in wb.sheetnames:
+        ws = wb[sheet_name]
+    else:
+        ws = wb.create_sheet(sheet_name)
+
+    bgColor = Color(rgb="283861")
+    bg = PatternFill(patternType='solid', fgColor=bgColor)
+    font = Font(color="FFFFFF")
+    thin = Side(border_style="thin", color="000000")
+    borderfull = Border(top=thin, left=thin, right=thin, bottom=thin)
+    borderbottom = Border(left=thin, right=thin, bottom=thin)
+    borderside = Border(left=thin, right=thin)
+    alignment3 = Alignment(horizontal="center")
+
+    row = 2
+
+    d = ws.cell(row=row, column=1, value='Actividad')
+    d.fill = bg
+    d.font = font
+    d.border = borderfull
+    d.alignment = alignment3
+    d = ws.cell(row=row, column=2, value='Componente')
+    d.fill = bg
+    d.font = font
+    d.border = borderfull
+    d.alignment = alignment3
+
+    ws.column_dimensions["A"].width = 11.0
+    ws.column_dimensions["B"].width = 25.0
+
+    printColumnasHeader(ws, columnas, 2, 3, 0)
+    printFilasHeader(ws, filas, 3, 1, 0)
+    for cell_range in ws.merged_cell_ranges:
+        rows = ws[cell_range]
+        if len(rows) > 1:
+            for row in rows:
+                row[0].border = borderside
+                row[0].border = borderbottom
+        else:
+            for cell in rows[0]:
+                cell.border = borderside
+                cell.border = borderbottom
+
+    printDataExcel(ws, datos, 3, 3, alignment3, 6)
+    ws.column_dimensions[get_column_letter(4)].width = 9
+
+    img1 = Image(parque.logo)
+    img2 = Image(os.path.join(settings.BASE_DIR,'static/common/images/saroenlogo-excel.png'))
+    ws.add_image(img1, 'A1')
+    ws.add_image(img2, 'K1')
+
+    return wb
+
+def dataTasaMontaje(parque,t, html = None):
+    datos = OrderedDict()
+    suma_columna = OrderedDict()
+    suma_fila = OrderedDict()
+    filas = Node("Filas")
+    columnas = Node("Columnas")
+    componentes_parque = ComponentesParque.objects.get(parque=parque).componentes.all()
+    filtros = {}
+    filtros[2] = 'relacionesfu__orden_descarga'
+    filtros[4] = 'relacionesfu__orden_montaje'
+    filtros[5] = 'relacionesfu__orden_puestaenmarcha'
+
+    configuracion = ConfiguracionFU.objects.get(parque=parque)
+
+    d_str = str(t.year) + "-W" + str(t.isocalendar()[1]) + "-0"
+    fecha_informe = datetime.strptime(d_str, "%Y-W%W-%w").date()
+
+    final = configuracion.fecha_final
+
+    if fecha_informe > final:
+        final = fecha_informe
+
+    last_anho = 0
+    last_mes = 0
+    fila = 0
+
+    aux = configuracion.fecha_inicio
+
+    e = EstadoFU.objects.get(nombre='Montaje')
+
+    [proyeccion,ultima_fecha] = calcularProyeccion(ComponentesParque.objects.get(parque=parque),t.year,t.isocalendar()[1])
+
+    filas_html = []
+    columnas_html = []
+
+    while aux < final:
+        if last_anho != aux.year:
+            n_anho = addUniqueNodo(str(aux.year),filas)
+            last_anho = aux.year
+        if last_mes != aux.month:
+            n_mes = addUniqueNodo(meses_espanol[str(aux.month)], n_anho)
+            last_mes = aux.month
+        n_semana = addUniqueNodo(str(aux.isocalendar()[1]), n_mes)
+        datos[fila] = OrderedDict()
+        suma_fila[fila] = float(0)
+        d_str = str(aux.year) + "-W" + str(aux.isocalendar()[1]) + "-0"
+        fecha_aux = datetime.strptime(d_str, "%Y-W%W-%w")
+
+        karws = {filtros[e.id] + '__gt': 0, filtros[e.id] + '__lte': 8}
+        componentes = componentes_parque.filter(**karws).order_by(filtros[e.id])
+        columna = 0
+        if componentes.count() > 0:
+            for c in componentes:
+                if aux <= fecha_informe:
+                    n_comp = addUniqueNodo(c.nombre, columnas,columnas_html)
+                    value = getReal(parque,c,e,fecha_aux)
+
+                    if fila > 0 :
+                        datos[fila][columna] = value - suma_columna[columna]
+                        suma_columna[columna] = value
+                    else:
+                        suma_columna[columna] = 0
+                        datos[fila][columna] = value
+
+                    suma_fila[fila] += datos[fila][columna]
+
+                columna += 1
+
+
+        n_comp = addUniqueNodo('Total Semana',columnas, columnas_html)
+        if aux <= fecha_informe:
+            datos[fila][columna] = round(float(suma_fila[fila])/ float(componentes.count()),2)
+        columna += 1
+
+        n_comp = addUniqueNodo('Real', columnas, columnas_html)
+        if aux <= fecha_informe:
+            if fila > 0:
+                datos[fila][columna] = datos[fila][columna-1] + datos[fila-1][columna]
+            else:
+                datos[fila][columna] = datos[fila][columna-1]
+        columna += 1
+
+        n_comp = addUniqueNodo('Contractual', columnas,columnas_html)
+        datos[fila][columna] = getContractual(parque,c,e,fecha_aux)
+        columna += 1
+
+        n_comp = addUniqueNodo('Plan', columnas, columnas_html)
+        datos[fila][columna] = getPlan(parque, c, e, fecha_aux)
+        columna += 1
+
+        n_comp = addUniqueNodo('Proyección', columnas, columnas_html)
+
+        try:
+            datos[fila][columna] = round((proyeccion[fila]*parque.no_aerogeneradores)/100,2)
+        except:
+            datos[fila][columna] = round((proyeccion[-1]*parque.no_aerogeneradores)/100,2)
+        columna += 1
+
+        filas_html.append(
+            {'Anho': str(aux.year), 'Mes': meses_espanol[str(aux.month)], 'Sem': str(aux.isocalendar()[1]),
+             'Fila': fila})
+
+        aux = aux + relativedelta.relativedelta(weeks=1)
+        fila += 1
+
+    if html is None:
+        return [filas,columnas,datos]
+    else:
+        return [filas_html,columnas_html,datos]
+
+def tasaMontajeExcel(parque,wb,t):
+    [filas, columnas, datos] = dataTasaMontaje(parque, t)
+    sheet_name = 'Tasa de montaje'
+    if sheet_name in wb.sheetnames:
+        ws = wb[sheet_name]
+    else:
+        ws = wb.create_sheet(sheet_name)
+
+    bgColor = Color(rgb="283861")
+    bg = PatternFill(patternType='solid', fgColor=bgColor)
+    font = Font(color="FFFFFF")
+    thin = Side(border_style="thin", color="000000")
+    borderfull = Border(top=thin, left=thin, right=thin, bottom=thin)
+    borderbottom = Border(left=thin, right=thin, bottom=thin)
+    borderside = Border(left=thin, right=thin)
+    alignment3 = Alignment(horizontal="center")
+
+    row = 2
+
+    d = ws.cell(row=row, column=1, value='Año')
+    d.fill = bg
+    d.font = font
+    d.border = borderfull
+    d.alignment = alignment3
+
+    d = ws.cell(row=row, column=2, value='Mes')
+    d.fill = bg
+    d.font = font
+    d.border = borderfull
+    d.alignment = alignment3
+
+    d = ws.cell(row=row, column=3, value='Sem')
+    d.fill = bg
+    d.font = font
+    d.border = borderfull
+    d.alignment = alignment3
+
+    ws.column_dimensions["A"].width = 6
+    ws.column_dimensions["B"].width = 10
+    ws.column_dimensions["C"].width = 8
+
+    printColumnasHeader(ws, columnas, 2, 4, 0)
+    printFilasHeader(ws, filas, 3, 1, 0)
+    for cell_range in ws.merged_cell_ranges:
+        rows = ws[cell_range]
+        if len(rows) > 1:
+            for row in rows:
+                row[0].border = borderside
+                row[0].border = borderbottom
+        else:
+            for cell in rows[0]:
+                cell.border = borderside
+                cell.border = borderbottom
+
+    printDataExcel(ws, datos, 3, 4, alignment3, 6)
+
+    for col in range(12,12+6):
+        ws.column_dimensions[get_column_letter(col)].width = 12
+
+    last_row = datos.keys()[-1] + 3 + 1
+    last_col = datos[0].keys()[-1] +4 -5 +1
+    d = ws.cell(row=last_row, column=3, value='Total')
+    d.fill = bg
+    d.font = font
+    d.alignment = alignment3
+    for col in range(4,last_col+1):
+        suma = '=SUM(' + get_column_letter(col) + str(5) +':'+ get_column_letter(col) + str(last_row-1) +')'
+        d = ws.cell(row=last_row, column=col, value=suma)
+        d.alignment = alignment3
+        d.border = borderbottom
+
+    img1 = Image(parque.logo)
+    img2 = Image(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo-excel.png'))
+    ws.add_image(img1, 'A1')
+    ws.add_image(img2, 'M1')
+
+    return wb
+
+def dataListadoParadas(parque,t, html = None):
+    datos = OrderedDict()
+    filas = Node("Filas")
+    columnas = Node("Columnas")
+
+    configuracion = ConfiguracionFU.objects.get(parque=parque)
+
+    fila = 0
+
+    paradas = Paradas.objects.filter(fecha_inicio__lte=t).order_by('fecha_inicio')
+
+    filas_html = []
+    columnas_html = []
+
+    for parada in paradas:
+        datos[fila] = OrderedDict()
+        n_row = addUniqueNodo(str(parada.id), filas)
+        n_col = addUniqueNodo('WTG', columnas, columnas_html)
+        datos[fila][0] = parada.aerogenerador.nombre
+        n_col = addUniqueNodo('Componente', columnas, columnas_html)
+        datos[fila][1] = parada.componente.nombre
+        n_col = addUniqueNodo('Trabajo', columnas, columnas_html)
+        datos[fila][2] = parada.trabajo.nombre
+        n_col = addUniqueNodo('Hora Paralización', columnas, columnas_html)
+        datos[fila][3] = parada.fecha_inicio.strftime('%d-%m-%Y %H:%M')
+        n_col = addUniqueNodo('Hora fin Paralización', columnas, columnas_html)
+        datos[fila][4] = parada.fecha_final.strftime('%d-%m-%Y %H:%M')
+        n_col = addUniqueNodo('Duración Paralización (h)', columnas, columnas_html)
+        datos[fila][5] = parada.duracion
+        n_col = addUniqueNodo('Viento (mps)', columnas, columnas_html)
+        datos[fila][6] = parada.viento
+        n_col = addUniqueNodo('Grúa', columnas, columnas_html)
+        datos[fila][7] = parada.grua.nombre
+        n_col = addUniqueNodo('Observaciones', columnas, columnas_html)
+        datos[fila][8] = parada.observaciones
+        filas_html.append({'Item': str(parada.id), 'Fila': fila})
+        fila += 1
+
+    if html is None:
+        return [filas,columnas,datos]
+    else:
+        return [filas_html,columnas_html,datos]
+
+def listadoParadasExcel(parque,wb,t):
+    [filas, columnas, datos] = dataListadoParadas(parque, t)
+    sheet_name = 'Listado de paradas'
+    if sheet_name in wb.sheetnames:
+        ws = wb[sheet_name]
+    else:
+        ws = wb.create_sheet(sheet_name)
+
+    bgColor = Color(rgb="283861")
+    bg = PatternFill(patternType='solid', fgColor=bgColor)
+    font = Font(color="FFFFFF")
+    thin = Side(border_style="thin", color="000000")
+    borderfull = Border(top=thin, left=thin, right=thin, bottom=thin)
+    borderbottom = Border(left=thin, right=thin, bottom=thin)
+    borderside = Border(left=thin, right=thin)
+    alignment3 = Alignment(horizontal="center")
+
+    row = 2
+
+    d = ws.cell(row=row, column=1, value='Item')
+    d.fill = bg
+    d.font = font
+    d.border = borderfull
+    d.alignment = alignment3
+
+    ws.column_dimensions["A"].width = 6
+
+    printColumnasHeader(ws, columnas, 2, 2, 0)
+    printFilasHeader(ws, filas, 3, 1, 0,Alignment(horizontal="center"))
+    for cell_range in ws.merged_cell_ranges:
+        rows = ws[cell_range]
+        if len(rows) > 1:
+            for row in rows:
+                row[0].border = borderside
+                row[0].border = borderbottom
+        else:
+            for cell in rows[0]:
+                cell.border = borderside
+                cell.border = borderbottom
+
+    printDataExcel(ws, datos, 3, 2, alignment3, 6)
+
+    ws.column_dimensions["B"].width = 13
+    ws.column_dimensions["C"].width = 12.2
+    ws.column_dimensions["D"].width = 10
+    ws.column_dimensions["E"].width = 17.6
+    ws.column_dimensions["F"].width = 17.6
+    ws.column_dimensions["G"].width = 20
+    ws.column_dimensions["H"].width = 10.7
+    ws.column_dimensions["I"].width = 10.6
+    ws.column_dimensions["J"].width = 50
+
+    img1 = Image(parque.logo)
+    img2 = Image(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo-excel.png'))
+    ws.add_image(img1, 'A1')
+    ws.add_image(img2, 'H1')
+
+    return wb
+
+def graficosFUExcel(parque,wb):
+    filtros = {}
+    filtros[1] = 'relacionesfu__orden_descarga'
+    filtros[3] = 'relacionesfu__orden_montaje'
+    filtros[4] = 'relacionesfu__orden_puestaenmarcha'
+
+    sheet_name = 'Graficas'
+    if sheet_name in wb.sheetnames:
+        ws = wb[sheet_name]
+    else:
+        ws = wb.create_sheet(sheet_name)
+    ws2 = wb['Seguimiento']
+    ws.sheet_view.zoomScale = 80
+    font_test = TextFont(typeface='Calibri')
+
+    componentes_parque = ComponentesParque.objects.get(parque=parque).componentes.all()
+    estados = EstadoFU.objects.filter(idx__gt=0).order_by('id')
+    n_graficos = 0
+    for e in estados:
+        if e.idx in filtros:
+            karws = {filtros[e.idx] + '__gt': 0}
+            componentes = componentes_parque.filter(**karws).order_by(filtros[e.idx])
+
+            if componentes.count() > 0:
+                cuenta = componentes.count()
+                c = BarChart()
+                c.style =  2
+                data1 = Reference(ws2, min_col=3, max_col=6 ,min_row=2, max_row=3+ cuenta-1)
+                categs = Reference(ws2, min_col=2, min_row=3, max_row=3 + cuenta-1)
+                c.add_data(data1,titles_from_data=True)
+
+                bgColor = []
+                bgColor.append(ColorChoice(srgbClr="a5a5a5"))
+                bgColor.append(ColorChoice(srgbClr="2E75B6"))
+                bgColor.append(ColorChoice(srgbClr="ED7D31"))
+                bgColor.append(ColorChoice(srgbClr="70AD47"))
+                for i in range(0,4):
+                    c.series[i].graphicalProperties.solidFill = bgColor[i]
+                    c.series[i].dLbls = DataLabelList()
+                    c.series[i].dLbls.showVal = True
+                    cp = CharacterProperties(latin=font_test, sz=800)
+                    c.series[i].dLbls.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
+
+                c.overlap = -20
+                c.set_categories(categs)
+
+                c.y_axis.scaling.min = 0
+                c.height = 10.22
+                c.width = 25.7
+                if e.nombre == 'Descarga':
+                    c.title = 'Descarga en Parque'
+                else:
+                    c.title = e.nombre
+                c.y_axis.title = 'Nº de Componentes'
+                c.legend.position = 'b'
+                lnAxis = LineProperties(noFill=True,w =0)
+                c.graphical_properties = GraphicalProperties(ln=lnAxis)
+                c.y_axis.spPr = GraphicalProperties(ln=lnAxis)
+                c.plot_area.graphicalProperties = GraphicalProperties(ln=lnAxis)
+
+                cp = CharacterProperties(latin=font_test, sz=900)
+                c.x_axis.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
+                c.y_axis.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
+                c.y_axis.title.tx.rich.p[0].r.rPr = cp
+
+                lnFont = LineProperties(prstDash = "solid", solidFill="244185")
+                cp2 =  CharacterProperties(latin=font_test, sz=1400, solidFill = "24C885")
+
+                c.title.tx.rich.p[0].r.rPr = cp2
+                c.title.tx.rich.p[0].endParaRpr = cp2
+                c.title.tx.rich.p[0].r.rPr.solidFill.RGB="24C885"
+                #c.title.txPr = GraphicalProperties(solidFill="244185")
+                fila_grafico = 3 + 20 * (n_graficos)
+                pos = "B" + str(fila_grafico)
+                ws.add_chart(c, pos)
+                #ws.cell(row=fila_grafico,column=1,value=c.style)
+                n_graficos += 1
+    ws3 = wb['Tasa de montaje']
+
+    fila = 3
+    valor = ws3.cell(row=fila,column = 3).value
+    while valor is not None:
+        fila += 1
+        valor = ws3.cell(row=fila, column=3).value
+
+    e = EstadoFU.objects.get(idx=3)
+
+    karws = {filtros[e.id] + '__gt': 0, filtros[e.id] + '__lte': 8}
+    componentes = componentes_parque.filter(**karws).order_by(filtros[e.idx])
+
+    cols = componentes.count()
+    data_col = 3+cols+3
+    c = LineChart()
+    data2 = Reference(ws3, min_col=data_col, max_col=data_col +4-1, min_row=2, max_row=fila - 2)
+    categs = Reference(ws3, min_col=3, min_row=3, max_row=fila -2)
+    c.add_data(data2, titles_from_data=True)
+    c.set_categories(categs)
+    c.height = 10.22
+    c.width = 25.7
+
+    c.title = 'Descarga en Parque'
+
+    c.y_axis.title = 'Nº de Aerogeneradores montados'
+    c.legend.position = 'b'
+    lnAxis = LineProperties(noFill=True, w=0)
+    c.graphical_properties = GraphicalProperties(ln=lnAxis)
+    c.y_axis.spPr = GraphicalProperties(ln=lnAxis)
+    c.plot_area.graphicalProperties = GraphicalProperties(ln=lnAxis)
+
+    bgColor = []
+    bgColor.append(ColorChoice(srgbClr="70AD47"))
+    bgColor.append(ColorChoice(srgbClr="5B9BD5"))
+    bgColor.append(ColorChoice(srgbClr="ED7D31"))
+    bgColor.append(ColorChoice(srgbClr="70A977"))
+    for i in range(0, 4):
+        c.series[i].graphicalProperties.solidFill = bgColor[i]
+        c.series[i].graphicalProperties.line.solidFill = bgColor[i]
+        c.series[i].graphicalProperties.line.width = 20050
+        cp = CharacterProperties(latin=font_test, sz=800)
+
+    c.series[3].graphicalProperties.line.dashStyle = "dot"
+
+    cp = CharacterProperties(latin=font_test, sz=900)
+    c.x_axis.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
+    c.y_axis.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
+    c.y_axis.title.tx.rich.p[0].r.rPr = cp
+
+    cp2 = CharacterProperties(latin=font_test, sz=1400, solidFill="24C885")
+    c.title.tx.rich.p[0].r.rPr = cp2
+    #c.x_axis.crossAx = 1
+    pos = "R3"
+    ws.add_chart(c, pos)
+
+    img1 = Image(parque.logo)
+    img2 = Image(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo-excel.png'))
+    ws.add_image(img1, 'A1')
+    ws.add_image(img2, 'N1')
+
+    return wb
+
+def reporteExcelFU(parque,t,nombre):
+    if parque.excel_fu:
+        wb = load_workbook(parque.excel_fu.file.name)
+    else:
+        wb = Workbook()
+    #wb = planificacionExcel(parque, wb)
+    wb = seriesfechasExcel(parque, wb)
+    wb = seguimientoExcel(parque,wb,t)
+    wb = tasaMontajeExcel(parque,wb,t)
+    wb = listadoParadasExcel(parque,wb,t)
+    wb = graficosFUExcel(parque,wb)
+
+    target_stream = StringIO.StringIO()
+    wb.save(target_stream)
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="' + nombre +'.xlsx"'
+    target_stream.flush()
+    ret_excel = target_stream.getvalue()
+    target_stream.close()
+    response.write(ret_excel)
+
+    return response
+
+def reportePdfFU(parque,t):
+    with open(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo.png'), "rb") as image_file:
+        logo_saroen = base64.b64encode(image_file.read())
+
+    # data Series y Fechas
+    resultados = []
+    columnas=[]
+    datos=[]
+    [resultados,columnas,datos] = dataSeriesfechas(parque,True)
+    titulo = 'Número de serie y fechas'
+    nombre = ''
+    paginas = {}
+    ag_per_page = 8
+    page = 0
+
+    for ag in range(0,parque.no_aerogeneradores+1):
+        if (ag) % ag_per_page == 0:
+            page +=1
+            paginas[page]=[]
+        paginas[page].append(ag)
+
+    # data Seguimiento
+    filas_seguimiento = []
+    col_seguimiento=[]
+    seguimiento=[]
+    [filas_seguimiento, col_seguimiento, seguimiento] = dataSeguimiento(parque, t, True)
+    paginas_seguimiento = {}
+    ag_per_page = 14
+    page = 0
+
+    for ag in range(0, len(col_seguimiento)):
+        if (ag) % ag_per_page == 0:
+            page += 1
+            paginas_seguimiento[page] = []
+        paginas_seguimiento[page].append(ag)
+
+    # data Tasa de montaje
+    filas_tasamontaje = []
+    col_tasamontaje = []
+    tasamontaje = []
+    [filas_tasamontaje, col_tasamontaje, tasamontaje] = dataTasaMontaje(parque, t, True)
+    paginas_tasamontaje = {}
+    col_per_page = 14
+    page = 0
+
+    for col in range(0, len(col_tasamontaje)):
+        if (col) % col_per_page == 0:
+            page += 1
+            paginas_tasamontaje[page] = []
+        paginas_tasamontaje[page].append(col)
+
+    # data Listado de paradas
+    filas_paradas = []
+    col_paradas = []
+    paradas = []
+    [filas_paradas, col_paradas, paradas] = dataListadoParadas(parque, t, True)
+
+
+    pdf = render_to_pdf('fu/reporteFU.html',
+                        {'pagesize': 'LETTER landscape',
+                         'title': 'Reporte Punchlist',
+                         'resultados': resultados,
+                         'datos': datos,
+                         'parque': parque,
+                         'titulo': titulo,
+                         'logo_saroen': logo_saroen,
+                         'fecha': t,
+                         'nombre': nombre,
+                         'paginas': paginas,
+                         'columnas': columnas,
+                         'filas_seguimiento': filas_seguimiento,
+                         'col_seguimiento': col_seguimiento,
+                         'seguimiento': seguimiento,
+                         'paginas_seguimiento': paginas_seguimiento,
+                         'filas_tasamontaje': filas_tasamontaje,
+                         'col_tasamontaje': col_tasamontaje,
+                         'tasamontaje': tasamontaje,
+                         'paginas_tasamontaje': paginas_tasamontaje,
+                         'filas_paradas': filas_paradas,
+                         'col_paradas': col_paradas,
+                         'paradas': paradas
+                         })
+    return pdf
+
+
 @login_required(login_url='ingresar')
 def reportes(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
@@ -2113,10 +3265,22 @@ def reportes(request,slug):
     form = None
 
     if request.method == 'POST':
-        pass
-
+        form = ReporteForm(request.POST)
+        if form.is_valid():
+            t = form.cleaned_data['fecha']
+            if form.cleaned_data['nombre_archivo'] != '':
+                nombre = form.cleaned_data['nombre_archivo']
+            else:
+                nombre = 'ReporteFU'
+            if 'pdf' in request.POST:
+                pdf =  reportePdfFU(parque,t)
+                respuesta = HttpResponse(pdf,content_type='application/pdf')
+                respuesta['Content-Disposition'] = 'attachment; filename="' + nombre +'.pdf"'
+                return respuesta
+            if 'excel' in request.POST:
+                return reporteExcelFU(parque,t,nombre)
     if form is None:
-        pass
+        form = ReporteForm()
 
     return TemplateResponse(request, 'fu/reportes.html',
         {'cont': contenido,

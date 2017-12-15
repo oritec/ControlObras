@@ -3,6 +3,7 @@ from django import forms
 from vista.models import ParqueSolar,Aerogenerador
 from fu.models import ComponentesParque, Componente,RelacionesFU,ConfiguracionFU
 from fu.models import EstadoFU, Registros, Paradas
+from datetime import date
 import logging
 logger = logging.getLogger('oritec')
 
@@ -129,3 +130,17 @@ class ParadasForm(forms.ModelForm):
         self.fields['observaciones'].widget = forms.Textarea()
         self.fields['observaciones'].widget.attrs['class'] = 'form-control'
         self.fields['observaciones'].widget.attrs['row'] = '3'
+
+class ReporteForm(forms.Form):
+
+    fecha = forms.DateField(widget=forms.DateInput(format='%d-%m-%Y'),
+                            input_formats=('%d-%m-%Y',),
+                            initial=date.today,
+                            label='Fecha')
+    nombre_archivo = forms.CharField(max_length=50,required=False)
+    def __init__(self, *args, **kwargs):
+        super(ReporteForm, self).__init__(*args, **kwargs)
+
+        self.fields['fecha'].widget.attrs['class'] = 'form-control'
+        self.fields['fecha'].widget.attrs['readonly'] = True
+        self.fields['nombre_archivo'].widget.attrs['class'] = 'form-control'

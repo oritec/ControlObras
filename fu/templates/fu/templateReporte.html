@@ -1,0 +1,256 @@
+{% load staticfiles %}
+{% load customtags %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title|default:"" }}</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    {% block style_base %}
+        {% comment %}
+            See DEFAULT_CSS in https://github.com/chrisglass/xhtml2pdf/blob/master/xhtml2pdf/default.py
+            for base style.
+        {% endcomment %}
+
+        {% block layout_style %}
+            <style type="text/css">
+                @page {
+                    size: {{ pagesize|default:"LETTER" }};
+                    margin-left: 1.5cm;
+                    margin-right: 1.5cm;
+                    margin-top: 2.5cm;
+                    margin-bottom: 1cm;
+
+                    @frame header_left_land {
+                        -pdf-frame-content: page-header-left-land;
+                        margin-top: 0.7cm;
+                        margin-right: 2mm;
+                        margin-bottom: 0cm;
+                        margin-left: 1.2cm;
+                    }
+
+                    @frame header_right_land {
+                        -pdf-frame-content: page-header-right-land;
+                        margin-top: 0.8cm;
+                        margin-right: 1mm;
+                        margin-bottom: 0cm;
+                        margin-left: 22cm;
+
+                    }
+
+                    @frame footer_left_land {
+                        -pdf-frame-content: page-footer-left-land;
+                        bottom: 0cm;
+                        margin-left: 1cm;
+                        margin-right: 1cm;
+                        height: 1cm;
+                    }
+
+                    @frame footer_center_land {
+                        -pdf-frame-content: page-footer-center-land;
+                        bottom: 0cm;
+                        margin-left: 13cm;
+                        margin-right: 1cm;
+                        height: 1cm;
+                    }
+                }
+
+                @page land{
+                    size:LETTER;
+                    margin-left: 2.5cm;
+                    margin-right: 2.5cm;
+                    margin-top: 2.5cm;
+                    margin-bottom: 2cm;
+
+                    @frame header_left {
+                        -pdf-frame-content: page-header-left;
+                        margin-top: 0.7cm;
+                        margin-right: 2mm;
+                        margin-bottom: 0cm;
+                        margin-left: 1.2cm;
+                    }
+
+                    @frame header_right {
+                        -pdf-frame-content: page-header-right;
+                        margin-top: 0.8cm;
+                        margin-right: 1mm;
+                        margin-bottom: 0cm;
+                        margin-left: 16cm;
+
+                    }
+
+                    @frame footer_left {
+                        -pdf-frame-content: page-footer-left;
+                        bottom: 0cm;
+                        margin-left: 1cm;
+                        margin-right: 1cm;
+                        height: 1cm;
+                    }
+
+                    @frame footer_center {
+                        -pdf-frame-content: page-footer-center;
+                        bottom: 0cm;
+                        margin-left: 18cm;
+                        margin-right: 1cm;
+                        height: 1cm;
+                    }
+                 }
+
+                body { font-family: "calibri","Regular" }
+                h1 {
+                    text-align: center;
+                }
+                .tabla-observaciones table,th,td {
+                    border: 1px solid;
+                    border-color: #000000;
+                    vertical-align: middle;
+                    font-size: 8px;
+                }
+                .tabla-observaciones th, td {
+                    padding-top:2px;
+                    padding-left:1px;
+                    margin-bottom:0px;
+                    text-align: center;
+                }
+                .tabla-observaciones th {
+                    font-weight: bold;
+                    color: #ffffff;
+                    background-color: #182752;
+                    text-align: center;
+                }
+                .noborder {
+                    padding:0px;
+                    margin:0px;
+                }
+                .vertical {
+                    transform: rotate(90deg);
+                }
+                .header_format {
+                    font-weight: bold;
+                    color: #ffffff;
+                    background-color: #182752;
+                    text-align: center;
+                }
+            </style>
+        {%endblock%}
+        {% block extra_style %}{% endblock %}
+        {% endblock %}
+</head>
+<body>
+<div>
+    <div id="page-header-left-land">
+        {% if parque.logo %}
+            <img src="{{ parque.logo.url }}" height="30" />
+        {% endif %}
+    </div>
+
+    <div id="page-header-right-land">
+        <img src="data:image/png;base64,{{ logo_saroen }}" height="25" />
+    </div>
+
+    <div id="content">
+<!--
+        <h1 style="padding-bottom:0px;margin-bottom: 0px"> {{ titulo }} </h1>
+        <h3 style="text-align:center;font-size:90%;padding-top:0px;margin-top:0px"> {{ fecha }} </h3>
+        {% if resultados|length == 0 %}
+           <p style="text-align: center;"> No existen observaciones pendientes.</p>
+        {% else %}
+        {% for pagina_id, pagina in paginas.items %}
+        <table class="tabla-observaciones">
+            <thead>
+                <tr>
+                    <th align="center" style="width: 12%;"> Actividad </th>
+                    <th align="center" style="width: 17%;"> Componente </th>
+                    <th align="center" style="width: 5%;">  </th>
+                    {% for p in pagina %}
+                    <th align="center" style="width: 8%;"> {{ columnas|index:p }} </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+            {% regroup resultados by Estado as filas %}
+            {% for Estado, items2 in filas %}
+                {% regroup items2 by Componente as filas2 %}
+                {% for Componente,items3 in filas2 %}
+                    {% regroup items3 by Item as filas3 %}
+                    {% for Item, items4 in filas3 %}
+                        <tr>
+                            {% if forloop.parentloop.first and forloop.first %}
+                            <td class="header_format" rowspan="{{ filas2|length|multiply:items3|length }}">
+                                {{ Estado }}
+                            </td>
+                            {% endif %}
+                            {% if forloop.first %}
+                            <td class="header_format" rowspan="{{ items3|length }}">
+                                {{ Componente }}
+                            </td>
+                            {% endif %}
+                            <td class="header_format">
+                                {{ Item }}
+                            </td>
+                                {% regroup items4 by Fila as filas4 %}
+                                {% for Fila, items5 in filas4 %}
+                                    {% with datos|get_item_safe:Fila as dato %}
+                                        {% for p in pagina %}
+                                        <td>
+                                        {% if dato is not None %}
+                                            {% if dato|get_item_safe:p is not None %}
+                                                {{ dato|get_item_safe:p }}
+                                            {% endif %}
+                                        {% endif %}
+                                        </td>
+                                        {% endfor %}
+                                    {% endwith %}
+                                {% endfor %}
+                        </tr>
+                    {% endfor %}
+
+                {% endfor %}
+            {% endfor %}
+            </tbody>
+        </table>
+            {% if not forloop.last %}
+            <p style="page-break-before: always" ></p>
+            {% endif %}
+        {% endfor %}
+        {% endif %}
+-->
+    </div>
+
+    <div id="page-footer-left-land">
+        {{ nombre }}
+    </div>
+
+    <div id="page-footer-center-land">
+        Página <pdf:pagenumber /> de <pdf:pagecount />
+    </div>
+</div>
+
+<div>
+  <pdf:nexttemplate name="land"/>
+  <pdf:nextpage/>
+</div>
+
+<div>
+    <div id="page-header-left">
+        {% if parque.logo %}
+            <img src="{{ parque.logo.url }}" height="30" />
+        {% endif %}
+    </div>
+
+    <div id="page-header-right">
+        <img src="data:image/png;base64,{{ logo_saroen }}" height="25" />
+    </div>
+
+    <div id="content">
+        Holis
+    </div>
+    <div id="page-footer-left">
+        {{ nombre }}
+    </div>
+
+    <div id="page-footer-center">
+        Página <pdf:pagenumber /> de <pdf:pagecount />
+    </div>
+</div>
+</body>
+</html>
