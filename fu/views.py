@@ -36,7 +36,7 @@ import zipfile
 from openpyxl.chart import BarChart, LineChart, Reference
 from openpyxl.chart.label import DataLabelList
 from openpyxl.chart.shapes import GraphicalProperties
-
+from openpyxl.chart.series import SeriesLabel, StrRef
 
 from openpyxl.drawing.fill import PatternFillProperties, ColorChoice
 from openpyxl.drawing.line import LineProperties
@@ -3021,6 +3021,7 @@ def graficosFUExcel(parque,wb):
     componentes_parque = ComponentesParque.objects.get(parque=parque).componentes.all()
     estados = EstadoFU.objects.filter(idx__gt=0).order_by('id')
     n_graficos = 0
+    cuenta_anterior = 0
     for e in estados:
         if e.idx in filtros:
             karws = {filtros[e.idx] + '__gt': 0}
@@ -3030,21 +3031,31 @@ def graficosFUExcel(parque,wb):
                 cuenta = componentes.count()
                 c = BarChart()
                 c.style =  2
-                data1 = Reference(ws2, min_col=3, max_col=6 ,min_row=2, max_row=3+ cuenta-1)
-                categs = Reference(ws2, min_col=2, min_row=3, max_row=3 + cuenta-1)
-                c.add_data(data1,titles_from_data=True)
+                data1 =  Reference(ws2, min_col=3, max_col=6 ,min_row=3+cuenta_anterior, max_row=3 + cuenta_anterior + cuenta-1)
+                categs = Reference(ws2, min_col=2, max_col=2, min_row=3+cuenta_anterior, max_row=3 + cuenta_anterior + cuenta-1)
+                cuenta_anterior += cuenta
+                c.add_data(data1,titles_from_data=False)
 
                 bgColor = []
                 bgColor.append(ColorChoice(srgbClr="a5a5a5"))
                 bgColor.append(ColorChoice(srgbClr="2E75B6"))
                 bgColor.append(ColorChoice(srgbClr="ED7D31"))
                 bgColor.append(ColorChoice(srgbClr="70AD47"))
+                legend_names = []
+                legend_names.append('C2')
+                legend_names.append('D2')
+                legend_names.append('E2')
+                legend_names.append('F2')
+
                 for i in range(0,4):
                     c.series[i].graphicalProperties.solidFill = bgColor[i]
                     c.series[i].dLbls = DataLabelList()
                     c.series[i].dLbls.showVal = True
                     cp = CharacterProperties(latin=font_test, sz=800)
                     c.series[i].dLbls.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
+                    title = u"{0}!{1}".format('Seguimiento', legend_names[i])
+                    title = SeriesLabel(strRef=StrRef(title))
+                    c.series[i].tx = title
 
                 c.overlap = -20
                 c.set_categories(categs)
