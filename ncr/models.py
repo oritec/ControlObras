@@ -303,7 +303,7 @@ class Revision(models.Model):
     nombre = models.CharField(max_length=100, unique=False)
     descripcion = models.CharField(max_length=1000,blank=True,null=True)
     estado = models.ForeignKey('EstadoRevision', on_delete=models.SET_NULL, null=True, default =1)
-    #prioridad = models.ForeignKey('Prioridad', on_delete=models.SET_NULL, null = True, default=1)
+    prioridad = models.ForeignKey('Prioridad', on_delete=models.SET_NULL, null = True, default=1)
     created_by = models.ForeignKey(User)
     reported_by = models.ForeignKey(Observador)
     created_at = models.DateTimeField(auto_now_add=True)
