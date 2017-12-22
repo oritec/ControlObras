@@ -73,7 +73,7 @@ class RevisionForm(forms.ModelForm):
                                         input_formats=('%d-%m-%Y',))
     class Meta:
         model = Revision
-        fields = ['fecha_revision','severidad','nombre','descripcion']
+        fields = ['fecha_revision','severidad','prioridad','nombre','descripcion']
         labels = {
             'nombre': 'Descripción',
             'descripcion': 'Detalle',
@@ -83,7 +83,8 @@ class RevisionForm(forms.ModelForm):
         #self.fields['fecha_revision'].widget = forms.HiddenInput()
         self.fields['severidad'].widget.attrs['class'] = 'bs-select form-control'
         self.fields['severidad'].widget.attrs['data-live-search'] = 'true'
-        self.fields['severidad'].widget.attrs['data-size'] = '8'
+        self.fields['prioridad'].widget.attrs['class'] = 'bs-select form-control'
+        self.fields['prioridad'].widget.attrs['data-size'] = '8'
         self.fields['nombre'].widget.attrs['class'] = 'form-control'
         self.fields['descripcion'].widget = forms.Textarea()
         self.fields['descripcion'].widget.attrs['class'] = 'form-control'
@@ -94,7 +95,7 @@ class RevisionFormFull(forms.ModelForm):
                                  input_formats=('%d-%m-%Y',))
     class Meta:
         model = Revision
-        fields = ['observacion','fecha_revision','severidad','nombre','descripcion', 'estado','reported_by']
+        fields = ['observacion','fecha_revision','severidad','prioridad','nombre','descripcion', 'estado','reported_by']
         labels = {
             'nombre': 'Descripción',
             'fecha_revision' : 'Fecha revisión',
@@ -107,6 +108,7 @@ class RevisionFormFull(forms.ModelForm):
         self.fields['severidad'].widget.attrs['class'] = 'bs-select form-control'
         self.fields['severidad'].widget.attrs['data-live-search'] = 'true'
         self.fields['severidad'].widget.attrs['data-size'] = '8'
+        self.fields['prioridad'].widget.attrs['class'] = 'bs-select form-control'
         self.fields['descripcion'].widget = forms.Textarea()
         self.fields['descripcion'].widget.attrs['class'] = 'form-control'
         self.fields['descripcion'].widget.attrs['row'] = '3'
@@ -160,7 +162,7 @@ class Punchlist(forms.Form):
     fotos = forms.BooleanField(label='¿Incluir fotos?',required=False)
     reparadas = forms.BooleanField(label='¿Incluir observaciones solucionadas?',required=False)
     colores = forms.BooleanField(label='¿Incluir código de colores?', required=False)
-
+    estados = forms.BooleanField(label='¿Incluir columna con el estado?', required=False)
 
     def __init__(self, *args, **kwargs):
         parque = kwargs.pop('parque')
@@ -192,3 +194,8 @@ class Punchlist(forms.Form):
         self.fields['fecha_from'].widget.attrs['readonly'] = True
         self.fields['fecha_to'].widget.attrs['class'] = 'form-control'
         self.fields['fecha_to'].widget.attrs['readonly'] = True
+        self.fields['estados'].widget.attrs['class'] = 'make-switch'
+        self.fields['estados'].widget.attrs['data-size'] = 'small'
+        self.fields['estados'].widget.attrs['data-on-text'] = 'Si'
+        self.fields['estados'].widget.attrs['data-off-text'] = 'No'
+        self.fields['estados'].widget.attrs['checked'] = ''

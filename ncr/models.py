@@ -59,8 +59,12 @@ class EstadoRevision(models.Model):
 @python_2_unicode_compatible
 class Prioridad(models.Model):
     nombre = models.CharField(max_length=150, unique=True)
+    class Meta:
+        ordering = ["id"]
+
     def __str__(self):
         return '%s' % (self.nombre)
+
 
 def rev_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>

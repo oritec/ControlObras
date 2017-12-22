@@ -280,3 +280,8 @@ def get_ncr_description(ncr):
         return r.nombre
     else:
         return ncr.nombre
+
+@register.filter
+def get_ncr_prioridad(ncr):
+    r = ncr.revision_set.all().order_by('-id')[0]
+    return r.prioridad.id

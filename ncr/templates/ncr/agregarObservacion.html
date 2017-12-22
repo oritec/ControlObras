@@ -129,6 +129,14 @@
                             </div>
 
                             <div class="form-group">
+                                <label class="control-label col-md-3">{{ revisionForm.prioridad.label }}</label>
+                                <div class="col-md-9">
+                                    {{ revisionForm.prioridad }}
+                                    <span class="help-block"> {{ revisionForm.prioridad.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
                                 <label class="control-label col-md-3">{{ observacionForm.punchlist.label }}:</label>
                                 <div class="col-md-9">
                                     {{ observacionForm.punchlist }}

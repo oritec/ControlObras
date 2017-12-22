@@ -57,9 +57,10 @@
                 h1 {
                     text-align: center;
                 }
-                .tabla-observaciones table,th,td {
+
+                .tabla-observaciones table,th,td{
                     border: 1px solid;
-                    border-color: #3a3836;
+                    border-color: #f3f1ef;
                     vertical-align: middle;
                 }
                 .tabla-observaciones th, td {
@@ -87,20 +88,23 @@
                     margin-bottom:0px;
                 }
 
-                .no-solucionada {
-                    background-color: #fc0d1b;
+                .prioridad3 {
+                    background-color: #fc614f;
                 }
-                .parcial-solucionada {
-                    background-color: #f8fa43;
+                .prioridad2 {
+                    background-color: #cccb00;
                 }
-                .solucionada {
-                    background-color: #4ab664;
+                .prioridad1 {
+                    background-color: #80cc37;
                 }
                 .row1 {
                     background-color: #cfd5e9;
                 }
                 .row2 {
                     background-color: #e9ebf5;
+                }
+                .row_normal {
+                    background-color: #ffffff;
                 }
                 .leyenda table {
                     border: 1px;
@@ -140,23 +144,39 @@
         <table class="tabla-observaciones">
             <thead>
                 <tr>
-                    <th align="center" style="width: 25%;"> Item </th>
-                    <th align="center" style="width: 20%;"> Componente </th>
-                    <th align="center" style="width: 55%;"> Descripci&oacute;n </th>
+                    <th align="center" style="width: 22%;"> Item </th>
+                    <th align="center" style="width: 13%;"> Componente </th>
+                    {% if estados %}
+                    <th align="center" style="width: 53%;"> Descripci&oacute;n </th>
+                    <th align="center" style="width: 12%;"> Solucionado </th>
+                    {% else %}
+                    <th align="center" style="width: 65%;"> Descripci&oacute;n </th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
             {% for observacion in resultados %}
                 <tr>
                     {% if colores %}
-                        <td align="center" class="{% if observacion.estado.nombre == 'No Solucionado' %}no-solucionada {% elif observacion.estado.nombre == 'Parcialmente Solucionado' %} parcial-solucionada {% else %} solucionada {% endif %}">
+                        <td align="center" class="prioridad{{ observacion|get_ncr_prioridad }}">
                     {% else %}
-                        <td align="center" class="{% cycle 'row1' 'row2' %}">
+                        <td align="center" class="">
                     {% endif %}
                         OBS_{{ parque.codigo }}-{{ observacion.aerogenerador.nombre }}-{{ observacion.observacion_id }}
                     </td>
-                    <td align="center" class="{% cycle 'row1' 'row2' %}"> {{ observacion.componente }} </td>
-                    <td align="left" class="{% cycle 'row1' 'row2' %}"> {{ observacion|get_ncr_description }} </td>
+                    <td align="center" class=""> {{ observacion.componente }} </td>
+                    <td align="left" class=""> {{ observacion|get_ncr_description }} </td>
+                    {% if estados %}
+                    <td align="center" class="">
+                        {% if observacion.estado.nombre == 'No Solucionado' %}
+                            <img src='data:image/png;base64,{{ img_nosolucionado }}' height="20px" width="20px"/>
+                        {% elif observacion.estado.nombre == 'Parcialmente Solucionado' %}
+                            <img src='data:image/png;base64,{{ img_parcialsolucionado }}' height="20px" width="20px"/>
+                        {% else %}
+                            <img src='data:image/png;base64,{{ img_nosolucionado }}' height="20px" width="20px"/>
+                        {% endif %}
+                    </td>
+                    {% endif %}
                 </tr>
             {% endfor %}
             </tbody>
@@ -167,16 +187,16 @@
 
         <table style="table-layout:fixed" >
             <tr>
-                <td style="margin-bottom:0px;padding-bottom:0px;color:#4ab664;width:1cm;border:1px;margin-right:0px;padding-right:0px;" class="solucionada ">h</td>
-                <td style="margin-bottom:0px;padding-bottom:0px;width:5cm;border:0px;margin-right:0px;padding-right:0px;" > Observación solucionada</td>
+                <td style="margin-bottom:0px;padding-bottom:0px;color:#80cc37;width:1cm;border:1px;margin-right:0px;padding-right:0px;" class="prioridad1">h</td>
+                <td style="margin-bottom:0px;padding-bottom:0px;width:5cm;border:0px;margin-right:0px;padding-right:0px;" > Solucionar cuando sea posible </td>
             </tr>
             <tr>
-                <td style="margin-bottom:0px;padding-bottom:0px;color:#4ab664;width:1cm;border:1px;margin-right:0px;padding-right:0px;" class="parcial-solucionada "></td>
-                <td style="margin-bottom:0px;padding-bottom:0px;width:5cm;border:0px;margin-right:0px;padding-right:0px;" > Observación parcialmente solucionada</td>
+                <td style="margin-bottom:0px;padding-bottom:0px;color:#4ab664;width:1cm;border:1px;margin-right:0px;padding-right:0px;" class="prioridad2"></td>
+                <td style="margin-bottom:0px;padding-bottom:0px;width:5cm;border:0px;margin-right:0px;padding-right:0px;" > Solucionar lo antes posible </td>
             </tr>
             <tr>
-                <td style="margin-bottom:0px;padding-bottom:0px;color:#4ab664;width:1cm;border:1px;margin-right:0px;padding-right:0px;" class="no-solucionada "></td>
-                <td style="margin-bottom:0px;padding-bottom:0px;width:5cm;border:0px;margin-right:0px;padding-right:0px;" > Observación no solucionada</td>
+                <td style="margin-bottom:0px;padding-bottom:0px;color:#4ab664;width:1cm;border:1px;margin-right:0px;padding-right:0px;" class="prioridad3"></td>
+                <td style="margin-bottom:0px;padding-bottom:0px;width:5cm;border:0px;margin-right:0px;padding-right:0px;" > Solucionar inmediatamente </td>
             </tr>
         </table>
 

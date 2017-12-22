@@ -603,7 +603,10 @@ def add_revision(request,slug,observacion_id, revision_id = 0):
         if edit_revision is not None:
             revisionForm = RevisionFormFull(instance=edit_revision)
         else:
-            revisionForm = RevisionFormFull(initial={"observacion":observacion,"nombre":observacion.nombre})
+            initial = {"observacion":observacion,
+                       "nombre":observacion.nombre,
+                       "prioridad": observacion.revision_set.all().order_by('-id')[0].prioridad}
+            revisionForm = RevisionFormFull(initial=initial)
 
     return TemplateResponse(request, 'ncr/agregarRevision.html',
         {'cont': contenido,
@@ -754,6 +757,10 @@ def informeNCR(request,slug):
                     colores = True
                 else:
                     colores = False
+                if "estados" in request.POST:
+                    estados = True
+                else:
+                    estados = False
                 fecha = datetime.strptime(request.POST['fecha'],'%d-%m-%Y').date()
 
                 nombre_archivo = 'Sin'
@@ -763,6 +770,7 @@ def informeNCR(request,slug):
 
                 respuesta = generatePdf(parque,resultados,imagenes,request.POST['titulo'],request,
                                         colores=colores,
+                                        estados = estados,
                                         fecha=fecha,
                                         nombre = nombre,
                                         )
@@ -787,6 +795,7 @@ def generatePdf(parque,resultados,imagenes, titulo,
                 request = None,
                 show_fotos=True,
                 colores = True,
+                estados = True,
                 fecha = date.today,
                 nombre = ''):
 
@@ -813,6 +822,7 @@ def generatePdf(parque,resultados,imagenes, titulo,
                                             'img_nosolucionado': img_nosolucionado,
                                             'logo_saroen': logo_saroen,
                                             'colores' : colores,
+                                            'estados': estados,
                                             'fecha': fecha,
                                             'nombre': nombre,
                                             }, content_type='application/pdf',
@@ -831,6 +841,7 @@ def generatePdf(parque,resultados,imagenes, titulo,
                              'img_nosolucionado': img_nosolucionado,
                              'logo_saroen': logo_saroen,
                              'colores': colores,
+                             'estados': estados,
                              'fecha': fecha,
                              'nombre': nombre,
                              })
@@ -1011,11 +1022,13 @@ def punchlist(request,slug):
                     [resultados, main_fotos, titulo] = punchlistResults(parque,ag,form)
                     logger.debug(resultados)
                     colores = form.cleaned_data['colores']
+                    estados = form.cleaned_data['estados']
                     fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
                     nombre = 'PL_' + parque.codigo + '-' + ag.nombre + '_' + fecha_str + '.pdf'
                     respuesta = generatePdf(parque,resultados,main_fotos,titulo,request,
                                             show_fotos=show_fotos,
                                             colores=colores,
+                                            estados=estados,
                                             fecha=form.cleaned_data['fecha'],
                                             nombre=nombre)
                     respuesta['Content-Disposition'] = 'attachment; filename='+nombre
