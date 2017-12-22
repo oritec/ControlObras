@@ -56,6 +56,12 @@ class EstadoRevision(models.Model):
     def graphText(self):
         return '%s' % (self.nombre)
 
+@python_2_unicode_compatible
+class Prioridad(models.Model):
+    nombre = models.CharField(max_length=150, unique=True)
+    def __str__(self):
+        return '%s' % (self.nombre)
+
 def rev_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'fotos/parque_{0}/observacion_{1}/revision_{2}/{3}'.format(instance.revision.observacion.parque.id,
@@ -297,6 +303,7 @@ class Revision(models.Model):
     nombre = models.CharField(max_length=100, unique=False)
     descripcion = models.CharField(max_length=1000,blank=True,null=True)
     estado = models.ForeignKey('EstadoRevision', on_delete=models.SET_NULL, null=True, default =1)
+    #prioridad = models.ForeignKey('Prioridad', on_delete=models.SET_NULL, null = True, default=1)
     created_by = models.ForeignKey(User)
     reported_by = models.ForeignKey(Observador)
     created_at = models.DateTimeField(auto_now_add=True)

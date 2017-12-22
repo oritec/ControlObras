@@ -1,0 +1,23 @@
+[
+    {
+        "model": "ncr.prioridad",
+        "pk": 1,
+        "fields": {
+            "nombre": "Solucionar cuando sea posible"
+        }
+    },
+    {
+        "model": "ncr.prioridad",
+        "pk": 2,
+        "fields": {
+            "nombre": "Solucionar lo antes posible"
+        }
+    },
+    {
+        "model": "ncr.prioridad",
+        "pk": 3,
+        "fields": {
+            "nombre": "Solucionar inmediatamente"
+        }
+    }
+]
