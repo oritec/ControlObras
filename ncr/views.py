@@ -625,22 +625,24 @@ def generateExcelNCR(resultados):
     ws['A1'] = 'WTG'
     ws['B1'] = 'Estado'
     ws['C1'] = 'Severidad'
-    ws['D1'] = 'Componente'
-    ws['E1'] = 'Subcomponente'
-    ws['F1'] = 'Tipo'
-    ws['G1'] = 'Descripcion'
+    ws['D1'] = 'Prioridad'
+    ws['E1'] = 'Componente'
+    ws['F1'] = 'Subcomponente'
+    ws['G1'] = 'Tipo'
+    ws['H1'] = 'Descripcion'
     row = 1
     for r in resultados:
         row += 1
         ws.cell(row=row, column=1,value=r.aerogenerador.nombre)
         ws.cell(row=row, column=2, value=r.estado.nombre)
         ws.cell(row=row, column=3, value=r.severidad.nombre)
-        ws.cell(row=row, column=4, value=r.componente.nombre)
-        ws.cell(row=row, column=5, value=r.sub_componente.nombre)
-        ws.cell(row=row, column=6, value=r.tipo.nombre)
-        ws.cell(row=row, column=7, value=r.nombre)
+        ws.cell(row=row, column=4, value=r.prioridad.nombre)
+        ws.cell(row=row, column=5, value=r.componente.nombre)
+        ws.cell(row=row, column=6, value=r.sub_componente.nombre)
+        ws.cell(row=row, column=7, value=r.tipo.nombre)
+        ws.cell(row=row, column=8, value=r.nombre)
 
-    tab = Table(displayName="NCR", ref="A1:G"+str(row))
+    tab = Table(displayName="NCR", ref="A1:H"+str(row))
     style = TableStyleInfo(name="TableStyleMedium9", showFirstColumn=False,
                            showLastColumn=False, showRowStripes=True, showColumnStripes=False)
     tab.tableStyleInfo = style
@@ -685,6 +687,7 @@ def informeNCR(request,slug):
             resultados = Observacion.objects.filter(aerogenerador__in=form.cleaned_data['aerogenerador'])
             resultados = resultados.filter(estado__in=form.cleaned_data['estado'])
             resultados = resultados.filter(severidad__in=form.cleaned_data['severidad'])
+            resultados = resultados.filter(prioridad__in=form.cleaned_data['prioridad'])
             resultados = resultados.filter(componente__in=form.cleaned_data['componente'])
             resultados = resultados.filter(sub_componente__in=form.cleaned_data['subcomponente'])
             resultados = resultados.filter(tipo__in=form.cleaned_data['tipo'])

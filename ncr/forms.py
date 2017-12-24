@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import forms
-from ncr.models import Observacion, Revision,EstadoRevision,Severidad,Componente,Subcomponente,Tipo
+from ncr.models import Observacion, Revision,EstadoRevision,Severidad,Componente,Subcomponente,Tipo, Prioridad
 from vista.models import ParqueSolar,Aerogenerador
 from fu.models import ConfiguracionFU
 import logging
@@ -124,6 +124,7 @@ class NCR(forms.Form):
     condicion = forms.MultipleChoiceField(choices=[('reparadas', 'Cerrada'), ('no reparadas', 'Abierta')],required=False,label="Condición")
     estado = forms.ModelMultipleChoiceField(queryset=EstadoRevision.objects.all(),required=False)
     severidad = forms.ModelMultipleChoiceField(queryset=Severidad.objects.all(),required=False)
+    prioridad = forms.ModelMultipleChoiceField(queryset=Prioridad.objects.all(), required=False)
     componente = forms.ModelMultipleChoiceField(queryset=Componente.objects.all(),required=False)
     subcomponente = forms.ModelMultipleChoiceField(queryset=Subcomponente.objects.all(),required=False)
     tipo = forms.ModelMultipleChoiceField(queryset=Tipo.objects.all(),required=False)

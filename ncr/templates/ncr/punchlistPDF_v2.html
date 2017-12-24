@@ -158,7 +158,7 @@
             {% for observacion in resultados %}
                 <tr>
                     {% if colores %}
-                        <td align="center" class="prioridad{{ observacion|get_ncr_prioridad }}">
+                        <td align="center" class="prioridad{{ observacion.prioridad.id }}">
                     {% else %}
                         <td align="center" class="">
                     {% endif %}
