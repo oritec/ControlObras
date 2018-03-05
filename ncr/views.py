@@ -622,27 +622,29 @@ def generateExcelNCR(resultados):
     ws = wb.active
     ws.title = "ReporteNCR"
     # Titulos
-    ws['A1'] = 'WTG'
-    ws['B1'] = 'Estado'
-    ws['C1'] = 'Severidad'
-    ws['D1'] = 'Prioridad'
-    ws['E1'] = 'Componente'
-    ws['F1'] = 'Subcomponente'
-    ws['G1'] = 'Tipo'
-    ws['H1'] = 'Descripcion'
+    ws['A1'] = '#'
+    ws['B1'] = 'WTG'
+    ws['C1'] = 'Estado'
+    ws['D1'] = 'Severidad'
+    ws['E1'] = 'Prioridad'
+    ws['F1'] = 'Componente'
+    ws['G1'] = 'Subcomponente'
+    ws['H1'] = 'Tipo'
+    ws['I1'] = 'Descripcion'
     row = 1
     for r in resultados:
         row += 1
-        ws.cell(row=row, column=1,value=r.aerogenerador.nombre)
-        ws.cell(row=row, column=2, value=r.estado.nombre)
-        ws.cell(row=row, column=3, value=r.severidad.nombre)
-        ws.cell(row=row, column=4, value=r.prioridad.nombre)
-        ws.cell(row=row, column=5, value=r.componente.nombre)
-        ws.cell(row=row, column=6, value=r.sub_componente.nombre)
-        ws.cell(row=row, column=7, value=r.tipo.nombre)
-        ws.cell(row=row, column=8, value=r.nombre)
+        ws.cell(row=row, column=1, value=str(row-1))
+        ws.cell(row=row, column=2,value=r.aerogenerador.nombre)
+        ws.cell(row=row, column=3, value=r.estado.nombre)
+        ws.cell(row=row, column=4, value=r.severidad.nombre)
+        ws.cell(row=row, column=5, value=r.prioridad.nombre)
+        ws.cell(row=row, column=6, value=r.componente.nombre)
+        ws.cell(row=row, column=7, value=r.sub_componente.nombre)
+        ws.cell(row=row, column=8, value=r.tipo.nombre)
+        ws.cell(row=row, column=9, value=r.nombre)
 
-    tab = Table(displayName="NCR", ref="A1:H"+str(row))
+    tab = Table(displayName="NCR", ref="A1:I"+str(row))
     style = TableStyleInfo(name="TableStyleMedium9", showFirstColumn=False,
                            showLastColumn=False, showRowStripes=True, showColumnStripes=False)
     tab.tableStyleInfo = style
@@ -744,6 +746,7 @@ def informeNCR(request,slug):
                 if not request.user.has_perm('usuarios.create_editables') :
                     raise PermissionDenied
                 logger.debug('Excel')
+                resultados = resultados.order_by('aerogenerador__idx')
                 target_stream = generateExcelNCR(resultados)
                 response = HttpResponse(
                     content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -771,12 +774,12 @@ def informeNCR(request,slug):
                     nombre_archivo = request.POST['nombre']
                 nombre = 'INFNCR_' + parque.codigo + '-' + nombre_archivo + '_' + fecha.strftime("%y%m%d") + '.pdf'
 
+                resultados = resultados.order_by('aerogenerador__idx')
                 respuesta = generatePdf(parque,resultados,imagenes,request.POST['titulo'],request,
                                         colores=colores,
                                         estados = estados,
                                         fecha=fecha,
-                                        nombre = nombre,
-                                        )
+                                        nombre = nombre)
                 respuesta['Content-Disposition'] = 'attachment; filename="' + nombre + '"'
                 return respuesta
 
@@ -894,7 +897,7 @@ def punchlistResults(parque, aerogenerador, form):
     resultados = resultados.order_by('componente__orden_punchlist','id')
     return [resultados, main_fotos, titulo]
 
-def generateWord(parque, aerogenerador,form):
+def generateWord(parque, aerogenerador,form, incluir_fotos = True):
     [resultados, main_fotos, titulo] = punchlistResults(parque, aerogenerador, form)
     if parque.word:
         nombre_archivo = parque.word.file.name
@@ -936,42 +939,43 @@ def generateWord(parque, aerogenerador,form):
         row_cells[3].text = r.nombre
         row_cells[3].width = Cm(8.75)
         count += 1
-    document.add_page_break()
-    h = document.add_heading(u'Fotografías', 2)
-    h.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    table = document.add_table(rows=1, cols=2, style="Fotos")
-    first = True
-    idx = 0
-    for r in main_fotos:
-        if not first:
-            if idx % 2 == 0:
-                row_cells = table.add_row().cells
-                celda = 0
+    if incluir_fotos:
+        document.add_page_break()
+        h = document.add_heading(u'Fotografías', 2)
+        h.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        table = document.add_table(rows=1, cols=2, style="Fotos")
+        first = True
+        idx = 0
+        for r in main_fotos:
+            if not first:
+                if idx % 2 == 0:
+                    row_cells = table.add_row().cells
+                    celda = 0
+                else:
+                    celda = 1
             else:
-                celda = 1
-        else:
-            row_cells = table.rows[0].cells
-            first = False
-            celda = 0
-        idx = idx + 1
+                row_cells = table.rows[0].cells
+                first = False
+                celda = 0
+            idx = idx + 1
 
-        archivo = settings.BASE_DIR + r['url']
-        c = row_cells[celda].paragraphs[0]
-        aux = c.add_run()
-        try:
-            aux.add_picture(archivo, width=Cm(7.5))
-            p = row_cells[celda].add_paragraph()
-            p.text = r['texto']
-            aux2 = p.add_run()
-            if r['status'] == 'Solucionado':
-                status_img = os.path.join(settings.BASE_DIR, 'static/common/images/check-mark-3-64.gif')
-            elif r['status'] == 'Parcialmente Solucionado':
-                status_img = os.path.join(settings.BASE_DIR, 'static/common/images/x-mark-64-amarillo.gif')
-            elif r['status'] == 'No Solucionado':
-                status_img = os.path.join(settings.BASE_DIR, 'static/common/images/x-mark-64.gif')
-            aux2.add_picture(status_img, width=Cm(0.4))
-        except IOError:
-            logger.debug('No se encontró imagen')
+            archivo = settings.BASE_DIR + r['url']
+            c = row_cells[celda].paragraphs[0]
+            aux = c.add_run()
+            try:
+                aux.add_picture(archivo, width=Cm(7.5))
+                p = row_cells[celda].add_paragraph()
+                p.text = r['texto']
+                aux2 = p.add_run()
+                if r['status'] == 'Solucionado':
+                    status_img = os.path.join(settings.BASE_DIR, 'static/common/images/check-mark-3-64.gif')
+                elif r['status'] == 'Parcialmente Solucionado':
+                    status_img = os.path.join(settings.BASE_DIR, 'static/common/images/x-mark-64-amarillo.gif')
+                elif r['status'] == 'No Solucionado':
+                    status_img = os.path.join(settings.BASE_DIR, 'static/common/images/x-mark-64.gif')
+                aux2.add_picture(status_img, width=Cm(0.4))
+            except IOError:
+                logger.debug('No se encontró imagen')
     target_stream = StringIO.StringIO()
     document.save(target_stream)
     return target_stream
@@ -1003,7 +1007,7 @@ def punchlist(request,slug):
                 logger.debug('WORD')
                 if len(form.cleaned_data['aerogenerador']) == 1:
                     ag = form.cleaned_data['aerogenerador'][0]
-                    target_stream = generateWord(parque,ag,form)
+                    target_stream = generateWord(parque,ag,form,incluir_fotos=show_fotos)
                     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
                     fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
                     nombre = 'PL_' + parque.codigo + '-' + ag.nombre + '_' + fecha_str + '.docx'
@@ -1020,7 +1024,7 @@ def punchlist(request,slug):
                     archive = zipfile.ZipFile(buff, 'w', zipfile.ZIP_DEFLATED)
 
                     for ag in form.cleaned_data['aerogenerador']:
-                        target_stream = generateWord(parque, ag, form)
+                        target_stream = generateWord(parque, ag, form, incluir_fotos=show_fotos)
                         fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
                         archivo_name = 'PL_' + parque.codigo + '-' + ag.nombre + '_' + fecha_str + '.docx'
                         logger.debug(archivo_name)
