@@ -33,7 +33,11 @@
             white-space:nowrap;
             z-index:500;
         }
-
+        @media print {
+          a[href]:after {
+            content: none !important;
+          }
+        }
     </style>
 {% endblock %}
 

@@ -1,0 +1,106 @@
+[
+    {
+        "model": "ncr.componente",
+        "pk": 1,
+        "fields": {
+            "nombre": "Palas",
+            "orden_punchlist": 1
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 2,
+        "fields": {
+            "nombre": "Buje",
+            "orden_punchlist": 2
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 3,
+        "fields": {
+            "nombre": "Drive Train",
+            "orden_punchlist": 3
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 4,
+        "fields": {
+            "nombre": "Nacelle",
+            "orden_punchlist": 4
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 5,
+        "fields": {
+            "nombre": "Cooler Top",
+            "orden_punchlist": 5
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 6,
+        "fields": {
+            "nombre": "Torre",
+            "orden_punchlist": 6
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 7,
+        "fields": {
+            "nombre": "T4",
+            "orden_punchlist": 7
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 8,
+        "fields": {
+            "nombre": "T3",
+            "orden_punchlist": 8
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 9,
+        "fields": {
+            "nombre": "T2",
+            "orden_punchlist": 9
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 10,
+        "fields": {
+            "nombre": "T1",
+            "orden_punchlist": 10
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 11,
+        "fields": {
+            "nombre": "Celda",
+            "orden_punchlist": 11
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 12,
+        "fields": {
+            "nombre": "Elevador",
+            "orden_punchlist": 12
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 13,
+        "fields": {
+            "nombre": "General",
+            "orden_punchlist": 13
+        }
+    }
+]

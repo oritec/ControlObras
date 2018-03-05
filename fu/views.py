@@ -427,7 +427,6 @@ def graficoAvances(componentes_parque,anho,semana,actual_date,data_proyeccion):
     if len(data_proyeccion):
         data_full.append({"name": "Proyección", "data": data_proyeccion,"dashStyle" : "Dot"})
 
-
     datos = serializeGrafico(data_full)
     return datos
 
@@ -901,6 +900,9 @@ def dashboard(request,slug):
     except Componente.DoesNotExist:
         ag_ready = 0
 
+    graficoAvancePost = '{series:' + graficoAvance + '}'
+    logger.debug(graficoAvancePost)
+    logger.debug(thisweek)
 
     return TemplateResponse(request, 'fu/dashboard.html',
                   {'cont': contenido,
@@ -3261,7 +3263,6 @@ def reportePdfFU(parque,t):
                          'paradas': paradas
                          })
     return pdf
-
 
 @login_required(login_url='ingresar')
 def reportes(request,slug):

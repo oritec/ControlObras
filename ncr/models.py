@@ -19,6 +19,7 @@ class Observador(models.Model):
 @python_2_unicode_compatible
 class Componente(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
+    orden_punchlist = models.IntegerField()
     def __str__(self):
         return '%s' % (self.nombre)
     def graphText(self):
@@ -64,7 +65,6 @@ class Prioridad(models.Model):
 
     def __str__(self):
         return '%s' % (self.nombre)
-
 
 def rev_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
