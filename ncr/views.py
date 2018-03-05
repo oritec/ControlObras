@@ -10,7 +10,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 from forms import ObservacionForm, RevisionForm, RevisionFormFull, NCR, Punchlist
-from ncr.models import Observacion, Revision, Fotos, Observador,Componente,Subcomponente,Tipo,Severidad,EstadoRevision
+from ncr.models import Observacion, Revision, Fotos, Observador,Componente,Subcomponente,Tipo,Severidad,EstadoRevision,Prioridad
 from easy_pdf.rendering import render_to_pdf_response, render_to_pdf
 from vista.models import Aerogenerador
 import json
@@ -120,7 +120,10 @@ def observaciones_resumen(request,slug):
     table_show_ag = True
 
     grafico_estado = graficoBarrasSimple(observaciones,'estado',EstadoRevision.objects.all().order_by('-id'),showall=True)
+
+    observaciones = observaciones.exclude(estado__nombre__exact='Solucionado')
     grafico_severidad = graficoBarrasSimple(observaciones,'severidad',Severidad.objects.all(), showall=True)
+    grafico_prioridad = graficoBarrasSimple(observaciones, 'prioridad', Prioridad.objects.all(), showall=True)
     grafico_componente = graficoBarrasSimple(observaciones,'componente',Componente.objects.all())
     grafico_subcomponente = graficoBarrasSimple(observaciones, 'sub_componente', Subcomponente.objects.all())
     grafico_tipo = graficoBarrasSimple(observaciones, 'tipo', Tipo.objects.all())
@@ -136,6 +139,7 @@ def observaciones_resumen(request,slug):
                    'aerogeneradores':aerogeneradores,
                    'grafico_estado':grafico_estado,
                    'grafico_severidad': grafico_severidad,
+                   'grafico_prioridad': grafico_prioridad,
                    'grafico_componente': grafico_componente,
                    'grafico_subcomponente': grafico_subcomponente,
                    'grafico_tipo': grafico_tipo,
@@ -157,7 +161,9 @@ def observaciones(request,slug,slug_ag):
     observaciones = Observacion.objects.filter(aerogenerador__idx__exact=aerogenerador.idx, parque= parque)
     grafico_estado = graficoBarrasSimple(observaciones, 'estado', EstadoRevision.objects.all().order_by('-id'),
                                          showall=True)
+    observaciones = observaciones.exclude(estado__nombre__exact='Solucionado')
     grafico_severidad = graficoBarrasSimple(observaciones, 'severidad', Severidad.objects.all(), showall=True)
+    grafico_prioridad = graficoBarrasSimple(observaciones, 'prioridad', Prioridad.objects.all(), showall=True)
     grafico_componente = graficoBarrasSimple(observaciones, 'componente', Componente.objects.all())
     grafico_subcomponente = graficoBarrasSimple(observaciones, 'sub_componente', Subcomponente.objects.all())
     grafico_tipo = graficoBarrasSimple(observaciones, 'tipo', Tipo.objects.all())
@@ -170,6 +176,7 @@ def observaciones(request,slug,slug_ag):
             'aerogeneradores':aerogeneradores,
             'grafico_estado':grafico_estado,
             'grafico_severidad': grafico_severidad,
+            'grafico_prioridad': grafico_prioridad,
             'grafico_componente': grafico_componente,
             'grafico_subcomponente': grafico_subcomponente,
             'grafico_tipo': grafico_tipo,

@@ -62,7 +62,8 @@ class Prioridad(models.Model):
     nombre = models.CharField(max_length=150, unique=True)
     class Meta:
         ordering = ["id"]
-
+    def graphText(self):
+        return '%s' % (self.nombre)
     def __str__(self):
         return '%s' % (self.nombre)
 

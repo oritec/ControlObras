@@ -147,6 +147,7 @@
     $("#back_url").val(window.location.href);
     var estadodata = {{ grafico_estado|safe }};
     var severidaddata = {{ grafico_severidad|safe }};
+    var prioridaddata = {{ grafico_prioridad|safe }};
     var componentedata = {{ grafico_componente|safe }};
     var subcomponentedata = {{ grafico_subcomponente|safe }};
     var tipodata = {{ grafico_tipo|safe }};
@@ -159,6 +160,8 @@
     NCRGraficos.showGraficoEstado(estadodata);
     titulo= 'Número de observaciones por severidad';
     NCRGraficos.showGraficoColumnas(severidaddata,titulo,'#grafico_severidad');
+    titulo= 'Número de observaciones por prioridad';
+    NCRGraficos.showGraficoColumnas(prioridaddata,titulo,'#grafico_prioridad');
     titulo= 'Número de observaciones por componente';
     NCRGraficos.showGraficoColumnas(componentedata,titulo,'#grafico_componente');
     titulo= 'Número de observaciones por sub-componente';
