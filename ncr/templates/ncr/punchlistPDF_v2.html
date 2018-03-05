@@ -144,19 +144,27 @@
         <table class="tabla-observaciones">
             <thead>
                 <tr>
+                    <th align="center" style="width: 5%;"> # </th>
                     <th align="center" style="width: 22%;"> Item </th>
                     <th align="center" style="width: 13%;"> Componente </th>
                     {% if estados %}
                     <th align="center" style="width: 53%;"> Descripci&oacute;n </th>
                     <th align="center" style="width: 12%;"> Solucionado </th>
                     {% else %}
-                    <th align="center" style="width: 65%;"> Descripci&oacute;n </th>
+                    <th align="center" style="width: 60%;"> Descripci&oacute;n </th>
                     {% endif %}
                 </tr>
             </thead>
             <tbody>
             {% for observacion in resultados %}
                 <tr>
+                    {% if colores %}
+                        <td align="center" class="prioridad{{ observacion.prioridad.id }}">
+                    {% else %}
+                        <td align="center" class="">
+                    {% endif %}
+                        {{ forloop.counter }}
+                    </td>
                     {% if colores %}
                         <td align="center" class="prioridad{{ observacion.prioridad.id }}">
                     {% else %}

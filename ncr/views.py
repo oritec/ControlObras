@@ -891,6 +891,7 @@ def punchlistResults(parque, aerogenerador, form):
         titulo = 'LISTADO DE OBSERVACIONES EN PUERTO'
     else:
         titulo = 'LISTADO DE PENDIENTES AEROGENERADOR ' + aerogenerador.nombre
+    resultados = resultados.order_by('componente__orden_punchlist','id')
     return [resultados, main_fotos, titulo]
 
 def generateWord(parque, aerogenerador,form):
@@ -911,19 +912,30 @@ def generateWord(parque, aerogenerador,form):
     document.add_paragraph('')
     for s in document.styles.latent_styles.element:
         logger.debug(s.name)
-    table = document.add_table(rows=1, cols=3, style="Punchlist")
+    table = document.add_table(rows=1, cols=4, style="Punchlist")
     hdr_cells = table.rows[0].cells
-    hdr_cells[0].text = 'Item'
-    hdr_cells[1].text = 'Componente'
-    hdr_cells[2].text = u'Descripción'
+    hdr_cells[0].text = '#'
+    hdr_cells[0].width = Cm(0.8)
+    hdr_cells[1].text = 'Item'
+    hdr_cells[1].width = Cm(3.8)
+    hdr_cells[2].text = 'Componente'
+    hdr_cells[2].width = Cm(2.5)
+    hdr_cells[3].text = u'Descripción'
+    hdr_cells[3].width = Cm(8.75)
     # styles = document.styles
     # table.rows[0].style = "borderColor:red;background-color:blue"
-
+    count = 1
     for r in resultados:
         row_cells = table.add_row().cells
-        row_cells[0].text = 'OBS_' + parque.codigo + '-' + r.aerogenerador.nombre + '-' + str(r.observacion_id)
-        row_cells[1].text = r.componente.nombre
-        row_cells[2].text = r.nombre
+        row_cells[0].text = str(count)
+        row_cells[0].width = Cm(0.8)
+        row_cells[1].text = 'OBS_' + parque.codigo + '-' + r.aerogenerador.nombre + '-' + str(r.observacion_id)
+        row_cells[1].width = Cm(3.8)
+        row_cells[2].text = r.componente.nombre
+        row_cells[2].width = Cm(2.5)
+        row_cells[3].text = r.nombre
+        row_cells[3].width = Cm(8.75)
+        count += 1
     document.add_page_break()
     h = document.add_heading(u'Fotografías', 2)
     h.alignment = WD_ALIGN_PARAGRAPH.CENTER
