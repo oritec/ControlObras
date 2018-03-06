@@ -1347,7 +1347,13 @@ def imagenes_aerogenerador(request,slug,slug_ag):
         if r.status_code == 200:
             grafico_resumen_b64 = r.text
 
-    titulo = 'Graficas'
+    if slug_ag == 'resumen':
+        titulo = 'Gráficas Resumen'
+        nombre_archivo = 'graficas_resumen.pdf'
+    else:
+        titulo = 'Gráficas ' + aerogenerador.nombre
+        nombre_archivo = 'graficas_' + aerogenerador.slug + '.pdf'
+
     with open(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo.png'), "rb") as image_file:
         logo_saroen = base64.b64encode(image_file.read())
 
@@ -1367,4 +1373,5 @@ def imagenes_aerogenerador(request,slug,slug_ag):
                                    #'fecha': fecha,
                                    #'nombre': nombre,
                                    }, content_type='application/pdf',
+                                  filename= nombre_archivo,
                                   response_class=HttpResponse)

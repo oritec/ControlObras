@@ -77,11 +77,11 @@
             </div>
             <div class="col-md-2">
                 {% if wtg %}
-                    <a href="{% url 'ncr:imagenes_aerogenerador' parque.slug wtg.slug %}" class="btn blue-soft"> Descargar imágenes
+                    <a href="{% url 'ncr:imagenes_aerogenerador' parque.slug wtg.slug %}" class="btn blue-soft"> Descargar gráficos
                         <i class="fa fa-plus"></i>
                     </a>
                 {% else %}
-                    <a href="{% url 'ncr:imagenes_aerogenerador' parque.slug 'resumen' %}" class="btn blue-soft"> Descargar imágenes
+                    <a href="{% url 'ncr:imagenes_aerogenerador' parque.slug 'resumen' %}" class="btn blue-soft"> Descargar gráficos
                     <i class="fa fa-plus"></i>
                 </a>
                 {% endif %}
