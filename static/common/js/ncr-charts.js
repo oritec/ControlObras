@@ -2,6 +2,9 @@ var NCRGraficos = function () {
 
     var GraficoEstado = function (data) {
         $('#grafico_estado').highcharts({
+            exporting:{
+                enabled:false
+            },
             chart : {
                 type: 'pie',
                 options3d: {
@@ -12,7 +15,7 @@ var NCRGraficos = function () {
             },
             title: {
                 text: 'Número de observaciones por estado',
-                x: -20 //center
+                x: -20
             },
             colors: ['#1ce67b',
                      '#fff110',
@@ -52,16 +55,19 @@ var NCRGraficos = function () {
                 data: data,
             }]
         });
-    }
+    };
 
      var GraficoColumnas = function (data,titulo,div) {
         $(div).highcharts({
+            exporting:{
+                enabled:false
+            },
             chart : {
                 type: 'column'
             },
             title: {
                 text: titulo,
-                x: -20 //center
+                x: -20
             },
             xAxis: {
                 type: 'category'
@@ -92,7 +98,7 @@ var NCRGraficos = function () {
                 data: data
             }]
         });
-    }
+    };
 
     var GraficoFull = function (data1,data2,titulo,div) {
         $(div).highcharts({
@@ -101,7 +107,7 @@ var NCRGraficos = function () {
             },
             title: {
                 text: titulo,
-                x: -20 //center
+                x: -20
             },
             xAxis: {
                 type: 'category'
@@ -134,7 +140,7 @@ var NCRGraficos = function () {
             },
             series: data1
         });
-    }
+    };
 
     var GraficoFull2 = function (data1,titulo,div) {
         $(div).highcharts({
@@ -143,8 +149,9 @@ var NCRGraficos = function () {
             },
             title: {
                 text: titulo,
-                x: -20 //center
+                x: -20
             },
+            series: data1,
             xAxis: {
                 type: 'category',
                 labels: {
@@ -173,7 +180,12 @@ var NCRGraficos = function () {
                     borderWidth: 0,
                     dataLabels: {
                         enabled: true,
-                        format: '{point.y}'
+                        format: '{point.y}',
+                        style: {
+                            color:'black',
+                            textOutline: 'none',
+                            fontSize: '9px'
+                        }
                     }
                 },
                 column: {
@@ -187,9 +199,12 @@ var NCRGraficos = function () {
                 verticalAlign: 'bottom',
                 borderWidth: 0
             },
-            series: data1
+            exporting:{
+                enabled:false
+            }
+
         });
-    }
+    };
 
     var GraficoFull3 = function (data1,data2,titulo,div) {
         $(div).highcharts({
@@ -198,7 +213,7 @@ var NCRGraficos = function () {
             },
             title: {
                 text: titulo,
-                x: -20 //center
+                x: -20
             },
             xAxis: {
                 type: 'category'
@@ -231,7 +246,7 @@ var NCRGraficos = function () {
             },
             series: data1
         });
-    }
+    };
 
     var GraficoFull4 = function (data1,data2,titulo,div) {
         $(div).highcharts({
@@ -240,7 +255,7 @@ var NCRGraficos = function () {
             },
             title: {
                 text: titulo,
-                x: -20 //center
+                x: -20
             },
             xAxis: {
                 type: 'category'
@@ -274,32 +289,25 @@ var NCRGraficos = function () {
             },
             series: data1
         });
-    }
+    };
 
     return {
-        //main function to initiate the module
         showGraficoEstado: function (data) {
-            //dataEstado = data;
             GraficoEstado(data);
         },
         showGraficoColumnas: function(data,titulo,div) {
-            //dataSeveridad = data;
             GraficoColumnas(data,titulo,div)
         },
         showGraficoFull: function(data1,data2,titulo,div) {
-            //dataSeveridad = data;
             GraficoFull(data1,data2,titulo,div)
         },
         showGraficoFull2: function(data,titulo,div) {
-            //dataSeveridad = data;
             GraficoFull2(data,titulo,div)
         },
         showGraficoFull3: function(data1,data2,titulo,div) {
-            //dataSeveridad = data;
             GraficoFull3(data1,data2,titulo,div)
         },
         showGraficoFull4: function(data1,data2,titulo,div) {
-            //dataSeveridad = data;
             GraficoFull4(data1,data2,titulo,div)
         }
     };

@@ -32,6 +32,12 @@ from django.core.exceptions import PermissionDenied
 from usuarios.models import Log
 from django.db import transaction
 
+from slimit import ast
+from slimit.parser import Parser
+from slimit.visitors import nodevisitor
+
+import requests
+
 logger = logging.getLogger('oritec')
 
 @login_required(login_url='ingresar')
@@ -180,6 +186,7 @@ def observaciones(request,slug,slug_ag):
             'grafico_componente': grafico_componente,
             'grafico_subcomponente': grafico_subcomponente,
             'grafico_tipo': grafico_tipo,
+            'wtg': aerogenerador
         })
 
 @login_required(login_url='ingresar')
@@ -1208,3 +1215,156 @@ def close_observacion(request,slug):
             log.save()
         observacion.save()
         return HttpResponseRedirect(request.POST['back_url'])
+
+@login_required(login_url='ingresar')
+def imagenes_aerogenerador(request,slug,slug_ag):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
+    if slug_ag != 'resumen':
+        aerogenerador = get_object_or_404(Aerogenerador, parque=parque, slug=slug_ag)
+
+    if slug_ag == 'resumen':
+        observaciones = Observacion.objects.filter(parque=parque)
+    else:
+        observaciones = Observacion.objects.filter(aerogenerador__idx__exact=aerogenerador.idx, parque=parque)
+
+    grafico_estado = graficoBarrasSimple(observaciones, 'estado', EstadoRevision.objects.all().order_by('-id'),
+                                         showall=True)
+
+    observaciones = observaciones.exclude(estado__nombre__exact='Solucionado')
+
+    grafico_componente = graficoBarrasSimple(observaciones, 'componente', Componente.objects.all())
+    grafico_severidad = graficoBarrasSimple(observaciones, 'severidad', Severidad.objects.all(), showall=True)
+    grafico_prioridad = graficoBarrasSimple(observaciones, 'prioridad', Prioridad.objects.all(), showall=True)
+    grafico_subcomponente = graficoBarrasSimple(observaciones, 'sub_componente', Subcomponente.objects.all())
+    grafico_tipo = graficoBarrasSimple(observaciones, 'tipo', Tipo.objects.all())
+    if slug_ag == 'resumen':
+        grafico_aerogenerador = graficoBarrasCompleto(observaciones, 'aerogenerador', aerogeneradores, showall=True)
+
+    with open('static/common/js/ncr-charts.js', 'r') as myfile:
+        data_js_file = myfile.read().replace('\n', '')
+
+    parser = Parser()
+    tree = parser.parse(data_js_file)
+    node_estado = None
+    node_columna = None
+    node_graficofull2 = None
+    data_found = False
+    for node in nodevisitor.visit(tree):
+        if isinstance(node,ast.Object) and node_estado is None:
+            if hasattr(node,'properties'):
+                node_estado = node
+                logger.debug(node.to_ecma())
+        if node_estado is not None and not data_found:
+            if isinstance(node,ast.Assign):
+                if node.left.value == 'data':
+                    node.right.value = grafico_estado
+                    data_found = True
+        if data_found and node_columna is None:
+            if isinstance(node, ast.Object):
+                if hasattr(node, 'properties'):
+                    node_columna = node
+        if data_found and node_columna is not None:
+            if isinstance(node,ast.Identifier):
+                if node.value == 'GraficoFull2':
+                    node_graficofull2 = node
+        if data_found and node_graficofull2 is not None:
+            if isinstance(node, ast.Object):
+                if hasattr(node, 'properties'):
+                    node_graficofull2 = node
+                    break
+
+
+
+    nodo_titulo = None
+    nodo_data = None
+    for node in nodevisitor.visit(node_columna):
+        if isinstance(node,ast.Assign) and nodo_titulo is None:
+            if node.left.value == 'text':
+                node.right.value = "'Número de observaciones por componente'"
+                nodo_titulo = node
+        if isinstance(node, ast.Assign) and nodo_titulo is not None:
+            if node.left.value == 'data':
+                node.right.value = grafico_componente
+                nodo_data = node
+                break
+
+    grafico_estado_b64 = ''
+    if node_estado is not None:
+        r = requests.post('http://67.205.142.111:8001', data={'infile': node_estado.to_ecma(), 'b64': 'true', 'scale':2})
+        if r.status_code == 200:
+            grafico_estado_b64 = r.text
+    grafico_componente_b64 = ''
+    if node_columna is not None:
+        r = requests.post('http://67.205.142.111:8001', data={'infile': node_columna.to_ecma(), 'b64': 'true', 'scale':2})
+        if r.status_code == 200:
+            grafico_componente_b64 = r.text
+
+    grafico_subcomponente_b64 = ''
+    nodo_titulo.right.value = "'Número de observaciones por sub-componente'"
+    nodo_data.right.value = grafico_subcomponente
+    r = requests.post('http://67.205.142.111:8001', data={'infile': node_columna.to_ecma(), 'b64': 'true', 'scale': 2})
+    if r.status_code == 200:
+        grafico_subcomponente_b64 = r.text
+
+    grafico_tipo_b64 = ''
+    nodo_titulo.right.value = "'Número de observaciones por tipo'"
+    nodo_data.right.value = grafico_tipo
+    r = requests.post('http://67.205.142.111:8001', data={'infile': node_columna.to_ecma(), 'b64': 'true', 'scale': 2})
+    if r.status_code == 200:
+        grafico_tipo_b64 = r.text
+
+    grafico_severidad_b64 = ''
+    nodo_titulo.right.value = "'Número de observaciones por severidad'"
+    nodo_data.right.value = grafico_severidad
+    r = requests.post('http://67.205.142.111:8001', data={'infile': node_columna.to_ecma(), 'b64': 'true', 'scale': 2})
+    if r.status_code == 200:
+        grafico_severidad_b64 = r.text
+
+    grafico_prioridad_b64 = ''
+    nodo_titulo.right.value = "'Número de observaciones por prioridad'"
+    nodo_data.right.value = grafico_prioridad
+    r = requests.post('http://67.205.142.111:8001', data={'infile': node_columna.to_ecma(), 'b64': 'true', 'scale': 2})
+    if r.status_code == 200:
+        grafico_prioridad_b64 = r.text
+
+    grafico_resumen_b64 = None
+    nodo_titulo = None
+    if slug_ag == 'resumen':
+        for node in nodevisitor.visit(node_graficofull2):
+            if isinstance(node, ast.Assign) and nodo_titulo is None:
+                if node.left.value == 'text':
+                    node.right.value = "'Severidad por aerogenerador'"
+                    nodo_titulo = node
+            if isinstance(node, ast.Assign) and nodo_titulo is not None:
+                if node.left.value == 'series':
+                    node.right.value = grafico_aerogenerador
+                if node.left.value == 'fontSize':
+                    node.right.value = "'4px'"
+                    break
+        logger.debug(node_graficofull2.to_ecma())
+        r = requests.post('http://67.205.142.111:8001', data={'infile': node_graficofull2.to_ecma(), 'b64': 'true', 'scale': 4})
+        if r.status_code == 200:
+            grafico_resumen_b64 = r.text
+
+    titulo = 'Graficas'
+    with open(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo.png'), "rb") as image_file:
+        logo_saroen = base64.b64encode(image_file.read())
+
+    return render_to_pdf_response(request, 'ncr/graficos_pdf.html',
+                                  {'pagesize': 'LETTER',
+                                   'title': 'Graficas Aerogenerador',
+                                   'parque': parque,
+                                   'titulo': titulo,
+                                   'logo_saroen': logo_saroen,
+                                   'grafico_estado_b64': grafico_estado_b64,
+                                   'grafico_componente_b64': grafico_componente_b64,
+                                   'grafico_subcomponente_b64': grafico_subcomponente_b64,
+                                   'grafico_tipo_b64': grafico_tipo_b64,
+                                   'grafico_severidad_b64': grafico_severidad_b64,
+                                   'grafico_prioridad_b64': grafico_prioridad_b64,
+                                   'grafico_resumen_b64': grafico_resumen_b64,
+                                   #'fecha': fecha,
+                                   #'nombre': nombre,
+                                   }, content_type='application/pdf',
+                                  response_class=HttpResponse)

@@ -5,6 +5,7 @@ from ncr import views
 
 urlpatterns = [
     url(r'^$', views.home, name='home'),
+    url(r'^observaciones/(?P<slug_ag>[-\w\d]+)/listado_fotos', views.imagenes_aerogenerador, name='imagenes_aerogenerador'),
     url(r'^observaciones/resumen', views.observaciones_resumen, name='observaciones-resumen'),
     url(r'^observaciones/imagenes/ver', views.list_fotos, name='fotos-list'),
     url(r'^observaciones/(?P<observacion_id>[0-9]+)/ver', views.show_observacion, name='observaciones-show'),
@@ -22,6 +23,7 @@ urlpatterns = [
     url(r'^revision/eliminar', views.del_revision, name='revision-eliminar'),
     url(r'^observaciones/informeNCR', views.informeNCR, name='informeNCR'),
     url(r'^observaciones/punchlist', views.punchlist, name='punchlist'),
-    url(r'^observaciones/(?P<slug_ag>[-\w\d]+)', views.observaciones, name='observaciones'),
+     url(r'^observaciones/(?P<slug_ag>[-\w\d]+)', views.observaciones, name='observaciones'),
     url(r'^observadores', views.observadores, name='observadores')
+
 ]

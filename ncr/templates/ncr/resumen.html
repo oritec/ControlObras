@@ -70,10 +70,21 @@
         </div>
         {% if perms.ncr.add_observacion %}
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-2">
                 <a href="{% url 'ncr:observaciones-agregar' parque.slug %}{{ url_append }}" class="btn green-steel"> Agregar Observaci&oacute;n
                     <i class="fa fa-plus"></i>
                 </a>
+            </div>
+            <div class="col-md-2">
+                {% if wtg %}
+                    <a href="{% url 'ncr:imagenes_aerogenerador' parque.slug wtg.slug %}" class="btn blue-soft"> Descargar imágenes
+                        <i class="fa fa-plus"></i>
+                    </a>
+                {% else %}
+                    <a href="{% url 'ncr:imagenes_aerogenerador' parque.slug 'resumen' %}" class="btn blue-soft"> Descargar imágenes
+                    <i class="fa fa-plus"></i>
+                </a>
+                {% endif %}
             </div>
         </div>
         {% endif %}
