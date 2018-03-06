@@ -1357,6 +1357,7 @@ def imagenes_aerogenerador(request,slug,slug_ag):
     with open(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo.png'), "rb") as image_file:
         logo_saroen = base64.b64encode(image_file.read())
 
+    fecha = datetime.now()
     return render_to_pdf_response(request, 'ncr/graficos_pdf.html',
                                   {'pagesize': 'LETTER',
                                    'title': 'Graficas Aerogenerador',
@@ -1370,7 +1371,7 @@ def imagenes_aerogenerador(request,slug,slug_ag):
                                    'grafico_severidad_b64': grafico_severidad_b64,
                                    'grafico_prioridad_b64': grafico_prioridad_b64,
                                    'grafico_resumen_b64': grafico_resumen_b64,
-                                   #'fecha': fecha,
+                                   'fecha': fecha,
                                    #'nombre': nombre,
                                    }, content_type='application/pdf',
                                   filename= nombre_archivo,
