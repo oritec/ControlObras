@@ -127,14 +127,15 @@ def observaciones_resumen(request,slug):
 
     grafico_estado = graficoBarrasSimple(observaciones,'estado',EstadoRevision.objects.all().order_by('-id'),showall=True)
 
-    observaciones = observaciones.exclude(estado__nombre__exact='Solucionado')
-    grafico_severidad = graficoBarrasSimple(observaciones,'severidad',Severidad.objects.all(), showall=True)
-    grafico_prioridad = graficoBarrasSimple(observaciones, 'prioridad', Prioridad.objects.all(), showall=True)
-    grafico_componente = graficoBarrasSimple(observaciones,'componente',Componente.objects.all())
-    grafico_subcomponente = graficoBarrasSimple(observaciones, 'sub_componente', Subcomponente.objects.all())
-    grafico_tipo = graficoBarrasSimple(observaciones, 'tipo', Tipo.objects.all())
+    observaciones2 = observaciones.exclude(estado__nombre__exact='Solucionado')
 
-    grafico_aerogenerador = graficoBarrasCompleto(observaciones,'aerogenerador',aerogeneradores, showall=True)
+    grafico_severidad = graficoBarrasSimple(observaciones2,'severidad',Severidad.objects.all(), showall=True)
+    grafico_prioridad = graficoBarrasSimple(observaciones2, 'prioridad', Prioridad.objects.all(), showall=True)
+    grafico_componente = graficoBarrasSimple(observaciones2,'componente',Componente.objects.all())
+    grafico_subcomponente = graficoBarrasSimple(observaciones2, 'sub_componente', Subcomponente.objects.all())
+    grafico_tipo = graficoBarrasSimple(observaciones2, 'tipo', Tipo.objects.all())
+
+    grafico_aerogenerador = graficoBarrasCompleto(observaciones2,'aerogenerador',aerogeneradores, showall=True)
 
     return TemplateResponse(request, 'ncr/resumen.html',
                   {'cont': contenido,
@@ -167,12 +168,12 @@ def observaciones(request,slug,slug_ag):
     observaciones = Observacion.objects.filter(aerogenerador__idx__exact=aerogenerador.idx, parque= parque)
     grafico_estado = graficoBarrasSimple(observaciones, 'estado', EstadoRevision.objects.all().order_by('-id'),
                                          showall=True)
-    observaciones = observaciones.exclude(estado__nombre__exact='Solucionado')
-    grafico_severidad = graficoBarrasSimple(observaciones, 'severidad', Severidad.objects.all(), showall=True)
-    grafico_prioridad = graficoBarrasSimple(observaciones, 'prioridad', Prioridad.objects.all(), showall=True)
-    grafico_componente = graficoBarrasSimple(observaciones, 'componente', Componente.objects.all())
-    grafico_subcomponente = graficoBarrasSimple(observaciones, 'sub_componente', Subcomponente.objects.all())
-    grafico_tipo = graficoBarrasSimple(observaciones, 'tipo', Tipo.objects.all())
+    observaciones2 = observaciones.exclude(estado__nombre__exact='Solucionado')
+    grafico_severidad = graficoBarrasSimple(observaciones2, 'severidad', Severidad.objects.all(), showall=True)
+    grafico_prioridad = graficoBarrasSimple(observaciones2, 'prioridad', Prioridad.objects.all(), showall=True)
+    grafico_componente = graficoBarrasSimple(observaciones2, 'componente', Componente.objects.all())
+    grafico_subcomponente = graficoBarrasSimple(observaciones2, 'sub_componente', Subcomponente.objects.all())
+    grafico_tipo = graficoBarrasSimple(observaciones2, 'tipo', Tipo.objects.all())
 
     return TemplateResponse(request, 'ncr/resumen.html',
         {'cont': contenido,
@@ -772,6 +773,7 @@ def informeNCR(request,slug):
                 return response
             if 'pdf' in request.POST:
                 logger.debug('PDF')
+                resultados = resultados.order_by('aerogenerador__idx')
                 imagenes = listFotos_v2(resultados)
                 if "colores" in request.POST:
                     colores = True
@@ -788,7 +790,6 @@ def informeNCR(request,slug):
                     nombre_archivo = request.POST['nombre']
                 nombre = 'INFNCR_' + parque.codigo + '-' + nombre_archivo + '_' + fecha.strftime("%y%m%d") + '.pdf'
 
-                resultados = resultados.order_by('aerogenerador__idx')
                 respuesta = generatePdf(parque,resultados,imagenes,request.POST['titulo'],request,
                                         colores=colores,
                                         estados = estados,

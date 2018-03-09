@@ -4,7 +4,7 @@
         "pk": 1,
         "fields": {
             "nombre": "Palas",
-            "orden_punchlist": 1
+            "orden_punchlist": 13
         }
     },
     {
@@ -12,7 +12,7 @@
         "pk": 2,
         "fields": {
             "nombre": "Buje",
-            "orden_punchlist": 2
+            "orden_punchlist": 12
         }
     },
     {
@@ -20,7 +20,7 @@
         "pk": 3,
         "fields": {
             "nombre": "Drive Train",
-            "orden_punchlist": 3
+            "orden_punchlist": 10
         }
     },
     {
@@ -28,7 +28,7 @@
         "pk": 4,
         "fields": {
             "nombre": "Nacelle",
-            "orden_punchlist": 4
+            "orden_punchlist": 9
         }
     },
     {
@@ -36,7 +36,7 @@
         "pk": 5,
         "fields": {
             "nombre": "Cooler Top",
-            "orden_punchlist": 5
+            "orden_punchlist": 11
         }
     },
     {
@@ -44,7 +44,7 @@
         "pk": 6,
         "fields": {
             "nombre": "Torre",
-            "orden_punchlist": 6
+            "orden_punchlist": 4
         }
     },
     {
@@ -52,7 +52,7 @@
         "pk": 7,
         "fields": {
             "nombre": "T4",
-            "orden_punchlist": 7
+            "orden_punchlist": 8
         }
     },
     {
@@ -60,7 +60,7 @@
         "pk": 8,
         "fields": {
             "nombre": "T3",
-            "orden_punchlist": 8
+            "orden_punchlist": 7
         }
     },
     {
@@ -68,7 +68,7 @@
         "pk": 9,
         "fields": {
             "nombre": "T2",
-            "orden_punchlist": 9
+            "orden_punchlist": 6
         }
     },
     {
@@ -76,7 +76,7 @@
         "pk": 10,
         "fields": {
             "nombre": "T1",
-            "orden_punchlist": 10
+            "orden_punchlist": 5
         }
     },
     {
@@ -84,7 +84,7 @@
         "pk": 11,
         "fields": {
             "nombre": "Celda",
-            "orden_punchlist": 11
+            "orden_punchlist": 2
         }
     },
     {
@@ -92,7 +92,7 @@
         "pk": 12,
         "fields": {
             "nombre": "Elevador",
-            "orden_punchlist": 12
+            "orden_punchlist": 3
         }
     },
     {
@@ -100,7 +100,7 @@
         "pk": 13,
         "fields": {
             "nombre": "General",
-            "orden_punchlist": 13
+            "orden_punchlist": 1
         }
     }
 ]
