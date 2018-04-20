@@ -6,6 +6,7 @@
     <!-- BEGIN PAGE LEVEL STYLES -->
     <link href="{% static 'common/assets/global/plugins/datatables/datatables.min.css' %}" rel="stylesheet" type="text/css" />
     <link href="{% static 'common/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/assets/global/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css' %}" rel="stylesheet" type="text/css" />
     <!-- END PAGE LEVEL STYLES -->
 {% endblock %}
 
@@ -55,6 +56,9 @@
                                         </a>
                                         {% if perms.ncr.delete_observacion or user == observacion.created_by %}
                                         <input type="button" id="del_observacion{{ observacion.id }}" data-target="#basic" data-toggle="modal" class="btn btn-xs btn-circle red" value="Borrar" onclick="$('#del_id').val({{ observacion.id }})"/>
+                                        {% endif %}
+                                        {% if observacion.cerrado %}
+                                            <span class="badge badge-default badge-roundless"> Cerrada </span>
                                         {% endif %}
                                     </td>
                                 </tr>

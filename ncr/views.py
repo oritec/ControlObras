@@ -125,9 +125,11 @@ def observaciones_resumen(request,slug):
     url_append = ''
     table_show_ag = True
 
-    grafico_estado = graficoBarrasSimple(observaciones,'estado',EstadoRevision.objects.all().order_by('-id'),showall=True)
+    observaciones2 = observaciones.exclude(cerrado = True)
 
-    observaciones2 = observaciones.exclude(estado__nombre__exact='Solucionado')
+    grafico_estado = graficoBarrasSimple(observaciones2,'estado',EstadoRevision.objects.all().order_by('-id'),showall=True)
+
+    observaciones2 = observaciones2.exclude(estado__nombre__exact='Solucionado')
 
     grafico_severidad = graficoBarrasSimple(observaciones2,'severidad',Severidad.objects.all(), showall=True)
     grafico_prioridad = graficoBarrasSimple(observaciones2, 'prioridad', Prioridad.objects.all(), showall=True)
@@ -166,7 +168,9 @@ def observaciones(request,slug,slug_ag):
     url_append='?aerogenerador='+str(aerogenerador.idx)
 
     observaciones = Observacion.objects.filter(aerogenerador__idx__exact=aerogenerador.idx, parque= parque)
-    grafico_estado = graficoBarrasSimple(observaciones, 'estado', EstadoRevision.objects.all().order_by('-id'),
+
+    observaciones2 = observaciones.exclude(cerrado=True)
+    grafico_estado = graficoBarrasSimple(observaciones2, 'estado', EstadoRevision.objects.all().order_by('-id'),
                                          showall=True)
     observaciones2 = observaciones.exclude(estado__nombre__exact='Solucionado')
     grafico_severidad = graficoBarrasSimple(observaciones2, 'severidad', Severidad.objects.all(), showall=True)
