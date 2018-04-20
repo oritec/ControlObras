@@ -706,6 +706,7 @@ def informeNCR(request,slug):
         if form.is_valid():
             logger.debug("Form Valid")
             resultados = Observacion.objects.filter(aerogenerador__in=form.cleaned_data['aerogenerador'])
+            resultados = resultados.exclude(cerrado = True)
             resultados = resultados.filter(estado__in=form.cleaned_data['estado'])
             resultados = resultados.filter(severidad__in=form.cleaned_data['severidad'])
             resultados = resultados.filter(prioridad__in=form.cleaned_data['prioridad'])
@@ -902,6 +903,7 @@ def listFotos_v2(resultados):
 def punchlistResults(parque, aerogenerador, form):
     reparadas = form.cleaned_data['reparadas']
     resultados = Observacion.objects.filter(parque=parque, aerogenerador=aerogenerador, punchlist=True)
+    resultados = resultados.exclude(cerrado=True)
     resultados = resultados.filter(fecha_observacion__gte=form.cleaned_data['fecha_from'],
                                    fecha_observacion__lte=form.cleaned_data['fecha_to'])
     if not reparadas:
