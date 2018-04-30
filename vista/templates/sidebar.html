@@ -72,114 +72,132 @@
 
                 {% if parque.no_aerogeneradores > 0 %}
                 <!--<li class="start ">-->
-                <li class="nav-item" id="menu-ncr">
-					<a href="javascript:;" class="nav-link nav-toggle">
-						<i class="fa fa-edit"></i>
-						<span class="title">NCRs</span>
-						<span class="selected"></span>
-						<span class="arrow open"></span>
-					</a>
-                    <ul class="sub-menu">
-                        <li class="nav-item " id="menu2-observaciones-resumen">
-							<a href="{% url 'ncr:observaciones-resumen' parque.slug %}" class="nav-link ">
-								<i class="fa fa-caret-right"></i>
-								<span class="title">Resumen</span>
-							</a>
-						</li>
-                        <li class="nav-item " id="menu2-informeNCR">
-							<a href="{% url 'ncr:informeNCR' parque.slug %}" class="nav-link ">
-								<i class="fa fa-caret-right"></i>
-								<span class="title">Informe NCRs</span>
-							</a>
-						</li>
-                        <li class="nav-item " id="menu2-punchlist">
-							<a href="{% url 'ncr:punchlist' parque.slug %}" class="nav-link ">
-								<i class="fa fa-caret-right"></i>
-								<span class="title">Punchlist</span>
-							</a>
-						</li>
-                    {% for wtg in aerogeneradores %}
-						<li class="nav-item " id="menu2-observaciones-{{ wtg.idx }}">
-							<a href="{% url 'ncr:observaciones' parque.slug wtg.slug %}" class="nav-link ">
-								<i class="fa fa-caret-right"></i>
-								<span class="title">{{ wtg.nombre }}</span>
-							</a>
-						</li>
-                    {% endfor %}
-                    </ul>
-				</li>
-                <li class="nav-item" id="menu-fu">
-					<a href="javascript:;" class="nav-link nav-toggle">
-						<i class="fa fa-line-chart"></i>
-						<span class="title">Follow Up</span>
-						<span class="selected"></span>
-						<span class="arrow open"></span>
-					</a>
-                    <ul class="sub-menu">
-                        <li class="nav-item " id="menu2-dashboard">
-							<a href="{% url 'fu:dashboard' parque.slug %}" class="nav-link ">
-								<i class="fa fa-caret-right"></i>
-								<span class="title">Dashboard</span>
-							</a>
-						</li>
-                        <li class="nav-item " id="menu2-dashboard-diario">
-							<a href="{% url 'fu:dashboard-diario' parque.slug %}" class="nav-link ">
-								<i class="fa fa-caret-right"></i>
-								<span class="title">Dashboard Diario</span>
-							</a>
-						</li>
-                        {% if perms.fu.add_componente %}
-                        <li class="nav-item " id="menu2-componentes">
-							<a href="{% url 'fu:componentes' parque.slug %}" class="nav-link ">
-								<i class="fa fa-caret-right"></i>
-								<span class="title">Componentes</span>
-							</a>
-						</li>
-                        {% endif %}
-                        {% if perms.fu.add_componentesparque %}
-                        <li class="nav-item " id="menu2-actividades">
-							<a href="{% url 'fu:actividades' parque.slug %}" class="nav-link ">
-								<i class="fa fa-caret-right"></i>
-								<span class="title">Actividades</span>
-							</a>
-						</li>
-                        {% endif %}
-                        {% if perms.fu.add_configuracionfu %}
-                        <li class="nav-item " id="menu2-configuracionfu">
-							<a href="{% url 'fu:configuracion' parque.slug %}" class="nav-link ">
-								<i class="fa fa-caret-right"></i>
-								<span class="title">Configuraci&oacute;n</span>
-							</a>
-						</li>
-                        {% endif %}
-                        <li class="nav-item " id="menu2-planificacion">
-							<a href="{% url 'fu:planificacion' parque.slug %}" class="nav-link ">
-								<i class="fa fa-caret-right"></i>
-								<span class="title">Planificaci&oacute;n</span>
-							</a>
-						</li>
-                        <li class="nav-item " id="menu2-paradas">
-							<a href="{% url 'fu:paradas' parque.slug %}" class="nav-link ">
-								<i class="fa fa-caret-right"></i>
-								<span class="title">Listado de paradas</span>
-							</a>
-						</li>
-                        <li class="nav-item " id="menu2-reportes">
-							<a href="{% url 'fu:reportes' parque.slug %}" class="nav-link ">
-								<i class="fa fa-caret-right"></i>
-								<span class="title">Reportes</span>
-							</a>
-						</li>
-                        {% for wtg in aerogeneradores|filter_ag_fu %}
-						<li class="nav-item " id="menu2-ingreso-{{ wtg.idx }}">
-							<a href="{% url 'fu:ingreso' parque.slug wtg.slug %}" class="nav-link ">
-								<i class="fa fa-caret-right"></i>
-								<span class="title">{{ wtg.nombre }}</span>
-							</a>
-						</li>
+                    <li class="nav-item" id="menu-ncr">
+                        <a href="javascript:;" class="nav-link nav-toggle">
+                            <i class="fa fa-edit"></i>
+                            <span class="title">NCRs</span>
+                            <span class="selected"></span>
+                            <span class="arrow open"></span>
+                        </a>
+                        <ul class="sub-menu">
+                            <li class="nav-item " id="menu2-observaciones-resumen">
+                                <a href="{% url 'ncr:observaciones-resumen' parque.slug %}" class="nav-link ">
+                                    <i class="fa fa-caret-right"></i>
+                                    <span class="title">Resumen</span>
+                                </a>
+                            </li>
+                            <li class="nav-item " id="menu2-informeNCR">
+                                <a href="{% url 'ncr:informeNCR' parque.slug %}" class="nav-link ">
+                                    <i class="fa fa-caret-right"></i>
+                                    <span class="title">Informe NCRs</span>
+                                </a>
+                            </li>
+                            <li class="nav-item " id="menu2-punchlist">
+                                <a href="{% url 'ncr:punchlist' parque.slug %}" class="nav-link ">
+                                    <i class="fa fa-caret-right"></i>
+                                    <span class="title">Punchlist</span>
+                                </a>
+                            </li>
+                        {% for wtg in aerogeneradores %}
+                            <li class="nav-item " id="menu2-observaciones-{{ wtg.idx }}">
+                                <a href="{% url 'ncr:observaciones' parque.slug wtg.slug %}" class="nav-link ">
+                                    <i class="fa fa-caret-right"></i>
+                                    <span class="title">{{ wtg.nombre }}</span>
+                                </a>
+                            </li>
                         {% endfor %}
-                    </ul>
-                </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item" id="menu-fu">
+                        <a href="javascript:;" class="nav-link nav-toggle">
+                            <i class="fa fa-line-chart"></i>
+                            <span class="title">Follow Up</span>
+                            <span class="selected"></span>
+                            <span class="arrow open"></span>
+                        </a>
+                        <ul class="sub-menu">
+                            <li class="nav-item " id="menu2-dashboard">
+                                <a href="{% url 'fu:dashboard' parque.slug %}" class="nav-link ">
+                                    <i class="fa fa-caret-right"></i>
+                                    <span class="title">Dashboard</span>
+                                </a>
+                            </li>
+                            <li class="nav-item " id="menu2-dashboard-diario">
+                                <a href="{% url 'fu:dashboard-diario' parque.slug %}" class="nav-link ">
+                                    <i class="fa fa-caret-right"></i>
+                                    <span class="title">Dashboard Diario</span>
+                                </a>
+                            </li>
+                            {% if perms.fu.add_componente %}
+                            <li class="nav-item " id="menu2-componentes">
+                                <a href="{% url 'fu:componentes' parque.slug %}" class="nav-link ">
+                                    <i class="fa fa-caret-right"></i>
+                                    <span class="title">Componentes</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% if perms.fu.add_componentesparque %}
+                            <li class="nav-item " id="menu2-actividades">
+                                <a href="{% url 'fu:actividades' parque.slug %}" class="nav-link ">
+                                    <i class="fa fa-caret-right"></i>
+                                    <span class="title">Actividades</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% if perms.fu.add_configuracionfu %}
+                            <li class="nav-item " id="menu2-configuracionfu">
+                                <a href="{% url 'fu:configuracion' parque.slug %}" class="nav-link ">
+                                    <i class="fa fa-caret-right"></i>
+                                    <span class="title">Configuraci&oacute;n</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                            <li class="nav-item " id="menu2-planificacion">
+                                <a href="{% url 'fu:planificacion' parque.slug %}" class="nav-link ">
+                                    <i class="fa fa-caret-right"></i>
+                                    <span class="title">Planificaci&oacute;n</span>
+                                </a>
+                            </li>
+                            <li class="nav-item " id="menu2-paradas">
+                                <a href="{% url 'fu:paradas' parque.slug %}" class="nav-link ">
+                                    <i class="fa fa-caret-right"></i>
+                                    <span class="title">Listado de paradas</span>
+                                </a>
+                            </li>
+                            <li class="nav-item " id="menu2-reportes">
+                                <a href="{% url 'fu:reportes' parque.slug %}" class="nav-link ">
+                                    <i class="fa fa-caret-right"></i>
+                                    <span class="title">Reportes</span>
+                                </a>
+                            </li>
+                            {% for wtg in aerogeneradores|filter_ag_fu %}
+                            <li class="nav-item " id="menu2-ingreso-{{ wtg.idx }}">
+                                <a href="{% url 'fu:ingreso' parque.slug wtg.slug %}" class="nav-link ">
+                                    <i class="fa fa-caret-right"></i>
+                                    <span class="title">{{ wtg.nombre }}</span>
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    <!--
+                    <li class="nav-item" id="menu-dr">
+                        <a href="javascript:;" class="nav-link nav-toggle">
+                            <i class="fa fa-line-chart"></i>
+                            <span class="title">DR</span>
+                            <span class="selected"></span>
+                            <span class="arrow open"></span>
+                        </a>
+                        <ul class="sub-menu">
+                            <li class="nav-item " id="menu2-listado">
+                                <a href="{% url 'dr:listado' parque.slug %}" class="nav-link ">
+                                    <i class="fa fa-caret-right"></i>
+                                    <span class="title">Listado</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    -->
                 {% endif %}
 			</ul>
 			<!-- END SIDEBAR MENU -->

@@ -26,6 +26,11 @@ def index(request):
             formParque = ParqueForm(request.POST)
             if formParque.is_valid():
                 p=formParque.save()
+                usuarios = Usuario.objects.all()
+                for u in usuarios:
+                    if u.user.is_superuser:
+                        u.parques.add(p)
+                usuario.parques.add(p)
                 log_msg = "Se crea parque " + p.nombre
                 log = Log(texto=log_msg,tipo=1,user=request.user)
                 log.save()

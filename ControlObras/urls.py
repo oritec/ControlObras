@@ -31,6 +31,7 @@ urlpatterns += [
     url(r'^403/$', usuario_forbidden, name='forbidden'),
     url(r'^(?P<slug>[-\w\d]+)/ncr/',include('ncr.urls', namespace='ncr', app_name="ncr")),
     url(r'^(?P<slug>[-\w\d]+)/followup/',include('fu.urls', namespace='fu', app_name="fu")),
+    url(r'^(?P<slug>[-\w\d]+)/dr/',include('dr.urls', namespace='dr', app_name="dr")),
     url(r'^',include('vista.urls', namespace='vista', app_name="vista")),
 ]
 

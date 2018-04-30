@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'vista',
     'usuarios',
     'ncr',
-    'fu'
+    'fu',
+    'dr'
 ]
 
 MIDDLEWARE = [

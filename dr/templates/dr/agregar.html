@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load customtags %}
+{% load tz %}
+{% block css %}
+    <!-- BEGIN PAGE LEVEL STYLES -->
+    <link href="{% static 'common/assets/global/plugins/bootstrap-select/css/bootstrap-select.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/assets/global/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL STYLES -->
+{% endblock %}
+
+{% block contenido %}
+
+
+    {% if parque.no_aerogeneradores == 0 %}
+        <div class="row">
+            <div class="col-md-11 col-md-offset-1">
+                <h4>Por favor, ingresar la informaci&oacute;n del parque (Configuraci&oacute;n).</h4>
+            </div>
+        </div>
+    {%  else %}
+        <div class="row">
+            <div class="portlet box blue" style="margin-left:30px;margin-right:30px;">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-search"></i> Agregar DR
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <!-- BEGIN FORM-->
+                     <form action="{% url 'dr:agregar' parque.slug %}" class="form-horizontal form-bordered" id="form_observacion" method="post">
+                        {% csrf_token %}
+                        {{ form.parque }}
+                        <div class="form-body">
+                            <div class="form-group">
+                                <label class="control-label col-md-3">Fecha DR:</label>
+                                <div class="col-md-9">
+                                    <div class="input-group input-medium date date-picker" data-date-format="dd-mm-yyyy" data-date-show-today-button="true">
+                                        {{ form.fecha }}
+                                        <span class="input-group-btn">
+                                            <button class="btn default" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                    <span class="help-block"> {{ form.fecha.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ form.climatologia.label }}</label>
+                                <div class="col-md-9">
+                                    {{ form.climatologia }}
+                                    <span class="help-block"> {{ form.climatologia.errors }} </span>
+                                </div>
+                            </div>
+
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ form.sitio.label }}:</label>
+                                <div class="col-md-9">
+                                    {{ form.sitio }}
+                                    <span class="help-block"> {{ form.sitio.errors }} </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">{{ form.actividades.label }}</label>
+                                <div class="col-md-9">
+                                    {{ form.actividades }}
+                                    <span class="help-block"> {{ form.actividades.errors }} </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <div class="row">
+                                <div class="col-md-offset-3 col-md-9">
+                                    <button type="submit" class="btn green">
+                                        <i class="fa fa-save"></i> Guardar </button>
+                                    <a href="{{ back_url }}" class="btn default">Cancelar</a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+<!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="{% static 'common/js/moment/moment-with-locales.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/pages/scripts/components-bootstrap-switch.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-select/js/bootstrap-select.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootbox/bootbox.min.js' %}" type="text/javascript"></script>
+    <!--
+    <script src="{% static 'common/assets/pages/scripts/components-date-time-pickers.min.js' %}" type="text/javascript"></script>
+    -->
+    <!-- END PAGE LEVEL PLUGINS -->
+{% endblock %}
+
+{% block jquery %}
+    if (jQuery().datepicker) {
+        $('.date-picker').datepicker({
+            locale: "es",
+            language: "es",
+            rtl: App.isRTL(),
+            orientation: "right",
+            autoclose: true,
+            showTodayButton: true,
+            toolbarPlacement:"bottom",
+            todayHighlight:true,
+            todayBtn:"linked",
+
+        });
+        //$('body').removeClass("modal-open"); // fix bug when inline picker is used in modal
+    }
+
+    /* Workaround to restrict daterange past date select: http://stackoverflow.com/questions/11933173/how-to-restrict-the-selectable-date-ranges-in-bootstrap-datepicker */
+
+    // Workaround to fix datepicker position on window scroll
+    $( document ).scroll(function(){
+        $('#form_modal2 .date-picker').datepicker('place'); //#modal is the id of the modal
+    });
+    $('.bs-select').selectpicker({
+        iconBase: 'fa',
+        tickIcon: 'fa-check',
+        dropupAuto: false,
+    });
+
+    $("#form_observacion").submit(function( event ) {
+        //alert('');
+        //console.log($("#id_fecha_observacion").val());
+        $("#id_fecha_revision").val($("#id_fecha_observacion").val());
+
+    });
+
+{% endblock %}
