@@ -160,7 +160,7 @@ def calcularProyeccion(componentes_parque,anho,semana):
     # Calculo de avance
     fecha = configuracion.fecha_inicio
     semana_calculo = fecha.isocalendar()[1]
-    d = str(fecha.year) + '-W' + str(semana_calculo)
+    d = str(fecha.isocalendar()[0]) + '-W' + str(semana_calculo)
     fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
     # Valores a numpy
     x_values = []
@@ -187,7 +187,7 @@ def calcularProyeccion(componentes_parque,anho,semana):
 
         fecha = fecha_calculo + relativedelta.relativedelta(weeks=1)
         semana_calculo = fecha.isocalendar()[1]
-        d = str(fecha.year) + '-W' + str(semana_calculo)
+        d = str(fecha.isocalendar()[0]) + '-W' + str(semana_calculo)
         fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
 
     if len(x_values) < 2:
@@ -199,7 +199,7 @@ def calcularProyeccion(componentes_parque,anho,semana):
     p = np.poly1d(z)
     fecha = configuracion.fecha_inicio
     semana_calculo = fecha.isocalendar()[1]
-    d = str(fecha.year) + '-W' + str(semana_calculo)
+    d = str(fecha.isocalendar()[0]) + '-W' + str(semana_calculo)
     fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
     data_graficos = []
     count = 0
@@ -220,7 +220,7 @@ def calcularProyeccion(componentes_parque,anho,semana):
         if valor < max_aerogeneradores:
             fecha = fecha_calculo + relativedelta.relativedelta(weeks=1)
             semana_calculo = fecha.isocalendar()[1]
-            d = str(fecha.year) + '-W' + str(semana_calculo)
+            d = str(fecha.isocalendar()[0]) + '-W' + str(semana_calculo)
             fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
     return [data_graficos,fecha_calculo]
 
@@ -243,7 +243,7 @@ def calcularProyeccionGrafico(componentes_parque,anho,semana):
     # Calculo de avance
     fecha = configuracion.fecha_inicio
     semana_calculo = fecha.isocalendar()[1]
-    d = str(fecha.year) + '-W' + str(semana_calculo)
+    d = str(fecha.isocalendar()[0]) + '-W' + str(semana_calculo)
     fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
     # Valores a numpy
     x_values = []
@@ -270,7 +270,7 @@ def calcularProyeccionGrafico(componentes_parque,anho,semana):
 
         fecha = fecha_calculo + relativedelta.relativedelta(weeks=1)
         semana_calculo = fecha.isocalendar()[1]
-        d = str(fecha.year) + '-W' + str(semana_calculo)
+        d = str(fecha.isocalendar()[0]) + '-W' + str(semana_calculo)
         fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
 
     if len(x_values) < 2:
@@ -282,7 +282,7 @@ def calcularProyeccionGrafico(componentes_parque,anho,semana):
     p = np.poly1d(z)
     fecha = configuracion.fecha_inicio
     semana_calculo = fecha.isocalendar()[1]
-    d = str(fecha.year) + '-W' + str(semana_calculo)
+    d = str(fecha.isocalendar()[0]) + '-W' + str(semana_calculo)
     fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
     data_graficos = []
     count = 0
@@ -303,7 +303,7 @@ def calcularProyeccionGrafico(componentes_parque,anho,semana):
         if valor < max_aerogeneradores:
             fecha = fecha_calculo + relativedelta.relativedelta(weeks=1)
             semana_calculo = fecha.isocalendar()[1]
-            d = str(fecha.year) + '-W' + str(semana_calculo)
+            d = str(fecha.isocalendar()[0]) + '-W' + str(semana_calculo)
             fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
     return [data_graficos,fecha_calculo]
 
@@ -347,7 +347,7 @@ def graficoAvances(componentes_parque,anho,semana,actual_date,data_proyeccion):
     d = str(anho) + '-W' + str(semana)
     r = datetime.strptime(d + '-0', "%Y-W%W-%w")
     s = actual_date.isocalendar()[1]
-    d = str(actual_date.year) + '-W' + str(s)
+    d = str(actual_date.isocalendar()[0]) + '-W' + str(s)
     r2 = datetime.strptime(d + '-0', "%Y-W%W-%w")
     parque = componentes_parque.parque
     try:
@@ -364,7 +364,7 @@ def graficoAvances(componentes_parque,anho,semana,actual_date,data_proyeccion):
     # Contractual
     fecha = configuracion.fecha_inicio
     semana_calculo = fecha.isocalendar()[1]
-    d = str(fecha.year) + '-W' + str(semana_calculo)
+    d = str(fecha.isocalendar()[0]) + '-W' + str(semana_calculo)
     fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
     data_graficos = []
     while fecha_calculo <= r:
@@ -380,14 +380,14 @@ def graficoAvances(componentes_parque,anho,semana,actual_date,data_proyeccion):
         data_graficos.append({"name": fecha_grafico, "y": valor})
         fecha = fecha_calculo + relativedelta.relativedelta(weeks=1)
         semana_calculo = fecha.isocalendar()[1]
-        d = str(fecha.year) + '-W' + str(semana_calculo)
+        d = str(fecha.isocalendar()[0]) + '-W' + str(semana_calculo)
         fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
     data_full.append({"name": "Contractual", "data": data_graficos})
 
     # Plan
     fecha = configuracion.fecha_inicio
     semana_calculo = fecha.isocalendar()[1]
-    d = str(fecha.year) + '-W' + str(semana_calculo)
+    d = str(fecha.isocalendar()[0]) + '-W' + str(semana_calculo)
     fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
     data_graficos = []
     while fecha_calculo <= r:
@@ -403,14 +403,14 @@ def graficoAvances(componentes_parque,anho,semana,actual_date,data_proyeccion):
         data_graficos.append({"name": fecha_grafico, "y": valor})
         fecha = fecha_calculo + relativedelta.relativedelta(weeks=1)
         semana_calculo = fecha.isocalendar()[1]
-        d = str(fecha.year) + '-W' + str(semana_calculo)
+        d = str(fecha.isocalendar()[0]) + '-W' + str(semana_calculo)
         fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
     data_full.append({"name": "Plan", "data": data_graficos})
 
     # Real
     fecha = configuracion.fecha_inicio
     semana_calculo = fecha.isocalendar()[1]
-    d = str(fecha.year) + '-W' + str(semana_calculo)
+    d = str(fecha.isocalendar()[0]) + '-W' + str(semana_calculo)
     fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
     data_graficos = []
 
@@ -423,7 +423,7 @@ def graficoAvances(componentes_parque,anho,semana,actual_date,data_proyeccion):
         data_graficos.append({"name": fecha_grafico, "y": valor})
         fecha = fecha_calculo + relativedelta.relativedelta(weeks=1)
         semana_calculo = fecha.isocalendar()[1]
-        d = str(fecha.year) + '-W' + str(semana_calculo)
+        d = str(fecha.isocalendar()[0]) + '-W' + str(semana_calculo)
         fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
     data_full.append({"name": "Real", "data": data_graficos})
 
@@ -435,7 +435,7 @@ def graficoAvances(componentes_parque,anho,semana,actual_date,data_proyeccion):
 
 def posicionAerogeneradores(componentes_parque,fecha_calculo):
     parque = componentes_parque.parque
-    d = str(fecha_calculo.year) + '-W' + str(fecha_calculo.isocalendar()[1])
+    d = str(fecha_calculo.isocalendar()[0]) + '-W' + str(fecha_calculo.isocalendar()[1])
     fecha = datetime.strptime(d + '-0', "%Y-W%W-%w")
     estado = EstadoFU.objects.get(idx=3)
     pos = OrderedDict()
@@ -1062,7 +1062,7 @@ def dashboard(request,slug):
                        })
 
     t = datetime.now()
-    anho = t.year
+    anho = t.isocalendar()[0]
     semana = t.isocalendar()[1]
     semana_today = t.isocalendar()[1]
     if request.method == 'POST':
@@ -1081,13 +1081,13 @@ def dashboard(request,slug):
     graficoPuestaenMarcha = graficoComponentes(componentes_parque, estado, last_day_week)
     [proyeccion, last_week] = calcularProyeccionGrafico(componentes_parque, anho, semana)
     if last_week is not None:
-        graficoAvance = graficoAvances(componentes_parque, last_week.year, last_week.isocalendar()[1], last_day_week,proyeccion)
+        graficoAvance = graficoAvances(componentes_parque, last_week.isocalendar()[0], last_week.isocalendar()[1], last_day_week,proyeccion)
     else:
         fecha_aux = configuracion.fecha_final
         semana_calculo = fecha_aux.isocalendar()[1]
         d = str(fecha_aux.isocalendar()[0]) + '-W' + str(semana_calculo)
         fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
-        graficoAvance = graficoAvances(componentes_parque, fecha_calculo.year, fecha_calculo.isocalendar()[1], last_day_week,
+        graficoAvance = graficoAvances(componentes_parque, fecha_calculo.isocalendar()[0], fecha_calculo.isocalendar()[1], last_day_week,
                                        proyeccion)
 
     thisweek = str(anho) + "-" + str(semana)
@@ -1101,7 +1101,7 @@ def dashboard(request,slug):
 
     fecha_aux= configuracion.fecha_inicio #+ relativedelta.relativedelta(weeks=1)
     semana_calculo = fecha_aux.isocalendar()[1]
-    d = str(fecha_aux.year) + '-W' + str(semana_calculo)
+    d = str(fecha_aux.isocalendar()[0]) + '-W' + str(semana_calculo)
     fecha_inicial = datetime.strptime(d + '-0', "%Y-W%W-%w")
 
     avance = porcentajeAvance(componentes_parque,last_day_week)
@@ -1187,7 +1187,7 @@ def dashboard_diario(request,slug):
     if request.method == 'POST':
         if 'fecha' in request.POST:
             t = datetime.strptime(request.POST['fecha'],"%d-%m-%Y")
-    anho = t.year
+    anho = t.isocalendar()[0]
     semana = t.isocalendar()[1]
     last_day_week = t
 
@@ -1199,13 +1199,13 @@ def dashboard_diario(request,slug):
     graficoPuestaenMarcha = graficoComponentes(componentes_parque, estado, t)
     [proyeccion, last_week] = calcularProyeccionGrafico(componentes_parque, anho, semana)
     if last_week is not None:
-        graficoAvance = graficoAvances(componentes_parque, last_week.year, last_week.isocalendar()[1], t,proyeccion)
+        graficoAvance = graficoAvances(componentes_parque, last_week.isocalendar()[0], last_week.isocalendar()[1], t,proyeccion)
     else:
         fecha_aux = configuracion.fecha_final
         semana_calculo = fecha_aux.isocalendar()[1]
-        d = str(fecha_aux.year) + '-W' + str(semana_calculo)
+        d = str(fecha_aux.isocalendar()[0]) + '-W' + str(semana_calculo)
         fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
-        graficoAvance = graficoAvances(componentes_parque, fecha_calculo.year, fecha_calculo.isocalendar()[1], t,
+        graficoAvance = graficoAvances(componentes_parque, fecha_calculo.isocalendar()[0], fecha_calculo.isocalendar()[1], t,
                                        proyeccion)
 
     thisweek = str(anho) + "-" + str(semana)
@@ -1215,7 +1215,7 @@ def dashboard_diario(request,slug):
 
     fecha_aux= configuracion.fecha_inicio #+ relativedelta.relativedelta(weeks=1)
     semana_calculo = fecha_aux.isocalendar()[1]
-    d = str(fecha_aux.year) + '-W' + str(semana_calculo)
+    d = str(fecha_aux.isocalendar()[0]) + '-W' + str(semana_calculo)
     fecha_inicial = datetime.strptime(d + '-0', "%Y-W%W-%w")
 
     avance = porcentajeAvance(componentes_parque,last_day_week)
@@ -1732,7 +1732,7 @@ def graficoPlanificacion(parque):
         aux = configuracion.fecha_inicio
         while aux < final:
             semana = str(aux.isocalendar()[1])
-            anho = aux.year
+            anho = aux.isocalendar()[0]
             d = str(anho) + "-W" + semana + "-0"
             fecha_query = datetime.strptime(d, "%Y-W%W-%w")
             xlabels += '"'+ str(anho) + '-' + semana + '",'
@@ -1825,7 +1825,7 @@ def planificacion(request,slug):
 
     aux = datetime.today()
     semana = str(aux.isocalendar()[1])
-    anho = aux.year
+    anho = aux.isocalendar()[0]
     thisweek = str(anho) + "-" + semana
 
     return TemplateResponse(request, 'fu/planificacion.html',
@@ -1864,13 +1864,13 @@ def download_config(request,slug):
     semana = str(aux.isocalendar()[1])
     semanas.append(semana)
     meses[semana] = meses_espanol[str(aux.month)]
-    anhos[semana] = str(aux.year)
+    anhos[semana] = str(aux.isocalendar()[0])
     aux = aux + relativedelta.relativedelta(weeks=1)
     while aux < final:
         semana = str(aux.isocalendar()[1])
         semanas.append(semana)
         meses[semana] = meses_espanol[str(aux.month)]
-        anhos[semana] = str(aux.year)
+        anhos[semana] = str(aux.isocalendar()[0])
         aux = aux + relativedelta.relativedelta(weeks=1)
 
     wb = Workbook()
@@ -2511,7 +2511,7 @@ def dataPlanificacion(parque):
                             n_semana = r.get(n_mes,str(aux.isocalendar()[1]))
                         except:
                             n_semana = Node(str(aux.isocalendar()[1]), n_mes)
-                        d_str = str(aux.year) + "-W" + str(aux.isocalendar()[1]) + "-0"
+                        d_str = str(aux.isocalendar()[0]) + "-W" + str(aux.isocalendar()[1]) + "-0"
                         fecha_aux = datetime.strptime(d_str, "%Y-W%W-%w")
                         try:
                             plan = filtro_plan.get(fecha=fecha_aux)
@@ -2845,7 +2845,7 @@ def dataSeguimiento(parque,t, html = None):
 
     anho = t.year
     semana = t.isocalendar()[1]
-    d = str(anho) + '-W' + str(semana)
+    d = str(t.isocalendar()[0]) + '-W' + str(semana)
     fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
 
     filas_html = []
@@ -2963,7 +2963,7 @@ def dataTasaMontaje(parque,t, html = None):
 
     configuracion = ConfiguracionFU.objects.get(parque=parque)
 
-    d_str = str(t.year) + "-W" + str(t.isocalendar()[1]) + "-0"
+    d_str = str(t.isocalendar()[0]) + "-W" + str(t.isocalendar()[1]) + "-0"
     fecha_informe = datetime.strptime(d_str, "%Y-W%W-%w").date()
 
     final = configuracion.fecha_final
@@ -2979,7 +2979,7 @@ def dataTasaMontaje(parque,t, html = None):
 
     e = EstadoFU.objects.get(nombre='Montaje')
 
-    [proyeccion,ultima_fecha] = calcularProyeccion(ComponentesParque.objects.get(parque=parque),t.year,t.isocalendar()[1])
+    [proyeccion,ultima_fecha] = calcularProyeccion(ComponentesParque.objects.get(parque=parque),t.isocalendar()[0],t.isocalendar()[1])
 
     filas_html = []
     columnas_html = []
@@ -2994,7 +2994,7 @@ def dataTasaMontaje(parque,t, html = None):
         n_semana = addUniqueNodo(str(aux.isocalendar()[1]), n_mes)
         datos[fila] = OrderedDict()
         suma_fila[fila] = float(0)
-        d_str = str(aux.year) + "-W" + str(aux.isocalendar()[1]) + "-0"
+        d_str = str(aux.isocalendar()[0]) + "-W" + str(aux.isocalendar()[1]) + "-0"
         fecha_aux = datetime.strptime(d_str, "%Y-W%W-%w")
 
         karws = {filtros[e.id] + '__gt': 0, filtros[e.id] + '__lte': 8}
@@ -3048,7 +3048,7 @@ def dataTasaMontaje(parque,t, html = None):
         columna += 1
 
         filas_html.append(
-            {'Anho': str(aux.year), 'Mes': meses_espanol[str(aux.month)], 'Sem': str(aux.isocalendar()[1]),
+            {'Anho': str(aux.isocalendar()[0]), 'Mes': meses_espanol[str(aux.month)], 'Sem': str(aux.isocalendar()[1]),
              'Fila': fila})
 
         aux = aux + relativedelta.relativedelta(weeks=1)
