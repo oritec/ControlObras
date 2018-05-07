@@ -1085,7 +1085,7 @@ def dashboard(request,slug):
     else:
         fecha_aux = configuracion.fecha_final
         semana_calculo = fecha_aux.isocalendar()[1]
-        d = str(fecha_aux.year) + '-W' + str(semana_calculo)
+        d = str(fecha_aux.isocalendar()[0]) + '-W' + str(semana_calculo)
         fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
         graficoAvance = graficoAvances(componentes_parque, fecha_calculo.year, fecha_calculo.isocalendar()[1], last_day_week,
                                        proyeccion)
@@ -2341,7 +2341,7 @@ def paradas(request,slug):
     contenido.subtitulo='Parque '+ parque.nombre
     contenido.menu = ['menu-fu', 'menu2-paradas']
 
-    paradas = Paradas.objects.all()
+    paradas = Paradas.objects.filter(parque=parque)
 
     if request.method == 'POST':
         if 'del_id' in request.POST:

@@ -180,10 +180,10 @@
                             {% endfor %}
                         </ul>
                     </li>
-                    <!--
+                    {% if request.user.is_superuser %}
                     <li class="nav-item" id="menu-dr">
                         <a href="javascript:;" class="nav-link nav-toggle">
-                            <i class="fa fa-line-chart"></i>
+                            <i class="fa fa-calendar"></i>
                             <span class="title">DR</span>
                             <span class="selected"></span>
                             <span class="arrow open"></span>
@@ -197,7 +197,7 @@
                             </li>
                         </ul>
                     </li>
-                    -->
+                    {% endif %}
                 {% endif %}
 			</ul>
 			<!-- END SIDEBAR MENU -->

@@ -1,5 +1,7 @@
 {% load staticfiles %}
 {% load customtags %}
+{% load sekizai_tags %}
+
 <!DOCTYPE html>
 
 <!--[if IE 8]> <html lang="en" class="ie8 no-js"> <![endif]-->
@@ -38,6 +40,8 @@
 {% block css %}
 
 {% endblock %}
+
+{% render_block "widget-css" %}
 
 </head>
 <!-- END HEAD -->
@@ -151,6 +155,8 @@
 	
 	{% endblock %}
 
+    {% render_block "widget-javascript" %}
+
 <script>
 	jQuery(document).ready(function() {
 		{% for id in cont.menu %}
@@ -195,6 +201,8 @@
 		{% block jquery %}
 
 		{% endblock %}
+
+        {% render_block "widget-jquery" %}
 	});
 </script>
 <!-- END JAVASCRIPTS -->

@@ -13,7 +13,7 @@ class DRForm(forms.ModelForm):
         model = DR
         fields = ['parque','fecha', 'climatologia','sitio','actividades']
         labels = {
-            'actividades': 'Actividad Principal',
+            'actividades': 'Actividades Principales',
         }
 
     def __init__(self, *args, **kwargs):

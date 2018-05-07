@@ -1,0 +1,404 @@
+{% load staticfiles %}
+{% load customtags %}
+{% load tz %}
+{% load sekizai_tags %}
+
+{% addtoblock 'widget-css' %}
+    <link href="{% static 'common/assets/global/plugins/bootstrap-select/css/bootstrap-select.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.css' %}" rel="stylesheet" type="text/css" />
+
+    <style>
+        .composicion_row {
+            display: none;
+            padding: 15px;
+        }
+        .img-radio {
+            opacity: 0.5;
+            margin-bottom: 5px;
+        }
+        .tabla_imagenes {
+            border: none;
+        }
+        .row_tabla_imagenes {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .fileinput{
+            margin-bottom:0px;
+        }
+
+        .fileinput .thumbnail{
+            margin-bottom:0px;
+        }
+    </style>
+{% endaddtoblock %}
+
+<div class="modal fade" id="composicion" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="js-title-step"></h4>
+            </div>
+            <form action="{% url 'dr:composicion_agregar' parque.slug dr.id %}" method="post" id="formComposicion" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="hide" data-step="1" data-title="Agregar composición: Pie y composición">
+                        <div class="form-group">
+                            <label>Pie</label>
+                            <textarea class="form-control" id="composicion_pie" name="composicion_pie" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Número de fotografías</label>
+                            <select class="form-control bs-select" name="nofotos" id="composicion_nofotos">
+                                <option disabled selected value> -- </option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="6">6</option>
+                            </select>
+                        </div>
+                        <div class="row composicion_row" id="composicion_row_1">
+                            <div class="col-md-6 text-center">
+                                <img src="{% static "common/images/dr/1H.png" %}" alt="1H" class="img-responsive img-radio center-block" >
+                                <button type="button" class="btn btn-primary btn-radio">1H</button>
+        				        <input type="checkbox" id="img-1-1" class="hidden">
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <img src="{% static "common/images/dr/1V.png" %}" alt="1H" class="img-responsive img-radio center-block" >
+                                <button type="button" class="btn btn-primary btn-radio">1V</button>
+        				        <input type="checkbox" id="img-1-2" class="hidden">
+                            </div>
+                        </div>
+                        <div class="row composicion_row" id="composicion_row_2">
+                            <div class="col-md-6 text-center">
+                                <img src="{% static "common/images/dr/2V.png" %}" alt="1H" class="img-responsive img-radio center-block" >
+                                <button type="button" class="btn btn-primary btn-radio">2V</button>
+        				        <input type="checkbox" id="img-2-1" class="hidden">
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <img src="{% static "common/images/dr/2H.png" %}" alt="1H" class="img-responsive img-radio center-block" >
+                                <button type="button" class="btn btn-primary btn-radio">2H</button>
+        				        <input type="checkbox" id="img-2-2" class="hidden">
+                            </div>
+                        </div>
+                        <div class="row composicion_row" id="composicion_row_3">
+                            <div class="col-md-4 text-center">
+                                <img src="{% static "common/images/dr/1V2H.png" %}" alt="1H" class="img-responsive img-radio center-block" >
+                                <button type="button" class="btn btn-primary btn-radio">1V2H</button>
+        				        <input type="checkbox" id="img-3-1" class="hidden">
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <img src="{% static "common/images/dr/2H1V.png" %}" alt="1H" class="img-responsive img-radio center-block" >
+                                <button type="button" class="btn btn-primary btn-radio">2H1V</button>
+        				        <input type="checkbox" id="img-3-2" class="hidden">
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <img src="{% static "common/images/dr/3V.png" %}" alt="1H" class="img-responsive img-radio center-block" >
+                                <button type="button" class="btn btn-primary btn-radio">3V</button>
+        				        <input type="checkbox" id="img-3-3" class="hidden">
+                            </div>
+                        </div>
+                        <div class="row composicion_row" id="composicion_row_4">
+                            <div class="col-md-3 text-center">
+                                <img src="{% static "common/images/dr/4H.png" %}" alt="1H" class="img-responsive img-radio center-block" >
+                                <button type="button" class="btn btn-primary btn-radio">4H</button>
+        				        <input type="checkbox" id="img-4-1" class="hidden">
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <img src="{% static "common/images/dr/2V2H.png" %}" alt="1H" class="img-responsive img-radio center-block" >
+                                <button type="button" class="btn btn-primary btn-radio">2V2H</button>
+        				        <input type="checkbox" id="img-4-2" class="hidden">
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <img src="{% static "common/images/dr/1V3H.png" %}" alt="1H" class="img-responsive img-radio center-block" >
+                                <button type="button" class="btn btn-primary btn-radio">1V3H</button>
+        				        <input type="checkbox" id="img-4-3" class="hidden">
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <img src="{% static "common/images/dr/4V.png" %}" alt="1H" class="img-responsive img-radio center-block" >
+                                <button type="button" class="btn btn-primary btn-radio">4V</button>
+        				        <input type="checkbox" id="img-4-4" class="hidden">
+                            </div>
+                        </div>
+                        <div class="row composicion_row" id="composicion_row_6">
+                            <div class="col-md-12 text-center">
+                                <img src="{% static "common/images/dr/6H.png" %}" alt="1H" class="img-responsive img-radio center-block" >
+                                <button type="button" class="btn btn-primary btn-radio">6H</button>
+        				        <input type="checkbox" id="img-6-1" class="hidden">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hide" data-step="2" data-title="Agregar composición: Seleccionar Imágenes y enviar">
+                        <!-- 1 foto -->
+                        <div class="row" id="row_img_1H" style="display: none">
+                            <div class="row row_tabla_imagenes">
+                                <table class="tabla_imagenes ">
+                                    <tr>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=400 height=308 template="1H" template_num=1 %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row" id="row_img_1V" style="display: none">
+                            <div class="row row_tabla_imagenes">
+                                <table class="tabla_imagenes ">
+                                    <tr>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=286 height=380 template="1V" template_num=1 %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- 2 fotos -->
+                        <div class="row" id="row_img_2V" style="display: none">
+                            <div class="row row_tabla_imagenes">
+                                <table class="tabla_imagenes ">
+                                    <tr>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=286 height=380 template="2V" template_num=1 %}
+                                        </td>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=286 height=380 template="2V" template_num=2 %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row" id="row_img_2H" style="display: none">
+                            <div class="row row_tabla_imagenes">
+                                <table class="tabla_imagenes ">
+                                    <tr>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=250 height=188 template="2H" template_num=1 %}
+                                        </td>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=250 height=188 template="2H" template_num=2 %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- 3 fotos -->
+                        <div class="row" id="row_img_1V2H" style="display: none">
+                            <div class="row row_tabla_imagenes">
+                                <table class="tabla_imagenes ">
+                                    <tr>
+                                        <td rowspan="2">
+                                            {% include 'dr/file_input.html' with width=286 height=380 template="1V2H" template_num=1 %}
+                                        </td>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=253 height=190 template="1V2H" template_num=2 %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=253 height=190 template="1V2H" template_num=3 %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row" id="row_img_2H1V" style="display: none">
+                            <div class="row row_tabla_imagenes">
+                                <table class="tabla_imagenes ">
+                                    <tr>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=253 height=190 template="2H1V" template_num=1 %}
+                                        </td>
+                                        <td rowspan="2">
+                                            {% include 'dr/file_input.html' with width=286 height=380 template="2H1V" template_num=2 %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=253 height=190 template="2H1V" template_num=3 %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row" id="row_img_3V" style="display: none">
+                            <div class="row row_tabla_imagenes">
+                                <table class="tabla_imagenes ">
+                                    <tr>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=130 height=173 template="3V" template_num=1 %}
+                                        </td>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=130 height=173 template="3V" template_num=2 %}
+                                        </td>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=130 height=173 template="3V" template_num=3 %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- 4 fotos -->
+                        <div class="row" id="row_img_4H" style="display: none">
+                            <div class="row row_tabla_imagenes">
+                                <table class="tabla_imagenes ">
+                                    <tr>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=200 height=150 template="4H" template_num=1 %}
+                                        </td>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=200 height=150 template="4H" template_num=2 %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=200 height=150 template="4H" template_num=3 %}
+                                        </td>
+                                        <td >
+                                            {% include 'dr/file_input.html' with width=200 height=150 template="4H" template_num=4 %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row" id="row_img_2V2H" style="display: none">
+                            <div class="row row_tabla_imagenes">
+                                <table class="tabla_imagenes ">
+                                    <tr>
+                                        <td rowspan="3">
+                                            {% include 'dr/file_input.html' with width=126 height=285 template="2V2H" template_num=1 %}
+                                        </td>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=126 height=95 template="2V2H" template_num=2 %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td rowspan="3">
+                                            {% include 'dr/file_input.html' with width=126 height=285 template="2V2H" template_num=3 %}
+                                        </td>
+                                    </tr>
+                                    <tr></tr>
+                                    <tr>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=126 height=95 template="2V2H" template_num=4 %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row" id="row_img_1V3H" style="display: none">
+                            <div class="row row_tabla_imagenes">
+                                <table class="tabla_imagenes ">
+                                    <tr>
+                                        <td rowspan="3">
+                                            {% include 'dr/file_input.html' with width=126 height=285 template="1V3H" template_num=1 %}
+                                        </td>
+                                        <td rowspan="2">
+                                            {% include 'dr/file_input.html' with width=250 height=190 template="1V3H" template_num=2 %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                    </tr>
+                                    <tr>
+                                        <td rowspan="2">
+                                            {% include 'dr/file_input.html' with width=250 height=190 template="1V3H" template_num=3 %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td >
+                                            {% include 'dr/file_input.html' with width=126 height=95 template="1V3H" template_num=4 %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row" id="row_img_4V" style="display: none">
+                            <div class="row row_tabla_imagenes">
+                                <table class="tabla_imagenes ">
+                                    <tr>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=143 height=190 template="4V" template_num=1 %}
+                                        </td>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=143 height=190 template="4V" template_num=2 %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=143 height=190 template="4V" template_num=3 %}
+                                        </td>
+                                        <td >
+                                            {% include 'dr/file_input.html' with width=143 height=190 template="4V" template_num=4 %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- 6 fotos -->
+                        <div class="row" id="row_img_6H" style="display: none">
+                            <div class="row row_tabla_imagenes">
+                                <table class="tabla_imagenes ">
+                                    <tr>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=169 height=126 template="6H" template_num=1 %}
+                                        </td>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=169 height=126 template="6H" template_num=2 %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=169 height=126 template="6H" template_num=3 %}
+                                        </td>
+                                        <td >
+                                            {% include 'dr/file_input.html' with width=169 height=126 template="6H" template_num=4 %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=169 height=126 template="6H" template_num=5 %}
+                                        </td>
+                                        <td >
+                                            {% include 'dr/file_input.html' with width=169 height=126 template="6H" template_num=6 %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" name="act_id" id="act_id" value="">
+                    <input type="hidden" name="edit" id="edit" value="0">
+                    <input type="hidden" name="pattern" id="pattern" value="">
+                    <button type="button" class="btn btn-default js-btn-step pull-left" data-orientation="cancel" data-dismiss="modal"></button>
+                    <button type="button" class="btn btn-warning js-btn-step" data-orientation="previous"></button>
+                    <button type="button" class="btn btn-success js-btn-step" data-orientation="next"></button>
+                    <!--
+                    <button type="submit" id='enviarmodal' class="btn green-steel" name="FromList">Agregar</button> -->
+                    <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+{% addtoblock "widget-javascript" %}
+    <script src="{% static 'common/jquery-bootstrap-modal-steps/jquery-bootstrap-modal-steps.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/pages/scripts/components-bootstrap-switch.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-select/js/bootstrap-select.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/js/w_modal_composicion.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.js' %}" type="text/javascript"></script>
+
+{% endaddtoblock %}
+
+{% addtoblock "widget-jquery" %}
+
+
+{% endaddtoblock %}
