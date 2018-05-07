@@ -1535,6 +1535,7 @@ def ordenar_actividades(request, slug, estado):
     logger.debug("Ordenar Actividades, estado = " + estado)
     response_data = {}
     response_data['files'] = []
+    componentes_parque = RelacionesFU.objects.filter(componentes_parque__parque=parque)
     if request.method == 'POST':
         response = json.dumps([])
         post_dict = parser.parse(request.POST.urlencode())
@@ -1542,7 +1543,7 @@ def ordenar_actividades(request, slug, estado):
         for pos, val in datos.iteritems():
             idx = pos +1
             id = int(val['id'])
-            obj = RelacionesFU.objects.get(componente__id=id)
+            obj = componentes_parque.get(componente__id=id)
             if estado == 'descarga':
                 obj.orden_descarga = idx
             elif estado == 'premontaje':
@@ -2191,7 +2192,9 @@ def ingreso(request,slug,slug_ag):
     relaciones = RelacionesFU.objects.filter(componentes_parque = componentes_parque)
 
     componentes['Descarga en Parque']['objetos'] = []
-    for c in componentes_parque.componentes.all().filter(estados__idx=1):
+    filtro = 'relacionesfu__orden_descarga'
+    karws = {filtro + '__gt': 0}
+    for c in componentes_parque.componentes.all().filter(**karws).order_by(filtro):
         aux = getComponenteStatus(registros, 1, c, relaciones)
         objeto = {}
         color = 'bg-yellow-crusta'
@@ -2207,7 +2210,9 @@ def ingreso(request,slug,slug_ag):
         componentes['Descarga en Parque']['objetos'].append(objeto)
 
     componentes['Montaje']['objetos']  = []
-    for c in componentes_parque.componentes.all().filter(estados__idx=3):
+    filtro = 'relacionesfu__orden_montaje'
+    karws = {filtro + '__gt': 0}
+    for c in componentes_parque.componentes.all().filter(**karws).order_by(filtro):
         aux = getComponenteStatus(registros, 3, c, relaciones)
         color = 'bg-grey-salt'
         objeto = {}
