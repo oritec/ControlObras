@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+from sys import platform
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'easy_pdf',
     'sekizai',
+    'raven.contrib.django.raven_compat',
     'vista',
     'usuarios',
     'ncr',
@@ -189,3 +191,18 @@ LOGGING = {
 
     }
 }
+
+if platform == "linux":
+    import raven
+
+    RAVEN_CONFIG = {
+        'dsn': 'https://e46b7f9b08e348f992f9ee85b5d2b493:a3b419fe496740fba7922837ed80a8da@sentry.io/1203110',
+        # If you are using git, you can also automatically configure the
+        # release based on the git info.
+        'release': raven.fetch_git_sha(os.path.abspath(BASE_DIR)),
+    }
+
+
+    MIDDLEWARE = [
+        'raven.contrib.django.raven_compat.middleware.Sentry404CatchMiddleware',
+    ] + MIDDLEWARE
