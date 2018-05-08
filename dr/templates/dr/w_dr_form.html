@@ -33,6 +33,14 @@
         </div>
 
         <div class="form-group">
+            <label class="control-label col-md-3">{{ form.numero.label }}</label>
+            <div class="col-md-9">
+                {{ form.numero }}
+                <span class="help-block"> {{ form.numero.errors }} </span>
+            </div>
+        </div>
+
+        <div class="form-group">
             <label class="control-label col-md-3">{{ form.climatologia.label }}</label>
             <div class="col-md-9">
                 {{ form.climatologia }}

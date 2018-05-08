@@ -48,7 +48,7 @@
                         <div class="dd" id="nestable">
                             <ol class="dd-list">
                                 {% for actividad in dr.actividaddr_set.all %}
-                                    <li class="dd-item" data-id="{{ forloop.counter }}">
+                                    <li class="dd-item" data-id="{{ forloop.counter }}" data-group="0">
                                         <div class="dd-handle-container">
                                             <div class="dd-handle" style="display: inline-block;">
                                                 {{ actividad.descripcion }}
@@ -59,6 +59,17 @@
                                                 Composición
                                             </a>
                                         </div>
+                                        {% if actividad.composiciondr_set.count > 0 %}
+                                            <ol class="dd-list">
+                                                {% for composiciondr in actividad.composiciondr_set.all %}
+                                                <li class="dd-item" data-id="{{ forloop.counter }}" data-group="1">
+                                                    <div class="dd-handle-container">
+                                                        <div class="dd-handle">{{ composiciondr.pie }} </div>
+                                                    </div>
+                                                </li>
+                                                {% endfor %}
+                                            </ol>
+                                        {% endif %}
                                     </li>
                                 {% endfor %}
                             </ol>
@@ -82,7 +93,10 @@
 {% endblock %}
 
 {% block jquery %}
-    $('#nestable').nestable({
-        group: 0
-    })
+    $('.dd').each(function(){
+        $(this).nestable({
+            maxDepth: 1,
+            group: $(this).prop('id')
+        });
+    });
 {% endblock %}

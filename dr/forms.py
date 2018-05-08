@@ -11,9 +11,10 @@ class DRForm(forms.ModelForm):
 
     class Meta:
         model = DR
-        fields = ['parque','fecha', 'climatologia','sitio','actividades']
+        fields = ['parque','fecha', 'numero', 'climatologia','sitio','actividades']
         labels = {
             'actividades': 'Actividades Principales',
+            'numero': 'Número',
         }
 
     def __init__(self, *args, **kwargs):
@@ -21,6 +22,7 @@ class DRForm(forms.ModelForm):
         self.fields['parque'].widget = forms.HiddenInput()
         self.fields['fecha'].widget.attrs['class'] = 'form-control'
         self.fields['fecha'].widget.attrs['readonly'] = True
+        self.fields['numero'].widget.attrs['class'] = 'form-control'
         self.fields['climatologia'].widget.attrs['class'] = 'form-control'
         self.fields['sitio'].widget.attrs['class'] = 'form-control'
         self.fields['actividades'].widget.attrs['class'] = 'form-control'

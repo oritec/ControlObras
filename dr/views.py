@@ -68,13 +68,18 @@ def agregar(request,slug):
             log_msg = "Se agrega reporte diario para parque " + parque.nombre
             log = Log(texto=log_msg, tipo=1, user=request.user)
             log.save()
-            dr.save() # Necesario para actualizar campos
+            #dr.save() # Necesario para actualizar campos
             return HttpResponseRedirect(reverse('dr:editar', args=[parque.slug,dr.id]))
         else:
             logger.debug('Formulario no es válido...')
 
     if form is None:
-        form = DRForm(initial={'parque':parque.id})
+        aux = DR.objects.filter(parque=parque).order_by('-numero')
+        if aux.exists():
+            next_num = aux[0].numero + 1
+        else:
+            next_num = 1
+        form = DRForm(initial={'parque':parque.id, 'numero': next_num})
 
     return TemplateResponse(request, 'dr/agregar.html',
                             {'cont': contenido,
@@ -201,7 +206,6 @@ def create_dr_word(request, slug,dr_id):
         logger.debug(s.name)
     table = document.add_table(rows=1, cols=3, style="Titulo")
 
-
     row_cells = table.rows[0].cells
     #table.rows[0].height_rule = WD_ROW_HEIGHT.EXACTLY
     tr = table.rows[0]._tr
@@ -250,7 +254,6 @@ def create_dr_word(request, slug,dr_id):
     for idx in range(1,4):
         r = r.merge(row_cells[idx])
 
-
     row_cells = table.add_row().cells
     row_cells[0].paragraphs[0].add_run('Actividades:').bold = True
     row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -273,13 +276,36 @@ def create_dr_word(request, slug,dr_id):
     for idx in range(1, 4):
         r = r.merge(row_cells[idx])
 
-
-
-    styles = document.styles
-    paragraph_styles = [s for s in styles if s.type == WD_STYLE_TYPE.PARAGRAPH]
-    for style in paragraph_styles:
-        logger.debug(style.name)
-
+    document.add_paragraph('')
+    # Inserta fotos
+    foto_count = 1
+    for actividad in dr.actividaddr_set.all():
+        for composicion in actividad.composiciondr_set.all():
+            if composicion.tipo == '1V2H':
+                table = document.add_table(rows=2, cols=2, style="TablaFotos")
+                row_cells = table.rows[0].cells
+                # foto 1
+                foto = FotosDR.objects.get(composicion=composicion, orden=0)
+                foto_filename = settings.BASE_DIR + foto.imagen.url
+                r = row_cells[0].paragraphs[0].add_run()
+                r.add_picture(foto_filename, width=Mm(90), height=Mm(120))
+                cell_toadd = row_cells[0]
+                # foto 2
+                foto = FotosDR.objects.get(composicion=composicion, orden=1)
+                foto_filename = settings.BASE_DIR + foto.imagen.url
+                r = row_cells[1].paragraphs[0].add_run()
+                r.add_picture(foto_filename, width=Mm(79), height=Mm(59.1))
+                # foto 3
+                row_cells = table.rows[1].cells
+                foto = FotosDR.objects.get(composicion=composicion, orden=2)
+                foto_filename = settings.BASE_DIR + foto.imagen.url
+                r = row_cells[1].paragraphs[0].add_run()
+                r.add_picture(foto_filename, width=Mm(79), height=Mm(59.1))
+                cell_toadd.merge(row_cells[0])
+                p = document.add_paragraph('Ilustración ' + str(foto_count) + '. ' + composicion.pie)
+                p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                p.style = 'Pie'
+                foto_count += 1
     target_stream = StringIO.StringIO()
     document.save(target_stream)
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
