@@ -22,7 +22,7 @@
             <div class="portlet box blue" style="margin-left:30px;margin-right:30px;">
                 <div class="portlet-title">
                     <div class="caption">
-                        <i class="fa fa-search"></i> Agregar DR
+                        <i class="fa fa-search"></i> Editar DR
                     </div>
                 </div>
                 <div class="portlet-body form">
@@ -36,35 +36,56 @@
             <div class="portlet box grey-salsa" style="margin-left:30px;margin-right:30px;">
                 <div class="portlet-title">
                     <div class="caption">
-                        <i class="fa fa-search"></i> Actividades
+                        <i class="fa fa-search"></i> Actividades y composiciones
                     </div>
-                    <a href="#actividad" id="add_actividad" data-toggle="modal" class="btn btn-circle btn-xs yellow-saffron pull-right" style="margin-top: 10px;" >
+                    <a href="#actividad" id="add_actividad" data-toggle="modal" class="btn btn-circle btn-xs green-jungle pull-right" style="margin-top: 10px;" onclick="$('#del_id').val({{ fila.id }})" >
                         <i class="fa fa-plus"></i>
                         Agregar
                     </a>
                 </div>
                 <div class="portlet-body">
-                    {% if dr.actividaddr_set.count > 0 %}
+                    {% if actividades|length > 0 %}
                         <div class="dd" id="nestable">
-                            <ol class="dd-list">
-                                {% for actividad in dr.actividaddr_set.all %}
-                                    <li class="dd-item" data-id="{{ forloop.counter }}" data-group="0">
+                            <ol class="dd-list" data-type="root">
+                                {% for actividad in actividades %}
+                                    <li class="dd-item" data-id="{{ actividad|get_item:"id" }}">
                                         <div class="dd-handle-container">
                                             <div class="dd-handle" style="display: inline-block;">
-                                                {{ actividad.descripcion }}
+                                                {{ actividad|get_item:"descripcion" }}
                                             </div>
 
-                                            <a href="#composicion" id="add_composicion" act_id="{{ actividad.id }}" data-toggle="modal" class="btn btn-circle btn-xs yellow-saffron pull-right add_composicion" style="z-index: 999;display: inline-block;" >
+                                            <a href="#composicion" id="add_composicion" act_id="{{ actividad|get_item:"id" }}" data-toggle="modal" class="btn btn-circle btn-xs green-jungle pull-right add_composicion" style="display: inline-block;" >
                                                 <i class="fa fa-plus"></i>
                                                 Composición
                                             </a>
+
+                                            <a href="#eliminar_actividad" id="del_actividad" act_id="{{ actividad|get_item:"id" }}" data-toggle="modal" class="btn btn-circle btn-xs red-haze pull-right add_composicion" style="margin-right:5px;display: inline-block" onclick="$('#del_id_actividad').val({{ actividad|get_item:"id" }})">
+                                                <i class="fa fa-trash-o"></i>
+                                                Eliminar
+                                            </a>
+
+                                            <a href="javascript:void(0);" id="editar_actividad" act_id="{{ actividad|get_item:"id" }}" class="btn btn-circle btn-xs yellow-saffron pull-right add_composicion" style="margin-right:5px;display: inline-block" onclick="editarActividad({{ actividad|get_item:"id" }});">
+                                                <i class="fa fa-edit"></i>
+                                                Editar
+                                            </a>
+
                                         </div>
-                                        {% if actividad.composiciondr_set.count > 0 %}
+                                        {% if actividad|get_item:"composiciones"|length > 0 %}
                                             <ol class="dd-list">
-                                                {% for composiciondr in actividad.composiciondr_set.all %}
-                                                <li class="dd-item" data-id="{{ forloop.counter }}" data-group="1">
+                                                {% for composiciondr in actividad|get_item:"composiciones" %}
+                                                <li class="dd-item" data-id="{{ composiciondr|get_item:"id" }}" data-type="child">
                                                     <div class="dd-handle-container">
-                                                        <div class="dd-handle">{{ composiciondr.pie }} </div>
+                                                        <div class="dd-handle" style="display: inline-block;">
+                                                            {{ composiciondr|get_item:"pie" }}
+                                                        </div>
+                                                        <a href="#eliminar_composicion" id="del_composicion" act_id="{{ actividad|get_item:"id" }}" data-toggle="modal" class="btn btn-circle btn-xs red-haze pull-right add_composicion" style="margin-right:5px;display: inline-block" onclick="$('#del_id_composicion').val({{ composiciondr|get_item:"id" }})">
+                                                            <i class="fa fa-trash-o"></i>
+                                                            Eliminar
+                                                        </a>
+                                                        <a href="javascript:void(0);" id="editar_composicion" act_id="{{ actividad|get_item:"id" }}" class="btn btn-circle btn-xs yellow-saffron pull-right add_composicion" style="margin-right:5px;display: inline-block;" onclick="editarComposicion({{ actividad|get_item:"id" }},{{ composiciondr|get_item:"id" }});">
+                                                            <i class="fa fa-edit"></i>
+                                                            Editar
+                                                        </a>
                                                     </div>
                                                 </li>
                                                 {% endfor %}
@@ -86,17 +107,193 @@
         {% include 'dr/w_modal_actividad.html' %}
         {% include 'dr/w_modal_composicion.html' %}
     {% endif %}
+
+<div class="modal fade" id="eliminar_actividad" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">
+                    <span class="glyphicon glyphicon-exclamation-sign" style="color:rgba(255, 63, 0, 0.89);font-size:20px"></span>
+                     <b>Advertencia</b> </h4>
+            </div>
+            <div class="modal-body">
+                 <h5><b>&iquest;Desea borrar la actividad? Esto eliminará todas las composiciones e imágenes.</b> </h5>
+            </div>
+            <div class="modal-footer">
+
+                <form action="{% url 'dr:actividad_eliminar' parque.slug dr.id %}" method="post" id="formModal">
+                    {% csrf_token %}
+                    <input type="hidden" name="del_id_actividad" id="del_id_actividad" value="">
+                    <input type="hidden" name="back_url" id="back_url" value="">
+                    <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" id='enviarmodal' class="btn red" name="FromList">Borrar</button>
+                    <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                </form>
+                <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
+
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+
+<div class="modal fade" id="eliminar_composicion" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">
+                    <span class="glyphicon glyphicon-exclamation-sign" style="color:rgba(255, 63, 0, 0.89);font-size:20px"></span>
+                     <b>Advertencia</b> </h4>
+            </div>
+            <div class="modal-body">
+                 <h5><b>&iquest;Desea borrar la composición? Esto eliminará todas las imágenes.</b> </h5>
+            </div>
+            <div class="modal-footer">
+
+                <form action="{% url 'dr:composicion_eliminar' parque.slug dr.id %}" method="post" id="formModal">
+                    {% csrf_token %}
+                    <input type="hidden" name="del_id_composicion" id="del_id_composicion" value="">
+                    <input type="hidden" name="back_url" id="back_url" value="">
+                    <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" id='enviarmodal' class="btn red" name="FromList">Borrar</button>
+                    <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                </form>
+                <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
+
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
 {% endblock %}
 
 {% block javascript %}
-    <script src="{% static 'common/assets/global/plugins/jquery-nestable/jquery.nestable.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/jquery-nestable/jquery.nestable.min.js' %}" type="text/javascript"></script>
+    <script>
+        function editarActividad(actividad_id){
+            console.log(actividad_id);
+            $.ajax({
+                type: "post",
+                url: "{% url 'dr:actividad_ajax' parque.slug %}",
+                data: {"id": actividad_id},
+                success: function (data) {
+                    console.log(data.descripcion);
+                    $('#titulo_actividad_modal').html('Editar Actividad');
+                    $("#actividad-descripcion").val(data.descripcion);
+                    $("#edit_actividad").val(data.id);
+                    $("#boton_actividad").html('Editar');
+
+                    $('#actividad').modal('show');
+                }
+            });
+        };
+
+        function editarComposicion(actividad_id, composicion_id){
+            console.log(composicion_id);
+            $.ajax({
+                type: "post",
+                url: "{% url 'dr:composicion_ajax' parque.slug  %}",
+                data: {"composicion_id": composicion_id,
+                        "actividad_id": actividad_id},
+                success: function (data) {
+                    //console.log(data);
+                    for (var i = 0; i < 6; i++) {
+                        $(".preview_" + (i + 1).toString()).each(function (index) {
+                            $(this).empty();
+                        });
+                    }
+                    //$('#titulo_composicion_modal').html('Editar Composición');
+                    $("#edit_composicion").val(data.id);
+                    $("#composicion_pie").val(data.pie);
+                    //$("#composicion_nofotos").val(data.no_fotos);
+                    $('#composicion_nofotos').selectpicker('val', data.no_fotos);
+                    //showPhotoGrid(data.no_fotos);
+                    $("#pattern_img_id").val(data.pattern_img_id);
+                    var arrayLength = data.fotos.length;
+                    for (var i = 0; i < arrayLength; i++) {
+                        console.log('foto');
+                        console.log(data.fotos[i].orden+1);
+                        $(".preview_" + (data.fotos[i].orden+1).toString()).each(function( index ) {
+                            //console.log('NAME:');
+                            //console.log($(this).attr('name'));
+
+                            //$(this).attr("src",data.fotos[i].url);
+                            //$(this).append(' <img src="' + data.fotos[i].url + '" alt="img" width="' + $(this).css('width') +'" height="' + $(this).css('height') +'"> ');
+                            $(this).append(' <img src="' + data.fotos[i].url + '" alt="img"> ');
+                            $(this).siblings().hide();
+                            $(this).show();
+
+                        });
+                    }
+                    $('#composicion').modal('show');
+                }
+            });
+        };
+    </script>
 {% endblock %}
 
 {% block jquery %}
-    $('.dd').each(function(){
-        $(this).nestable({
-            maxDepth: 1,
-            group: $(this).prop('id')
-        });
+
+    $('#nestable').nestable({
+        group: 0, // you can change this name as you like
+        maxDepth: 2,   // this is important if you have the same case of the question
+
+        callback: function(l,e){
+        // l is the main container
+        // e is the element that was moved
+            //console.log('callback nestable');
+            //console.log(l);
+            //console.log(e);
+            //console.log($('#nestable').nestable('serialize'));
+            $.ajax({
+                type: "post",
+                url: "{% url 'dr:dr_ordenar' parque.slug dr.id %}",
+                data: {"orden": JSON.stringify($('#nestable').nestable('serialize'))},
+                success: function (data) {
+                    console.log('OK');
+                }
+            });
+        },
+        beforeDragStop: function(l,e, p){
+        // l is the main container
+        // e is the element that was moved
+        // p is the place where element was moved.
+            console.log(l);
+            console.log(e);
+            console.log(p);
+            var datatype_to = $(p).data('type');
+            var datatype_from = $(e).data('type');
+            console.log(datatype_to);
+            console.log(datatype_from);
+            if (datatype_from == "child" && datatype_to == "root")
+                return false;
+        },
+        reject: [{
+            rule: function () {
+                // The this object refers to dragRootEl i.e. the dragged element.
+                // The drag action is cancelled if this function returns true
+                return true;
+                var ils = $(this).find('>ol.dd-list > li.dd-item');
+
+                for (var i = 0; i < ils.length; i++) {
+                    var datatype = $(ils[i]).data('type');
+                    if (datatype === 'child'){
+                        return true;
+                    }
+                }
+                return false;
+            },
+            action: function (nestable) {
+                // This optional function defines what to do when such a rule applies. The this object still refers to the dragged element,
+                // and nestable is, well, the nestable root element
+                alert('Can not move this item to the root');
+            }
+        }]
     });
 {% endblock %}

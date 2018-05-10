@@ -63,13 +63,13 @@
                         </div>
                         <div class="row composicion_row" id="composicion_row_1">
                             <div class="col-md-6 text-center">
-                                <img src="{% static "common/images/dr/1H.png" %}" alt="1H" class="img-responsive img-radio center-block" >
-                                <button type="button" class="btn btn-primary btn-radio">1H</button>
+                                <img src="{% static "common/images/dr/1V.png" %}" alt="1H" class="img-responsive img-radio center-block" >
+                                <button type="button" class="btn btn-primary btn-radio">1V</button>
         				        <input type="checkbox" id="img-1-1" class="hidden">
                             </div>
                             <div class="col-md-6 text-center">
-                                <img src="{% static "common/images/dr/1V.png" %}" alt="1H" class="img-responsive img-radio center-block" >
-                                <button type="button" class="btn btn-primary btn-radio">1V</button>
+                                <img src="{% static "common/images/dr/1H.png" %}" alt="1H" class="img-responsive img-radio center-block" >
+                                <button type="button" class="btn btn-primary btn-radio">1H</button>
         				        <input type="checkbox" id="img-1-2" class="hidden">
                             </div>
                         </div>
@@ -134,23 +134,23 @@
                     </div>
                     <div class="hide" data-step="2" data-title="Agregar composición: Seleccionar Imágenes y enviar">
                         <!-- 1 foto -->
-                        <div class="row" id="row_img_1H" style="display: none">
-                            <div class="row row_tabla_imagenes">
-                                <table class="tabla_imagenes ">
-                                    <tr>
-                                        <td>
-                                            {% include 'dr/file_input.html' with width=400 height=308 template="1H" template_num=1 %}
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
                         <div class="row" id="row_img_1V" style="display: none">
                             <div class="row row_tabla_imagenes">
                                 <table class="tabla_imagenes ">
                                     <tr>
                                         <td>
                                             {% include 'dr/file_input.html' with width=286 height=380 template="1V" template_num=1 %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row" id="row_img_1H" style="display: none">
+                            <div class="row row_tabla_imagenes">
+                                <table class="tabla_imagenes ">
+                                    <tr>
+                                        <td>
+                                            {% include 'dr/file_input.html' with width=400 height=308 template="1H" template_num=1 %}
                                         </td>
                                     </tr>
                                 </table>
@@ -268,22 +268,21 @@
                             <div class="row row_tabla_imagenes">
                                 <table class="tabla_imagenes ">
                                     <tr>
-                                        <td rowspan="3">
-                                            {% include 'dr/file_input.html' with width=126 height=285 template="2V2H" template_num=1 %}
+                                        <td rowspan="2">
+                                            {% include 'dr/file_input.html' with width=160 height=200 template="2V2H" template_num=1 %}
                                         </td>
                                         <td>
-                                            {% include 'dr/file_input.html' with width=126 height=95 template="2V2H" template_num=2 %}
+                                            {% include 'dr/file_input.html' with width=160 height=120 template="2V2H" template_num=2 %}
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td rowspan="3">
-                                            {% include 'dr/file_input.html' with width=126 height=285 template="2V2H" template_num=3 %}
+                                        <td rowspan="2">
+                                            {% include 'dr/file_input.html' with width=160 height=200 template="2V2H" template_num=3 %}
                                         </td>
                                     </tr>
-                                    <tr></tr>
                                     <tr>
                                         <td>
-                                            {% include 'dr/file_input.html' with width=126 height=95 template="2V2H" template_num=4 %}
+                                            {% include 'dr/file_input.html' with width=160 height=120 template="2V2H" template_num=4 %}
                                         </td>
                                     </tr>
                                 </table>
@@ -294,22 +293,22 @@
                                 <table class="tabla_imagenes ">
                                     <tr>
                                         <td rowspan="3">
-                                            {% include 'dr/file_input.html' with width=126 height=285 template="1V3H" template_num=1 %}
+                                            {% include 'dr/file_input.html' with width=200 height=285 template="1V3H" template_num=1 %}
                                         </td>
                                         <td rowspan="2">
-                                            {% include 'dr/file_input.html' with width=250 height=190 template="1V3H" template_num=2 %}
+                                            {% include 'dr/file_input.html' with width=252 height=190 template="1V3H" template_num=2 %}
                                         </td>
                                     </tr>
                                     <tr>
                                     </tr>
                                     <tr>
                                         <td rowspan="2">
-                                            {% include 'dr/file_input.html' with width=250 height=190 template="1V3H" template_num=3 %}
+                                            {% include 'dr/file_input.html' with width=252 height=190 template="1V3H" template_num=3 %}
                                         </td>
                                     </tr>
                                     <tr>
                                         <td >
-                                            {% include 'dr/file_input.html' with width=126 height=95 template="1V3H" template_num=4 %}
+                                            {% include 'dr/file_input.html' with width=200 height=95 template="1V3H" template_num=4 %}
                                         </td>
                                     </tr>
                                 </table>
@@ -373,8 +372,9 @@
                 </div>
                 <div class="modal-footer">
                     <input type="hidden" name="act_id" id="act_id" value="">
-                    <input type="hidden" name="edit" id="edit" value="0">
+                    <input type="hidden" name="edit_composicion" id="edit_composicion" value="0">
                     <input type="hidden" name="pattern" id="pattern" value="">
+                    <input type="hidden" name="pattern_img_id" id="pattern_img_id" value="">
                     <button type="button" class="btn btn-default js-btn-step pull-left" data-orientation="cancel" data-dismiss="modal"></button>
                     <button type="button" class="btn btn-warning js-btn-step" data-orientation="previous"></button>
                     <button type="button" class="btn btn-success js-btn-step" data-orientation="next"></button>

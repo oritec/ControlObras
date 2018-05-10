@@ -10,7 +10,7 @@
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
                 <h4 class="modal-title">
                     <span class="glyphicon glyphicon-plus" style="color:rgba(57,225,62,0.89);font-size:20px"></span>
-                     <b>Agregar Actividad</b> </h4>
+                     <b id="titulo_actividad_modal">Agregar Actividad</b> </h4>
             </div>
             <form action="{% url 'dr:actividad_agregar' parque.slug dr.id %}" method="post" id="formActividad">
                 {% csrf_token %}
@@ -21,10 +21,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-
-
+                    <input type="hidden" name="edit_actividad" id="edit_actividad" value="0">
                     <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" id='enviarmodal' class="btn green-steel" name="FromList">Agregar</button>
+                    <button type="submit" id='boton_actividad' class="btn green-steel" name="FromList">Agregar</button>
                     <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
                 </div>
             </form>
@@ -35,7 +34,11 @@
 </div>
 
 {% addtoblock "widget-jquery" %}
-    $('#actividad').on('shown.bs.modal', function (e) {
-        $("#actividad-descripcion").val('');
+    $('#actividad').on('show.bs.modal', function (e) {
+        if (typeof e.relatedTarget != "undefined"){
+            $("#actividad-descripcion").val('');
+            $('#titulo_actividad_modal').html('Agregar Actividad');
+            $("#boton_actividad").html('Agregar');
+        }
     })
 {% endaddtoblock %}

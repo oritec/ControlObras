@@ -2,16 +2,31 @@ $( document ).ready(function() {
 
     $('#composicion').on('show.bs.modal', function (e) {
         console.log('show modal composicion');
-        $("#composicion_pie").val('');
-        var select_val = $('#composicion_nofotos').val();
-        console.log(select_val);
-
-        if ( select_val != null){
-            showPhotoGrid(select_val);
+        if (typeof e.relatedTarget != "undefined") {
+            $("#composicion_pie").val('');
+            var select_val = $('#composicion_nofotos').val();
+            console.log(select_val);
+            if ( select_val != null){
+                showPhotoGrid(select_val,'1');
+            }
+            for (var i = 0; i < 6; i++) {
+                $(".preview_" + (i + 1).toString()).each(function (index) {
+                    $(this).empty();
+                });
+            }
+            $("#edit_composicion").val('0');
+        } else{
+            var select_val = $('#composicion_nofotos').val();
+            var pattern_id = $('#pattern_img_id').val();
+            console.log(select_val);
+            if ( select_val != null){
+                showPhotoGrid(select_val, pattern_id);
+            }
         }
+
     })
 
-    function showPhotoGrid(idx){
+    function showPhotoGrid(idx, pattern_id){
         console.log('showPhotoGrid');
         $(".composicion_row").each(function( ) {
             //console.log($(this));
@@ -19,7 +34,7 @@ $( document ).ready(function() {
         });
         console.log(idx);
         $('#composicion_row_'+idx).show();
-        var img_selected = $('#img-' + idx + '-1');
+        var img_selected = $('#img-' + idx + '-' + pattern_id);
         console.log(img_selected);
         manageBtnRadio(img_selected.siblings('.btn'));
     }
@@ -29,7 +44,7 @@ $( document ).ready(function() {
         //console.log(select_val);
         //showPhotoGrid(
         if ( select_val != null){
-            showPhotoGrid(select_val);
+            showPhotoGrid(select_val,'1');
         }
     });
 
