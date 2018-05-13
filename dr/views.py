@@ -26,6 +26,7 @@ from docx.oxml.ns import qn
 from docx.enum.style import WD_STYLE_TYPE
 from django.views.decorators.csrf import csrf_exempt
 import json
+from django.contrib import messages
 
 import logging
 logger = logging.getLogger('oritec')
@@ -72,9 +73,11 @@ def agregar(request,slug):
             log = Log(texto=log_msg, tipo=1, user=request.user)
             log.save()
             #dr.save() # Necesario para actualizar campos
+            messages.add_message(request, messages.SUCCESS, 'Reporte agregado')
             return HttpResponseRedirect(reverse('dr:editar', args=[parque.slug,dr.id]))
         else:
             logger.debug('Formulario no es válido...')
+            messages.add_message(request, messages.ERROR, 'Error al agregar reporte')
 
     if form is None:
         aux = DR.objects.filter(parque=parque).order_by('-numero')
@@ -113,9 +116,11 @@ def editar(request, slug, dr_id):
             log_msg = "Se agrega reporte diario para parque " + parque.nombre
             log = Log(texto=log_msg, tipo=1, user=request.user)
             log.save()
+            messages.add_message(request, messages.SUCCESS, 'Reporte Actualizado')
             #return HttpResponseRedirect(reverse('dr:observaciones-show', args=[parque.slug,observacion.id]))
         else:
             logger.debug('Formulario no es válido...')
+            messages.add_message(request, messages.ERROR, 'Error al actualizar reporte')
 
     if form is None:
         form = DRForm(instance=dr)
@@ -178,7 +183,7 @@ def borrar(request, slug):
         dr.delete()
         log = Log(texto=log_msg, tipo=3, user=request.user)
         log.save()
-
+        messages.add_message(request, messages.SUCCESS, 'Reporte Eliminado')
         return HttpResponseRedirect(request.POST['back_url'])
 
 @login_required(login_url='ingresar')
@@ -197,6 +202,7 @@ def actividad_agregar(request, slug, dr_id):
                 actividad.save()
                 log = Log(texto=log_msg, tipo=3, user=request.user)
                 log.save()
+                messages.add_message(request, messages.SUCCESS, 'Actividad Agregada')
             else:
                 actividad = ActividadDR.objects.get(id=int(request.POST['edit_actividad']))
 
@@ -206,6 +212,7 @@ def actividad_agregar(request, slug, dr_id):
                 actividad.save()
                 log = Log(texto=log_msg, tipo=3, user=request.user)
                 log.save()
+                messages.add_message(request, messages.SUCCESS, 'Actividad editada correctamente')
         return HttpResponseRedirect(reverse('dr:editar', args=[parque.slug,dr.id]))
 
 @login_required(login_url='ingresar')
@@ -217,6 +224,7 @@ def actividad_eliminar(request, slug, dr_id):
             id = int(request.POST['del_id_actividad'])
             actividad = ActividadDR.objects.get(id=id)
             actividad.delete()
+            messages.add_message(request, messages.SUCCESS, 'Actividad eliminada')
         return HttpResponseRedirect(reverse('dr:editar', args=[parque.slug, dr_id]))
 
 @login_required(login_url='ingresar')
@@ -228,6 +236,7 @@ def composicion_eliminar(request, slug, dr_id):
             id = int(request.POST['del_id_composicion'])
             composicion = ComposicionDR.objects.get(id=id)
             composicion.delete()
+            messages.add_message(request, messages.SUCCESS, 'Composición eliminada')
     return HttpResponseRedirect(reverse('dr:editar', args=[parque.slug, dr_id]))
 
 @csrf_exempt
@@ -329,6 +338,7 @@ def composicion_agregar(request, slug, dr_id):
                           " - DR - " + str(dr.id)
                 log = Log(texto=log_msg, tipo=3, user=request.user)
                 log.save()
+                messages.add_message(request, messages.SUCCESS, 'Composición agregada')
             else:
                 composicion = ComposicionDR.objects.get(id=int(request.POST['edit_composicion']))
                 composicion.pie=request.POST['composicion_pie']
@@ -345,19 +355,20 @@ def composicion_agregar(request, slug, dr_id):
                                     imagen=request.FILES[file_field],
                                     orden=i)
                         f.save()
+                messages.add_message(request, messages.SUCCESS, 'Composición actualizada correctamente')
 
         return HttpResponseRedirect(reverse('dr:editar', args=[parque.slug,dr.id]))
 
-def word_insert_pagebreak(document, logo_archivo, dr):
+def word_insert_pagebreak(document, logo_archivo, dr,codigo_informe):
     document.add_page_break()
     table = document.add_table(rows=1, cols=3, style="TablaHeader")
     row_cells = table.rows[0].cells
     r = row_cells[0].paragraphs[0].add_run()
     r.add_picture(logo_archivo, width=Mm(39), height=Mm(10.4))
     row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
-    row_cells[1].paragraphs[0].add_run('DR_' + dr.parque.codigo.upper() + '-' + str(dr.numero)).bold = True
+    row_cells[1].paragraphs[0].add_run(codigo_informe)
     row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-    row_cells[2].paragraphs[0].add_run('Fecha: ' + dr.fecha.strftime("%d/%m/%Y")).bold = True
+    row_cells[2].paragraphs[0].add_run('Fecha: ' + dr.fecha.strftime("%d/%m/%Y"))
     row_cells[2].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
     document.add_paragraph(style='Espacio')
 
@@ -371,6 +382,8 @@ def create_dr_word(request, slug, dr_id):
     temp_doc = Document()
     #document.styles.add_style('ListBullet', temp_doc.styles['ListBullet'].type)
     #document.styles.add_style('List Paragraph', temp_doc.styles['List Paragraph'].type)
+
+    codigo_informe = 'DR_' + dr.parque.codigo.upper() + '-' + '%03d' % dr.numero
 
     section = document.sections[0]
     section.page_height = Mm(279.4)
@@ -414,7 +427,7 @@ def create_dr_word(request, slug, dr_id):
     row_cells[1].paragraphs[0].add_run(dr.parque.cliente).bold = True
     row_cells[2].paragraphs[0].add_run('Informe Nº:').bold = True
     row_cells[2].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
-    row_cells[3].paragraphs[0].add_run('DR_' + dr.parque.codigo.upper() + '-' + str(dr.numero)).bold = True
+    row_cells[3].paragraphs[0].add_run(codigo_informe).bold = True
 
     row_cells = table.add_row().cells
     row_cells[0].paragraphs[0].add_run('WTG Num:').bold = True
@@ -721,7 +734,7 @@ def create_dr_word(request, slug, dr_id):
                 ancho = 82
                 alto = 110
                 if (foto_count % 2) == 1:
-                    word_insert_pagebreak(document, logo_archivo, dr)
+                    word_insert_pagebreak(document, logo_archivo, dr,codigo_informe)
                 table = document.add_table(rows=2, cols=2, style="TablaFotos")
                 table.alignment = WD_TABLE_ALIGNMENT.CENTER
                 row_cells = table.rows[0].cells
@@ -765,7 +778,7 @@ def create_dr_word(request, slug, dr_id):
                 ancho = 85
                 alto = 64
                 if (foto_count % 2) == 1:
-                    word_insert_pagebreak(document, logo_archivo, dr)
+                    word_insert_pagebreak(document, logo_archivo, dr,codigo_informe)
                 table = document.add_table(rows=3, cols=2, style="TablaFotos")
                 table.alignment = WD_TABLE_ALIGNMENT.CENTER
                 row_cells = table.rows[0].cells
@@ -824,19 +837,19 @@ def create_dr_word(request, slug, dr_id):
 
             foto_count += 1
             if (foto_count % 2) == 0:
-                word_insert_pagebreak(document, logo_archivo, dr)
+                word_insert_pagebreak(document, logo_archivo, dr, codigo_informe)
             else:
                 document.add_paragraph()
 
-    core_properties = document.core_properties
-    core_properties.title = 'DR_' + dr.parque.codigo.upper() + '-' + str(dr.numero)
-    core_properties.comments = 'Fecha: ' + dr.fecha.strftime("%d/%m/%Y")
+    #core_properties = document.core_properties
+    #core_properties.title =
+    #core_properties.comments = 'Fecha: ' + dr.fecha.strftime("%d/%m/%Y")
 
     target_stream = StringIO.StringIO()
     document.save(target_stream)
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-    fecha_str = datetime.datetime.now().strftime("%y%m%d")
-    nombre = 'DR_' + fecha_str + '.docx'
+    fecha_str = datetime.datetime.now().strftime("%d%m%y")
+    nombre = codigo_informe + '_' + fecha_str + '.docx'
     response['Content-Disposition'] = 'attachment; filename=' + nombre
     target_stream.flush()
     ret_word = target_stream.getvalue()

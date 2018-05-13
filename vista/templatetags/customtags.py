@@ -285,3 +285,8 @@ def get_ncr_description(ncr):
 def get_ncr_prioridad(ncr):
     r = ncr.revision_set.all().order_by('-id')[0]
     return r.prioridad.id
+
+@register.filter()
+def paddingzeros(value, n_padding):
+    format = '%0'+str(n_padding) +'d'
+    return format % value

@@ -15,6 +15,10 @@ $( document ).ready(function() {
                 });
             }
             $("#edit_composicion").val('0');
+            $('.fileinput-preview').empty();
+            $('.fileinput-preview').hide();
+            $('.fileinput-new').show();
+
         } else{
             var select_val = $('#composicion_nofotos').val();
             var pattern_id = $('#pattern_img_id').val();
