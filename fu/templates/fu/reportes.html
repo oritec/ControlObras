@@ -10,10 +10,10 @@
 
 {% block contenido %}
     
-{% if parque.no_aerogeneradores == 0 %}
+{% if not configuracion %}
     <div class="row">
         <div class="col-md-11 col-md-offset-1">
-            <h4>Por favor, ingresar la informaci&oacute;n del parque (Configuraci&oacute;n).</h4>
+            <h4>Por favor, configurar Follow up.</h4>
         </div>
     </div>
 {% else %}

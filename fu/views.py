@@ -3517,6 +3517,12 @@ def reportes(request,slug):
     contenido.subtitulo='Parque '+ parque.nombre
     contenido.menu = ['menu-fu', 'menu2-reportes']
 
+    try:
+        configuracion = ConfiguracionFU.objects.get(parque=parque)
+    except ConfiguracionFU.DoesNotExist:
+        configuracion = None
+
+
     form = None
 
     if request.method == 'POST':
@@ -3542,4 +3548,5 @@ def reportes(request,slug):
             'parque': parque,
             'form': form,
             'aerogeneradores': aerogeneradores,
+            'configuracion': configuracion
         })
