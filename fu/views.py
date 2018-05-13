@@ -2825,7 +2825,7 @@ def seriesfechasExcel(parque,wb):
 
     printDataExcel(ws, datos, 3, 4,alignment3,14)
 
-    img1 = Image(parque.logo)
+    img1 = Image(parque.logo_excel)
     img2 = Image(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo-excel.png'))
     ws.add_image(img1, 'A1')
     ws.add_image(img2, 'K1')
@@ -2947,7 +2947,8 @@ def seguimientoExcel(parque,wb,t):
     printDataExcel(ws, datos, 3, 3, alignment3, 6)
     ws.column_dimensions[get_column_letter(4)].width = 9
 
-    img1 = Image(parque.logo)
+
+    img1 = Image(parque.logo_excel)
     img2 = Image(os.path.join(settings.BASE_DIR,'static/common/images/saroenlogo-excel.png'))
     ws.add_image(img1, 'A1')
     ws.add_image(img2, 'K1')
@@ -3138,7 +3139,7 @@ def tasaMontajeExcel(parque,wb,t):
         d.alignment = alignment3
         d.border = borderbottom
 
-    img1 = Image(parque.logo)
+    img1 = Image(parque.logo_excel)
     img2 = Image(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo-excel.png'))
     ws.add_image(img1, 'A1')
     ws.add_image(img2, 'M1')
@@ -3240,7 +3241,7 @@ def listadoParadasExcel(parque,wb,t):
     ws.column_dimensions["I"].width = 10.6
     ws.column_dimensions["J"].width = 50
 
-    img1 = Image(parque.logo)
+    img1 = Image(parque.logo_excel)
     img2 = Image(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo-excel.png'))
     ws.add_image(img1, 'A1')
     ws.add_image(img2, 'H1')
@@ -3391,7 +3392,7 @@ def graficosFUExcel(parque,wb):
     pos = "R3"
     ws.add_chart(c, pos)
 
-    img1 = Image(parque.logo)
+    img1 = Image(parque.logo_excel)
     img2 = Image(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo-excel.png'))
     ws.add_image(img1, 'A1')
     ws.add_image(img2, 'N1')
