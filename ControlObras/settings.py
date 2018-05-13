@@ -30,9 +30,7 @@ ALLOWED_HOSTS = ['localhost','67.205.142.111']
 
 import raven
 
-if platform == "linux":
-
-
+if platform == "linux" or platform == "linux2":
     RAVEN_CONFIG = {
         'dsn': 'https://e46b7f9b08e348f992f9ee85b5d2b493:a3b419fe496740fba7922837ed80a8da@sentry.io/1203110',
         # If you are using git, you can also automatically configure the
@@ -71,7 +69,7 @@ MIDDLEWARE = [
     'usuarios.middleware.PermissionMiddleware', # Para ayudar un poco con los permisos
 ]
 
-if platform == "linux":
+if platform == "linux" or platform == "linux2":
     MIDDLEWARE = [
             'raven.contrib.django.raven_compat.middleware.Sentry404CatchMiddleware',
         ] + MIDDLEWARE
