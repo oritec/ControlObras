@@ -3049,7 +3049,10 @@ def dataTasaMontaje(parque,t, html = None):
         try:
             datos[fila][columna] = round((proyeccion[fila]*parque.no_aerogeneradores)/100,2)
         except:
-            datos[fila][columna] = round((proyeccion[-1]*parque.no_aerogeneradores)/100,2)
+            if ( len(proyeccion) > 0 ):
+                datos[fila][columna] = round((proyeccion[-1]*parque.no_aerogeneradores)/100,2)
+            else:
+                datos[fila][columna] = 0
         columna += 1
 
         filas_html.append(

@@ -59,7 +59,7 @@
                     margin-left: 2cm;
                     margin-right: 2cm;
                     margin-top: 2.5cm;
-                    margin-bottom: 2cm;
+                    margin-bottom: 1cm;
 
                     @frame header_left {
                         -pdf-frame-content: page-header-left;
@@ -304,11 +304,16 @@
                     {% for Sem, items4 in filas3 %}
                         <tr>
                             {% if forloop.parentloop.first and forloop.first %}
+                                <!--
                             <td class="header_format" rowspan="{{ items2|length }}">
                                 {{ Anho }}
                             </td>
+                            -->
                             {% endif %}
                             {% if forloop.first %}
+                            <td class="header_format" rowspan="{{ items3|length }}">
+                                {{ Anho }}
+                            </td>
                             <td class="header_format" rowspan="{{ items3|length }}">
                                 {{ Mes }}
                             </td>

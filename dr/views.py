@@ -202,7 +202,7 @@ def actividad_agregar(request, slug, dr_id):
                 actividad.save()
                 log = Log(texto=log_msg, tipo=3, user=request.user)
                 log.save()
-                messages.add_message(request, messages.SUCCESS, 'Actividad Agregada')
+                messages.add_message(request, messages.SUCCESS, 'Actividad agregada')
             else:
                 actividad = ActividadDR.objects.get(id=int(request.POST['edit_actividad']))
 

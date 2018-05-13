@@ -28,9 +28,20 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost','67.205.142.111']
 
+import raven
+
+if platform == "linux":
+
+
+    RAVEN_CONFIG = {
+        'dsn': 'https://e46b7f9b08e348f992f9ee85b5d2b493:a3b419fe496740fba7922837ed80a8da@sentry.io/1203110',
+        # If you are using git, you can also automatically configure the
+        # release based on the git info.
+        'release': raven.fetch_git_sha(os.path.abspath(BASE_DIR)),
+    }
+
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -59,6 +70,11 @@ MIDDLEWARE = [
     'usuarios.middleware.ChangePasswordMiddleware', # Para obligar a resetear la contrasena
     'usuarios.middleware.PermissionMiddleware', # Para ayudar un poco con los permisos
 ]
+
+if platform == "linux":
+    MIDDLEWARE = [
+            'raven.contrib.django.raven_compat.middleware.Sentry404CatchMiddleware',
+        ] + MIDDLEWARE
 
 ROOT_URLCONF = 'ControlObras.urls'
 
@@ -192,17 +208,3 @@ LOGGING = {
     }
 }
 
-if platform == "linux":
-    import raven
-
-    RAVEN_CONFIG = {
-        'dsn': 'https://e46b7f9b08e348f992f9ee85b5d2b493:a3b419fe496740fba7922837ed80a8da@sentry.io/1203110',
-        # If you are using git, you can also automatically configure the
-        # release based on the git info.
-        'release': raven.fetch_git_sha(os.path.abspath(BASE_DIR)),
-    }
-
-
-    MIDDLEWARE = [
-        'raven.contrib.django.raven_compat.middleware.Sentry404CatchMiddleware',
-    ] + MIDDLEWARE
