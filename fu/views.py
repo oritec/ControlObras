@@ -2984,6 +2984,8 @@ def dataTasaMontaje(parque,t, html = None):
     aux = configuracion.fecha_inicio
 
     e = EstadoFU.objects.get(nombre='Montaje')
+    e_descarga = EstadoFU.objects.get(nombre='Descarga')
+    n_componentes = componentes_parque.filter(relacionesfu__orden_montaje__gt=0, relacionesfu__orden_descarga__gt=0).count()
 
     [proyeccion,ultima_fecha] = calcularProyeccion(ComponentesParque.objects.get(parque=parque),t.isocalendar()[0],t.isocalendar()[1])
 
@@ -3003,7 +3005,7 @@ def dataTasaMontaje(parque,t, html = None):
         d_str = str(aux.isocalendar()[0]) + "-W" + str(aux.isocalendar()[1]) + "-0"
         fecha_aux = datetime.strptime(d_str, "%Y-W%W-%w")
 
-        karws = {filtros[e.id] + '__gt': 0, filtros[e.id] + '__lte': 8}
+        karws = {filtros[e.id] + '__gt': 0, filtros[e.id] + '__lte': n_componentes}
         componentes = componentes_parque.filter(**karws).order_by(filtros[e.id])
         columna = 0
         if componentes.count() > 0:
@@ -3070,6 +3072,10 @@ def dataTasaMontaje(parque,t, html = None):
 
 def tasaMontajeExcel(parque,wb,t):
     [filas, columnas, datos] = dataTasaMontaje(parque, t)
+    componentes_parque = ComponentesParque.objects.get(parque=parque).componentes.all()
+    n_componentes = componentes_parque.filter(relacionesfu__orden_montaje__gt=0,
+                                              relacionesfu__orden_descarga__gt=0).count()
+
     sheet_name = 'Tasa de montaje'
     if sheet_name in wb.sheetnames:
         ws = wb[sheet_name]
@@ -3122,7 +3128,7 @@ def tasaMontajeExcel(parque,wb,t):
                 cell.border = borderside
                 cell.border = borderbottom
 
-    printDataExcel(ws, datos, 3, 4, alignment3, 6)
+    printDataExcel(ws, datos, 3, 4, alignment3, 10)
 
     for col in range(12,12+6):
         ws.column_dimensions[get_column_letter(col)].width = 12
@@ -3155,7 +3161,7 @@ def dataListadoParadas(parque,t, html = None):
 
     fila = 0
 
-    paradas = Paradas.objects.filter(fecha_inicio__lte=t).order_by('fecha_inicio')
+    paradas = Paradas.objects.filter(fecha_inicio__lte=t, parque=parque).order_by('fecha_inicio')
 
     filas_html = []
     columnas_html = []
@@ -3345,21 +3351,20 @@ def graficosFUExcel(parque,wb):
         valor = ws3.cell(row=fila, column=3).value
 
     e = EstadoFU.objects.get(idx=3)
+    n_componentes = componentes_parque.filter(relacionesfu__orden_montaje__gt=0,
+                                              relacionesfu__orden_descarga__gt=0).count()
 
-    karws = {filtros[e.id] + '__gt': 0, filtros[e.id] + '__lte': 8}
-    componentes = componentes_parque.filter(**karws).order_by(filtros[e.idx])
-
-    cols = componentes.count()
-    data_col = 3+cols+3
+    cols = n_componentes
+    data_col = 3+cols+2
     c = LineChart()
-    data2 = Reference(ws3, min_col=data_col, max_col=data_col +4-1, min_row=2, max_row=fila - 2)
+    data2 = Reference(ws3, min_col=data_col, max_col=data_col + 4 -1, min_row=2, max_row=fila - 2)
     categs = Reference(ws3, min_col=3, min_row=3, max_row=fila -2)
     c.add_data(data2, titles_from_data=True)
     c.set_categories(categs)
     c.height = 10.22
     c.width = 25.7
 
-    c.title = 'Descarga en Parque'
+    c.title = 'Avance de Izado'
 
     c.y_axis.title = 'Nº de Aerogeneradores montados'
     c.legend.position = 'b'

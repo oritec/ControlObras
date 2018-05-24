@@ -848,7 +848,7 @@ def create_dr_word(request, slug, dr_id):
     target_stream = StringIO.StringIO()
     document.save(target_stream)
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-    fecha_str = datetime.datetime.now().strftime("%d%m%y")
+    fecha_str = dr.fecha.strftime("%d%m%y")
     nombre = codigo_informe + '_' + fecha_str + '.docx'
     response['Content-Disposition'] = 'attachment; filename=' + nombre
     target_stream.flush()

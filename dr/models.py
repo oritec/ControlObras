@@ -5,8 +5,8 @@ from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
 from vista.models import Aerogenerador
-
 import logging
+
 logger = logging.getLogger('oritec')
 
 @python_2_unicode_compatible
@@ -75,12 +75,13 @@ class FotosDR(models.Model):
             return
 
         from PIL import Image
+        from PIL import ExifTags
         from cStringIO import StringIO
         from django.core.files.uploadedfile import SimpleUploadedFile
         import os
 
         # Set our max thumbnail size in a tuple (max width, max height)
-        THUMBNAIL_SIZE = (120, 120)
+        THUMBNAIL_SIZE = (1000, 1000)
 
         try:
             DJANGO_TYPE = self.imagen.file.content_type
@@ -110,6 +111,10 @@ class FotosDR(models.Model):
         # Without antialiasing the image pattern artifacts may result.
         if image.height > 1200 or image.width >1200:
             THUMBNAIL_SIZE = (image.width*0.2, image.height*0.2)
+
+        #exif = dict((ExifTags.TAGS[k], v) for k, v in image._getexif().items() if k in ExifTags.TAGS)
+        #if not exif['Orientation']:
+        #    logging.debug('not orientation')
 
         image.thumbnail(THUMBNAIL_SIZE, Image.ANTIALIAS)
         #return 0
@@ -144,7 +149,7 @@ class FotosDR(models.Model):
         if updateThumbnail:
             try:
                 self.create_thumbnail()
-                self.create_reporte_img()
+                #self.create_reporte_img()
             except Exception as e:
                 logger.debug(e.__doc__)
                 logger.debug(e.message)
