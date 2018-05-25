@@ -256,7 +256,7 @@ class Observacion(models.Model):
     estado = models.ForeignKey('EstadoRevision', on_delete=models.SET_NULL, null=True, default=1)
     cerrado = models.BooleanField(default=False)  # False: No Cerrado, True:Cerrado
     msg_cerrado = models.CharField(max_length=500, blank = True, null= True, default='')
-    clase = models.BooleanField(default=True) # True: NCR, False:Incidencia
+    clase = models.BooleanField(default=False) # True: NCR, False: Sin Categoría (antes Incidencia)
     no_serie = models.CharField(max_length=100, unique=False,null=True,blank=True,default='')
     severidad = models.ForeignKey('Severidad', on_delete=models.SET_NULL, null=True)
     prioridad = models.ForeignKey('Prioridad', on_delete=models.SET_NULL, null=True)

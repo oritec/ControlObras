@@ -50,7 +50,7 @@
                             </h4>
                         <ul>
                             <li> <b>Aerogenerador:</b> {{ observacion.aerogenerador }} </li>
-                            <li> <b>Categoría:</b> {% if observacion.clase %} NCR {% else %} Incidencia {% endif %} </li>
+                            <li> <b>Categoría:</b> {% if observacion.clase %} NCR {% else %} Sin Categoría {% endif %} </li>
                             <li> <b>Componente:</b> {{ observacion.componente }}</li>
                             <li> <b>N&uacute;mero de Serie:</b> {% if observacion.no_serie == '' %} - {% else %}{{ observacion.no_serie }} {% endif %}</li>
                             <li> <b>Sub-Componente:</b> {{ observacion.sub_componente }}</li>

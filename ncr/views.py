@@ -1083,11 +1083,13 @@ def punchlist(request,slug):
                         [resultados, main_fotos, titulo] = punchlistResults(parque, ag, form)
                         logger.debug(resultados)
                         colores = form.cleaned_data['colores']
+                        estados = form.cleaned_data['estados']
                         fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
                         archivo_name = 'PL_' + parque.codigo + '-' + ag.nombre + '_' + fecha_str + '.pdf'
                         archivo = generatePdf(parque, resultados, main_fotos, titulo,
                                               show_fotos=show_fotos,
                                               colores = colores,
+                                              estados=estados,
                                               fecha=form.cleaned_data['fecha'],
                                               nombre=archivo_name)
 

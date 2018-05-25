@@ -3,91 +3,104 @@
         "model": "ncr.componente",
         "pk": 1,
         "fields": {
-            "nombre": "Palas"
+            "nombre": "Palas",
+            "orden_punchlist": 13
         }
     },
     {
         "model": "ncr.componente",
         "pk": 2,
         "fields": {
-            "nombre": "Buje"
+            "nombre": "Buje",
+            "orden_punchlist": 12
         }
     },
     {
         "model": "ncr.componente",
         "pk": 3,
         "fields": {
-            "nombre": "Drive Train"
+            "nombre": "Drive Train",
+            "orden_punchlist": 10
         }
     },
     {
         "model": "ncr.componente",
         "pk": 4,
         "fields": {
-            "nombre": "Nacelle"
+            "nombre": "Nacelle",
+            "orden_punchlist": 9
         }
     },
     {
         "model": "ncr.componente",
         "pk": 5,
         "fields": {
-            "nombre": "Cooler Top"
+            "nombre": "Cooler Top",
+            "orden_punchlist": 11
         }
     },
     {
         "model": "ncr.componente",
         "pk": 6,
         "fields": {
-            "nombre": "Torre"
+            "nombre": "Torre",
+            "orden_punchlist": 4
         }
     },
     {
         "model": "ncr.componente",
         "pk": 7,
         "fields": {
-            "nombre": "T4"
+            "nombre": "T4",
+            "orden_punchlist": 8
         }
     },
     {
         "model": "ncr.componente",
         "pk": 8,
         "fields": {
-            "nombre": "T3"
+            "nombre": "T3",
+            "orden_punchlist": 7
         }
     },
     {
         "model": "ncr.componente",
         "pk": 9,
         "fields": {
-            "nombre": "T2"
+            "nombre": "T2",
+            "orden_punchlist": 6
         }
     },
     {
         "model": "ncr.componente",
         "pk": 10,
         "fields": {
-            "nombre": "T1"
+            "nombre": "T1",
+            "orden_punchlist": 5
         }
     },
     {
         "model": "ncr.componente",
         "pk": 11,
         "fields": {
-            "nombre": "Celda"
+            "nombre": "Celda",
+            "orden_punchlist": 2
         }
     },
     {
         "model": "ncr.componente",
         "pk": 12,
         "fields": {
-            "nombre": "Elevador"
+            "nombre": "Elevador",
+            "orden_punchlist": 3
         }
     },
     {
         "model": "ncr.componente",
         "pk": 13,
         "fields": {
-            "nombre": "General"
+            "nombre": "General",
+            "orden_punchlist": 1
         }
     },
     {
@@ -136,7 +149,7 @@
         "model": "ncr.subcomponente",
         "pk": 7,
         "fields": {
-            "nombre": "Exterior"
+            "nombre": "Superficie Exterior"
         }
     },
     {
@@ -171,7 +184,7 @@
         "model": "ncr.subcomponente",
         "pk": 12,
         "fields": {
-            "nombre": "Interior"
+            "nombre": "Superficie Interior"
         }
     },
     {
@@ -220,7 +233,7 @@
         "model": "ncr.subcomponente",
         "pk": 19,
         "fields": {
-            "nombre": "Tornillería"
+            "nombre": "Tornillería y Sujeción"
         }
     },
     {
@@ -249,6 +262,90 @@
         "pk": 23,
         "fields": {
             "nombre": "Vortex"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 24,
+        "fields": {
+            "nombre": "Escotilla"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 25,
+        "fields": {
+            "nombre": "Plataforma"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 26,
+        "fields": {
+            "nombre": "Sirga"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 27,
+        "fields": {
+            "nombre": "Foso"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 28,
+        "fields": {
+            "nombre": "Sistema de Refrigeración"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 29,
+        "fields": {
+            "nombre": "Puerta Acceso"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 30,
+        "fields": {
+            "nombre": "Sensores"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 31,
+        "fields": {
+            "nombre": "Implementos de Seguridad/Emergencia"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 32,
+        "fields": {
+            "nombre": "Viga Elevador"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 33,
+        "fields": {
+            "nombre": "Rodamientos"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 34,
+        "fields": {
+            "nombre": "Polipasto"
+        }
+    },
+    {
+        "model": "ncr.subcomponente",
+        "pk": 35,
+        "fields": {
+            "nombre": "No Aplica"
         }
     },
     {
@@ -343,6 +440,41 @@
         }
     },
     {
+        "model": "ncr.tipo",
+        "pk": 14,
+        "fields": {
+            "nombre": "Inexistencia"
+        }
+    },
+    {
+        "model": "ncr.tipo",
+        "pk": 15,
+        "fields": {
+            "nombre": "Diseño"
+        }
+    },
+    {
+        "model": "ncr.tipo",
+        "pk": 16,
+        "fields": {
+            "nombre": "Elemento incorrecto"
+        }
+    },
+    {
+        "model": "ncr.tipo",
+        "pk": 17,
+        "fields": {
+            "nombre": "Conducta inapropiada"
+        }
+    },
+    {
+        "model": "ncr.tipo",
+        "pk": 18,
+        "fields": {
+            "nombre": "No aplica"
+        }
+    },
+    {
         "model": "ncr.severidad",
         "pk": 2,
         "fields": {
@@ -395,13 +527,6 @@
         "pk": 3,
         "fields": {
             "nombre": "Solucionado"
-        }
-    },
-    {
-        "model": "ncr.observador",
-        "pk": 1,
-        "fields": {
-            "nombre": "Félix Echevarría"
         }
     }
 ]

@@ -63,7 +63,7 @@ class ObservacionForm(forms.ModelForm):
         self.fields['clase'].widget.attrs['class'] = 'make-switch'
         self.fields['clase'].widget.attrs['data-size'] = 'small'
         self.fields['clase'].widget.attrs['data-on-text'] = 'NCR'
-        self.fields['clase'].widget.attrs['data-off-text'] = 'Incidencia'
+        self.fields['clase'].widget.attrs['data-off-text'] = 'Sin Categoría'
         self.fields['reported_by'].widget.attrs['class'] = 'bs-select form-control'
         self.fields['reported_by'].widget.attrs['data-live-search'] = 'true'
         self.fields['reported_by'].widget.attrs['data-size'] = '8'
