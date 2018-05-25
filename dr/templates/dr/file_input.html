@@ -3,6 +3,14 @@
 {% load tz %}
 {% load sekizai_tags %}
 
+{% addtoblock "widget-css" %}
+    <style>
+        .fileinput .thumbnail > img {
+            image-orientation: from-image;
+        }
+    </style>
+{% endaddtoblock %}
+
 <div class="fileinput fileinput-new" data-provides="fileinput">
     <div class="fileinput-new thumbnail" style="width: {{ width }}px; height: {{ height }}px;"  data-trigger="fileinput">
         <img src="http://www.placehold.it/{{ width }}x{{ height }}/EFEFEF/AAAAAA&amp;text=Imagen" alt="" />
