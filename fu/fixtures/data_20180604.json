@@ -1,0 +1,9 @@
+[
+    {
+        "model": "fu.paradastrabajo",
+        "pk": 3,
+        "fields": {
+            "nombre": "Otro"
+        }
+    }
+]

@@ -119,11 +119,11 @@ class Paradas(models.Model):
     fecha_inicio = models.DateTimeField(blank=False, null=False)
     fecha_final = models.DateTimeField(blank=False, null=False)
     aerogenerador = models.ForeignKey(Aerogenerador,on_delete=models.CASCADE)
-    componente = models.ForeignKey(Componente, on_delete=models.CASCADE)
+    componente = models.ForeignKey(Componente, on_delete=models.CASCADE, blank=True, null=True)
     trabajo = models.ForeignKey(ParadasTrabajo, on_delete=models.CASCADE)
     duracion = models.FloatField(blank=True,null=True)
     viento = models.FloatField(blank=True,null=True)
-    grua = models.ForeignKey(ParadasGrua, on_delete=models.CASCADE)
+    grua = models.ForeignKey(ParadasGrua, on_delete=models.CASCADE, blank=True, null=True)
     observaciones = models.CharField(max_length=200,blank=True,null=True)
     created_by = models.ForeignKey(User)
     def __str__(self):

@@ -2811,7 +2811,7 @@ def add_paradas(request,slug):
     form = None
 
     if request.method == 'POST':
-        form = ParadasForm(request.POST,initial={'parque':parque})
+        form = ParadasForm(request.POST)
         if form.is_valid():
             if not request.user.has_perm('fu.add_paradas'):
                 raise PermissionDenied
@@ -2823,7 +2823,7 @@ def add_paradas(request,slug):
                       " - Aerogenerador - " + parada.aerogenerador.nombre
             log = Log(texto=log_msg, tipo=1, user=request.user)
             log.save()
-            parada.delete()
+            #parada.delete()
             messages.add_message(request, messages.SUCCESS, 'Registro agregado con éxito!')
             return HttpResponseRedirect(reverse('fu:paradas', args=[parque.slug]))
         else:

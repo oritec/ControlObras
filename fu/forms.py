@@ -99,6 +99,9 @@ class ParadasForm(forms.ModelForm):
     class Meta:
         model = Paradas
         fields = ['parque','fecha_inicio','fecha_final','aerogenerador','componente','trabajo','viento','grua','observaciones']
+        labels = {
+            'viento': 'Motivo',
+        }
     def __init__(self, *args, **kwargs):
         super(ParadasForm, self).__init__(*args, **kwargs)
 
