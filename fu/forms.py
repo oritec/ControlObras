@@ -98,10 +98,8 @@ class ParadasForm(forms.ModelForm):
                                        input_formats=('%d-%m-%Y %H:%M',))
     class Meta:
         model = Paradas
-        fields = ['parque','fecha_inicio','fecha_final','aerogenerador','componente','trabajo','viento','grua','observaciones']
-        labels = {
-            'viento': 'Motivo',
-        }
+        fields = ['parque','fecha_inicio','fecha_final','aerogenerador','componente','trabajo','motivo','grua','observaciones']
+
     def __init__(self, *args, **kwargs):
         super(ParadasForm, self).__init__(*args, **kwargs)
 
@@ -129,7 +127,7 @@ class ParadasForm(forms.ModelForm):
         self.fields['grua'].widget.attrs['class'] = 'bs-select form-control'
         self.fields['grua'].widget.attrs['data-live-search'] = 'true'
         self.fields['grua'].widget.attrs['data-size'] = '8'
-        self.fields['viento'].widget.attrs['class'] = 'form-control'
+        self.fields['motivo'].widget.attrs['class'] = 'form-control'
         self.fields['observaciones'].widget = forms.Textarea()
         self.fields['observaciones'].widget.attrs['class'] = 'form-control'
         self.fields['observaciones'].widget.attrs['row'] = '3'

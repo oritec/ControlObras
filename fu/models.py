@@ -123,6 +123,7 @@ class Paradas(models.Model):
     trabajo = models.ForeignKey(ParadasTrabajo, on_delete=models.CASCADE)
     duracion = models.FloatField(blank=True,null=True)
     viento = models.FloatField(blank=True,null=True)
+    motivo = models.CharField(max_length=200,blank=True,null=True, default='')
     grua = models.ForeignKey(ParadasGrua, on_delete=models.CASCADE, blank=True, null=True)
     observaciones = models.CharField(max_length=200,blank=True,null=True)
     created_by = models.ForeignKey(User)

@@ -40,7 +40,7 @@
                                 <th> Componente </th>
                                 <th> Trabajo </th>
                                 <th> Duraci&oacute;n [h] </th>
-                                <th> Viento [m/s] </th>
+                                <th> Motivo </th>
                                 <th> Gr&uacute;a </th>
                                 <th> Observaciones </th>
                                 <th> Acci&oacute;n </th>
@@ -56,7 +56,7 @@
                                 <td> {{ parada.componente.nombre }} </td>
                                 <td> {{ parada.trabajo.nombre }} </td>
                                 <td> {{ parada.duracion|floatformat:1 }} </td>
-                                <td> {{ parada.viento }} </td>
+                                <td> {{ parada.motivo }} </td>
                                 <td> {{ parada.grua.nombre }} </td>
                                 <td> {% if parada.observaciones %}{{ parada.observaciones }} {% else %} - {% endif %}</td>
                                 <td>

@@ -3608,8 +3608,8 @@ def dataListadoParadas(parque,t, html = None):
         datos[fila][4] = parada.fecha_final.strftime('%d-%m-%Y %H:%M')
         n_col = addUniqueNodo('Duración Paralización (h)', columnas, columnas_html)
         datos[fila][5] = parada.duracion
-        n_col = addUniqueNodo('Viento (mps)', columnas, columnas_html)
-        datos[fila][6] = parada.viento
+        n_col = addUniqueNodo('Motivo', columnas, columnas_html)
+        datos[fila][6] = parada.motivo
         n_col = addUniqueNodo('Grúa', columnas, columnas_html)
         datos[fila][7] = parada.grua.nombre
         n_col = addUniqueNodo('Observaciones', columnas, columnas_html)
@@ -3670,7 +3670,7 @@ def listadoParadasExcel(parque,wb,t):
     ws.column_dimensions["E"].width = 17.6
     ws.column_dimensions["F"].width = 17.6
     ws.column_dimensions["G"].width = 20
-    ws.column_dimensions["H"].width = 10.7
+    ws.column_dimensions["H"].width = 25
     ws.column_dimensions["I"].width = 10.6
     ws.column_dimensions["J"].width = 50
 
