@@ -1,52 +1,51 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from django.conf import settings
+import os
+import StringIO
+from collections import OrderedDict, defaultdict
+from dateutil import relativedelta
+from datetime import datetime
+import numpy as np
+from anytree import Node, Resolver
+
+from django.db.models import Sum
+from django.core.exceptions import PermissionDenied
+from django.core.urlresolvers import reverse
 from django.template.response import TemplateResponse
-import logging
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import get_object_or_404
+from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib import messages
 from vista.models import ParqueSolar, Aerogenerador
 from vista.functions import *
 from fu.forms import ComponenteForm, AddComponentesForm, ConfiguracionFUForm,PlanificacionForm,DeleteComponentesForm
 from fu.forms import RegistroDescargaForm, RegistroForm, ParadasForm,ReporteForm
-from fu.models import Componente, ComponentesParque, RelacionesFU, ConfiguracionFU, Contractual, Plan, EstadoFU
+from fu.models import Componente, ConfiguracionFU, Contractual, Plan, EstadoFU
+from fu.models import ParqueEolico, Membership
 from fu.models import Registros, Paradas
-from django.contrib import messages
-from django.db.models import Max
-from collections import OrderedDict, defaultdict
-from django.http import HttpResponse, HttpResponseRedirect
+from ncr.views import serializeGrafico
+from usuarios.models import Log
 from querystring_parser import parser
-from dateutil import relativedelta
-from datetime import datetime, date
+
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.drawing.image import Image
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Font, Color
 from openpyxl import load_workbook
-from django.core.urlresolvers import reverse
-import StringIO
-from django.conf import settings
-import os
-from ncr.views import serializeGrafico
-from django.db.models import Sum
-import numpy as np
-from django.core.exceptions import PermissionDenied
-from usuarios.models import Log
-from anytree import Node, Resolver
-import zipfile
 from openpyxl.chart import BarChart, LineChart, Reference
 from openpyxl.chart.label import DataLabelList
 from openpyxl.chart.shapes import GraphicalProperties
 from openpyxl.chart.series import SeriesLabel, StrRef
-
-from openpyxl.drawing.fill import PatternFillProperties, ColorChoice
+from openpyxl.drawing.fill import ColorChoice
 from openpyxl.drawing.line import LineProperties
 from openpyxl.drawing.text import Paragraph, ParagraphProperties, CharacterProperties
 from openpyxl.drawing.text import Font as TextFont
 from openpyxl.chart.text import RichText
-from openpyxl.drawing.colors import ColorChoiceDescriptor
+from datetime import datetime
 import base64
-from easy_pdf.rendering import render_to_pdf_response, render_to_pdf
-from PyPDF2 import PdfFileMerger, PdfFileReader
+from easy_pdf.rendering import render_to_pdf
 
 meses_espanol={"1":"Enero",
        "2":"Febrero",
@@ -93,70 +92,68 @@ def getReal(parque,componente,estado,fecha):
                                  fecha__lte=fecha)
     return c.count()
 
-def graficoComponentes(componentes_parque,estado,fecha_calculo):
+def graficoComponentes(parque_eolico,estado,fecha_calculo):
     data_full = []
     # Me entrega el domingo final de esa semana.
 
     r = fecha_calculo
-    max_aerogeneradores = componentes_parque.parque.no_aerogeneradores
-    if estado.idx == 1:
-        filtro = 'relacionesfu__orden_descarga'
-    elif estado.idx == 3:
-        filtro = 'relacionesfu__orden_montaje'
-    elif estado.idx == 4:
-        filtro = 'relacionesfu__orden_puestaenmarcha'
-    karws = {filtro+'__gt': 0}
-    componentes = componentes_parque.componentes.all()
+    max_aerogeneradores = parque_eolico.parque.no_aerogeneradores
 
     # Los totales
     data_graficos = []
-    for s in componentes.filter(**karws).order_by(filtro):
-        data_graficos.append({"name": s.nombre, "y": max_aerogeneradores})
+    miembros = Membership.objects.filter(parque_eolico=parque_eolico,
+                                         estado= estado)
+    for m in miembros:
+        data_graficos.append({"name": m.componente.nombre, "y": max_aerogeneradores})
     data_full.append({"name": "Total", "data": data_graficos})
 
     # Contractual
     data_graficos = []
 
-    for s in componentes.filter(**karws).order_by(filtro):
-        value = getContractual(componentes_parque.parque, s, estado, r)
-        data_graficos.append({"name": s.nombre, "y": value})
+    for m in miembros:
+        value = getContractual(parque_eolico.parque, m.componente, estado, r)
+        data_graficos.append({"name": m.componente.nombre, "y": value})
 
     data_full.append({"name": "Contractual", "data": data_graficos})
 
     # Plan
     data_graficos = []
-    for s in componentes.filter(**karws).order_by(filtro):
-        value = getPlan(componentes_parque.parque, s, estado, r)
-        data_graficos.append({"name": s.nombre, "y": value})
+    for m in miembros:
+        value = getPlan(parque_eolico.parque, m.componente, estado, r)
+        data_graficos.append({"name": m.componente.nombre, "y": value})
 
     data_full.append({"name": "Plan", "data": data_graficos})
 
     # Real
     data_graficos = []
-    for s in componentes.filter(**karws).order_by(filtro):
-        value = getReal(componentes_parque.parque, s, estado, r)
-        data_graficos.append({"name": s.nombre, "y": value})
+    for m in miembros:
+        value = getReal(parque_eolico.parque, m.componente, estado, r)
+        data_graficos.append({"name": m.componente.nombre, "y": value})
     data_full.append({"name": "Real", "data": data_graficos})
 
     datos = serializeGrafico(data_full)
     return datos
 
-def calcularProyeccion(componentes_parque,anho,semana):
+def calcularProyeccion(parque_eolico,anho,semana):
     d = str(anho) + '-W' + str(semana)
     # Se calcula solo con los datos de hasta la semana pasada
     r = datetime.strptime(d + '-0', "%Y-W%W-%w") - relativedelta.relativedelta(weeks=1)
-    parque = componentes_parque.parque
+    parque = parque_eolico.parque
     try:
         configuracion = ConfiguracionFU.objects.get(parque=parque)
     except ConfiguracionFU.DoesNotExist:
         return [[], None]
     max_aerogeneradores = parque.no_aerogeneradores
-    aux = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
-                                      orden_montaje__range=(1, 8))
+    estado_montaje = EstadoFU.objects.get(nombre='Montaje')
+    ag_montar = aerogeneradoresAMontar(parque_eolico)
+    # aux = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
+    #                                   orden_montaje__range=(1, 8))
+    aux = Membership.objects.filter(parque_eolico= parque_eolico,
+                                    estado=estado_montaje,
+                                    orden__range=(1, ag_montar))
     componentes_montaje = []
     for c in aux:
         componentes_montaje.append(c.componente.id)
-    estado = EstadoFU.objects.get(idx=3)
     # Calculo de avance
     fecha = configuracion.fecha_inicio
     semana_calculo = fecha.isocalendar()[1]
@@ -172,9 +169,9 @@ def calcularProyeccion(componentes_parque,anho,semana):
     while fecha_calculo <= r:
         c = Registros.objects.filter(parque=parque,
                                      componente__in=componentes_montaje,
-                                     estado=estado,
+                                     estado=estado_montaje,
                                      fecha__lte=fecha_calculo)
-        valor = float(c.count()) / 8
+        valor = float(c.count()) / ag_montar
         if not first:
             if valor != 0:
                 first = True
@@ -224,22 +221,29 @@ def calcularProyeccion(componentes_parque,anho,semana):
             fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
     return [data_graficos,fecha_calculo]
 
-def calcularProyeccionGrafico(componentes_parque,anho,semana):
+def calcularProyeccionGrafico(parque_eolico, anho, semana):
     d = str(anho) + '-W' + str(semana)
     # Se calcula solo con los datos de hasta la semana pasada
     r = datetime.strptime(d + '-0', "%Y-W%W-%w") - relativedelta.relativedelta(weeks=1)
-    parque = componentes_parque.parque
+    parque = parque_eolico.parque
     try:
         configuracion = ConfiguracionFU.objects.get(parque=parque)
     except ConfiguracionFU.DoesNotExist:
         return [[], None]
     max_aerogeneradores = parque.no_aerogeneradores
-    aux = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
-                                      orden_montaje__range=(1, 8))
+    # aux = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
+    #                                   orden_montaje__range=(1, 8))
+    estado_montaje = EstadoFU.objects.get(nombre='Montaje')
+
+    ag_montar = aerogeneradoresAMontar(parque_eolico)
+
+    aux = Membership.objects.filter(parque_eolico=parque_eolico,
+                                    estado=estado_montaje,
+                                    orden__range=(1,ag_montar))
     componentes_montaje = []
     for c in aux:
         componentes_montaje.append(c.componente.id)
-    estado = EstadoFU.objects.get(idx=3)
+
     # Calculo de avance
     fecha = configuracion.fecha_inicio
     semana_calculo = fecha.isocalendar()[1]
@@ -255,9 +259,9 @@ def calcularProyeccionGrafico(componentes_parque,anho,semana):
     while fecha_calculo <= r:
         c = Registros.objects.filter(parque=parque,
                                      componente__in=componentes_montaje,
-                                     estado=estado,
+                                     estado=estado_montaje,
                                      fecha__lte=fecha_calculo)
-        valor = float(c.count()) / 8
+        valor = float(c.count()) / ag_montar
         if not first:
             if valor != 0:
                 first = True
@@ -307,56 +311,97 @@ def calcularProyeccionGrafico(componentes_parque,anho,semana):
             fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
     return [data_graficos,fecha_calculo]
 
-def aerogeneradoresMontados(componentes_parque,fecha):
-    parque = componentes_parque.parque
-    aux = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
-                                      orden_montaje=8)
+# Funcion para determinar cuantos aerogeneradores se deben montar...
+def aerogeneradoresAMontar(parque_eolico):
+    estado_montaje = EstadoFU.objects.get(nombre='Montaje')
+    estado_descarga = EstadoFU.objects.get(nombre='Descarga')
+
+    aux = Membership.objects.filter(parque_eolico=parque_eolico,
+                                    estado=estado_montaje)
+    cuenta_total = 0
+    for m in aux:
+        aux2 = Membership.objects.filter(parque_eolico=parque_eolico, componente=m.componente, estado=estado_descarga)
+        if aux2.count() > 0:
+            cuenta_total += 1
+
+    return cuenta_total
+
+def aerogeneradoresMontados(parque_eolico,fecha):
+    parque = parque_eolico.parque
+
+    # aux = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
+    #                                   orden_montaje=8)
+
+    estado_montaje = EstadoFU.objects.get(nombre='Montaje')
+    estado_descarga = EstadoFU.objects.get(nombre='Descarga')
+
+    cuenta_total = aerogeneradoresAMontar(parque_eolico)
+    miembros = Membership.objects.filter(parque_eolico=parque_eolico,
+                                         estado=estado_montaje,
+                                         orden=cuenta_total)
     try:
-        componente = aux[0].componente
+        componente = miembros[0].componente
     except:
         return 0
-    estado = EstadoFU.objects.get(idx=3)
+
 
     c = Registros.objects.filter(parque=parque,
                                  componente=componente,
-                                 estado=estado,
+                                 estado=estado_montaje,
                                  fecha__lte=fecha)
     return c.count()
 
-def porcentajeAvance(componentes_parque,fecha,componentes_montaje=None):
-    parque = componentes_parque.parque
+def porcentajeAvance(parque_eolico,fecha,componentes_montaje=None):
+    parque = parque_eolico.parque
     max_aerogeneradores = parque.no_aerogeneradores
+    estado_montaje = EstadoFU.objects.get(nombre='Montaje')
+    miembros = None
+
+    ag_montar = aerogeneradoresAMontar(parque_eolico)
+    if ag_montar == 0:
+        ag_montar = 8
+
     if componentes_montaje is None:
-        aux = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
-                                          orden_montaje__range=(1, 8))
+        # aux = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
+        #                                   orden_montaje__range=(1, 8))
+
+        miembros = Membership.objects.filter(parque_eolico=parque_eolico,
+                                             estado=estado_montaje,
+                                             orden__range=(1,ag_montar))
         componentes_montaje = []
-        for c in aux:
-            componentes_montaje.append(c.componente.id)
-    estado = EstadoFU.objects.get(idx=3)
+        for m in miembros:
+            componentes_montaje.append(m.componente.id)
 
     c = Registros.objects.filter(parque=parque,
                                  componente__in=componentes_montaje,
-                                 estado=estado,
+                                 estado=estado_montaje,
                                  fecha__lte=fecha)
-    valor = float(c.count()) / 8
+
+
+    valor = float(c.count()) / ag_montar
+
     valor = valor / max_aerogeneradores * 100
     return valor
 
-def graficoAvances(componentes_parque,anho,semana,actual_date,data_proyeccion):
+def graficoAvances(parque_eolico,anho,semana,actual_date,data_proyeccion):
     data_full = []
     d = str(anho) + '-W' + str(semana)
     r = datetime.strptime(d + '-0', "%Y-W%W-%w")
     s = actual_date.isocalendar()[1]
     d = str(actual_date.isocalendar()[0]) + '-W' + str(s)
     r2 = datetime.strptime(d + '-0', "%Y-W%W-%w")
-    parque = componentes_parque.parque
+    parque = parque_eolico.parque
     try:
         configuracion = ConfiguracionFU.objects.get(parque=parque)
     except ConfiguracionFU.DoesNotExist:
         return data_full
     max_aerogeneradores = parque.no_aerogeneradores
-    aux = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
-                                                      orden_montaje__range=(1,8))
+    # aux = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
+    #                                                   orden_montaje__range=(1,8))
+    estado_montaje = EstadoFU.objects.get(nombre='Montaje')
+    aux = Membership.objects.filter(parque_eolico=parque_eolico,
+                                    estado=estado_montaje,
+                                    orden__range=(1, 8))
     componentes_montaje =[]
     for c in aux:
         componentes_montaje.append(c.componente.id)
@@ -416,9 +461,9 @@ def graficoAvances(componentes_parque,anho,semana,actual_date,data_proyeccion):
 
     while fecha_calculo <= r2:
         if fecha_calculo == r2:
-            valor = porcentajeAvance(componentes_parque, actual_date, componentes_montaje=componentes_montaje)
+            valor = porcentajeAvance(parque_eolico, actual_date, componentes_montaje=componentes_montaje)
         else:
-            valor = porcentajeAvance(componentes_parque,fecha_calculo,componentes_montaje=componentes_montaje)
+            valor = porcentajeAvance(parque_eolico,fecha_calculo,componentes_montaje=componentes_montaje)
         fecha_grafico = str(fecha_calculo.year) + '-' + str(semana_calculo)
         data_graficos.append({"name": fecha_grafico, "y": valor})
         fecha = fecha_calculo + relativedelta.relativedelta(weeks=1)
@@ -433,8 +478,8 @@ def graficoAvances(componentes_parque,anho,semana,actual_date,data_proyeccion):
     datos = serializeGrafico(data_full)
     return datos
 
-def posicionAerogeneradores(componentes_parque,fecha_calculo):
-    parque = componentes_parque.parque
+def posicionAerogeneradores(parque_eolico, fecha_calculo):
+    parque = parque_eolico.parque
     d = str(fecha_calculo.isocalendar()[0]) + '-W' + str(fecha_calculo.isocalendar()[1])
     fecha = datetime.strptime(d + '-0', "%Y-W%W-%w")
     estado = EstadoFU.objects.get(idx=3)
@@ -1358,11 +1403,14 @@ def posicionAerogeneradores(componentes_parque,fecha_calculo):
                 reg_ids = []
                 for r in registros:
                     reg_ids.append(r.componente.id)
-                rel = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
-                                                  componente__in=reg_ids).order_by('-orden_montaje')
-                for r in rel:
+                # rel = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
+                #                                   componente__in=reg_ids).order_by('-orden_montaje')
+                miembros = Membership.objects.filter(parque_eolico=parque_eolico,
+                                                     componente__in=reg_ids,
+                                                     estado = estado).order_by('-orden')
+                for m in miembros:
                     path = os.path.join(settings.BASE_DIR,'static/common/images/ag')
-                    filename = path + '/' + unicode(r.componente.nombre) + '.png'
+                    filename = path + '/' + unicode(m.componente.nombre) + '.png'
                     if os.path.isfile(unicode(filename).encode('utf-8')):
                         found = True
                         [nombre, width, top, left] = get_image_data(os.path.basename(filename),
@@ -1465,10 +1513,10 @@ def dashboard(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     try:
-        componentes_parque = ComponentesParque.objects.get(parque=parque)
-    except ComponentesParque.DoesNotExist:
-        componentes_parque = ComponentesParque(parque=parque)
-        componentes_parque.save()
+        parque_eolico = ParqueEolico.objects.get(parque=parque)
+    except ParqueEolico.DoesNotExist:
+        parque_eolico = ParqueEolico(parque=parque)
+        parque_eolico.save()
 
     contenido = ContenidoContainer()
     contenido.user = request.user
@@ -1499,20 +1547,20 @@ def dashboard(request,slug):
     last_day_week = datetime.strptime(d + '-0', "%Y-W%W-%w")
 
     estado = EstadoFU.objects.get(idx=1)
-    graficoDescarga = graficoComponentes(componentes_parque,estado,last_day_week)
+    graficoDescarga = graficoComponentes(parque_eolico,estado,last_day_week)
     estado = EstadoFU.objects.get(idx=3)
-    graficoMontaje = graficoComponentes(componentes_parque, estado, last_day_week)
+    graficoMontaje = graficoComponentes(parque_eolico, estado, last_day_week)
     estado = EstadoFU.objects.get(idx=4)
-    graficoPuestaenMarcha = graficoComponentes(componentes_parque, estado, last_day_week)
-    [proyeccion, last_week] = calcularProyeccionGrafico(componentes_parque, anho, semana)
+    graficoPuestaenMarcha = graficoComponentes(parque_eolico, estado, last_day_week)
+    [proyeccion, last_week] = calcularProyeccionGrafico(parque_eolico, anho, semana)
     if last_week is not None:
-        graficoAvance = graficoAvances(componentes_parque, last_week.isocalendar()[0], last_week.isocalendar()[1], last_day_week,proyeccion)
+        graficoAvance = graficoAvances(parque_eolico, last_week.isocalendar()[0], last_week.isocalendar()[1], last_day_week, proyeccion)
     else:
         fecha_aux = configuracion.fecha_final
         semana_calculo = fecha_aux.isocalendar()[1]
         d = str(fecha_aux.isocalendar()[0]) + '-W' + str(semana_calculo)
         fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
-        graficoAvance = graficoAvances(componentes_parque, fecha_calculo.isocalendar()[0], fecha_calculo.isocalendar()[1], last_day_week,
+        graficoAvance = graficoAvances(parque_eolico, fecha_calculo.isocalendar()[0], fecha_calculo.isocalendar()[1], last_day_week,
                                        proyeccion)
 
     thisweek = str(anho) + "-" + str(semana)
@@ -1522,15 +1570,15 @@ def dashboard(request,slug):
     else:
         d = str(anho) + '-W' + str(semana)
         fecha = datetime.strptime(d + '-0', "%Y-W%W-%w")
-    pos_ag = posicionAerogeneradores(componentes_parque,last_day_week)
+    pos_ag = posicionAerogeneradores(parque_eolico, last_day_week)
 
     fecha_aux= configuracion.fecha_inicio #+ relativedelta.relativedelta(weeks=1)
     semana_calculo = fecha_aux.isocalendar()[1]
     d = str(fecha_aux.isocalendar()[0]) + '-W' + str(semana_calculo)
     fecha_inicial = datetime.strptime(d + '-0', "%Y-W%W-%w")
 
-    avance = porcentajeAvance(componentes_parque,last_day_week)
-    montados = aerogeneradoresMontados(componentes_parque,last_day_week)
+    avance = porcentajeAvance(parque_eolico,last_day_week)
+    montados = aerogeneradoresMontados(parque_eolico,last_day_week)
     try:
         componente = Componente.objects.get(nombre="Mechanical Completion")
         estado = EstadoFU.objects.get(idx=3)
@@ -1587,10 +1635,10 @@ def dashboard_diario(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     try:
-        componentes_parque = ComponentesParque.objects.get(parque=parque)
-    except ComponentesParque.DoesNotExist:
-        componentes_parque = ComponentesParque(parque=parque)
-        componentes_parque.save()
+        parque_eolico = ParqueEolico.objects.get(parque=parque)
+    except ParqueEolico.DoesNotExist:
+        parque_eolico = ParqueEolico(parque=parque)
+        parque_eolico.save()
 
     contenido = ContenidoContainer()
     contenido.user = request.user
@@ -1618,34 +1666,41 @@ def dashboard_diario(request,slug):
     last_day_week = t
 
     estado = EstadoFU.objects.get(idx=1)
-    graficoDescarga = graficoComponentes(componentes_parque,estado,t)
+    graficoDescarga = graficoComponentes(parque_eolico, estado, t)
     estado = EstadoFU.objects.get(idx=3)
-    graficoMontaje = graficoComponentes(componentes_parque, estado, t)
+    graficoMontaje = graficoComponentes(parque_eolico, estado, t)
     estado = EstadoFU.objects.get(idx=4)
-    graficoPuestaenMarcha = graficoComponentes(componentes_parque, estado, t)
-    [proyeccion, last_week] = calcularProyeccionGrafico(componentes_parque, anho, semana)
+    graficoPuestaenMarcha = graficoComponentes(parque_eolico, estado, t)
+    [proyeccion, last_week] = calcularProyeccionGrafico(parque_eolico, anho, semana)
     if last_week is not None:
-        graficoAvance = graficoAvances(componentes_parque, last_week.isocalendar()[0], last_week.isocalendar()[1], t,proyeccion)
+        graficoAvance = graficoAvances(parque_eolico,
+                                       last_week.isocalendar()[0],
+                                       last_week.isocalendar()[1],
+                                       t,
+                                       proyeccion)
     else:
         fecha_aux = configuracion.fecha_final
         semana_calculo = fecha_aux.isocalendar()[1]
         d = str(fecha_aux.isocalendar()[0]) + '-W' + str(semana_calculo)
         fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
-        graficoAvance = graficoAvances(componentes_parque, fecha_calculo.isocalendar()[0], fecha_calculo.isocalendar()[1], t,
+        graficoAvance = graficoAvances(parque_eolico,
+                                       fecha_calculo.isocalendar()[0],
+                                       fecha_calculo.isocalendar()[1],
+                                       t,
                                        proyeccion)
 
     thisweek = str(anho) + "-" + str(semana)
     week_str = 'Semana ' + str(semana)
     fecha = t
-    pos_ag = posicionAerogeneradores(componentes_parque,t)
+    pos_ag = posicionAerogeneradores(parque_eolico,t)
 
     fecha_aux= configuracion.fecha_inicio #+ relativedelta.relativedelta(weeks=1)
     semana_calculo = fecha_aux.isocalendar()[1]
     d = str(fecha_aux.isocalendar()[0]) + '-W' + str(semana_calculo)
     fecha_inicial = datetime.strptime(d + '-0', "%Y-W%W-%w")
 
-    avance = porcentajeAvance(componentes_parque,last_day_week)
-    montados = aerogeneradoresMontados(componentes_parque,last_day_week)
+    avance = porcentajeAvance(parque_eolico,last_day_week)
+    montados = aerogeneradoresMontados(parque_eolico,last_day_week)
     try:
         componente = Componente.objects.get(nombre="Mechanical Completion")
         estado = EstadoFU.objects.get(idx=3)
@@ -1697,10 +1752,10 @@ def avance(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     try:
-        componentes_parque = ComponentesParque.objects.get(parque=parque)
-    except ComponentesParque.DoesNotExist:
-        componentes_parque = ComponentesParque(parque=parque)
-        componentes_parque.save()
+        parque_eolico = ParqueEolico.objects.get(parque=parque)
+    except ParqueEolico.DoesNotExist:
+        parque_eolico = ParqueEolico(parque=parque)
+        parque_eolico.save()
 
     contenido = ContenidoContainer()
     contenido.user = request.user
@@ -1708,7 +1763,7 @@ def avance(request,slug):
     contenido.subtitulo = u'Parque Eólico - ' + parque.nombre
     contenido.menu = ['menu-fu', 'menu2-avance']
 
-    pos_ag = posicionAerogeneradores(componentes_parque,2017,39)
+    pos_ag = posicionAerogeneradores(parque_eolico, 2017, 39)
 
     return TemplateResponse(request, 'fu/avance.html',
                   {'cont': contenido,
@@ -1795,109 +1850,136 @@ def getOrden(componente, d,p,m,pm):
             ret_pm = pm + 1
     return [ret_d,ret_p,ret_m,ret_pm]
 
-def getComponentesbyState(componentes_parque, estado):
+def getComponentesbyState(parque_eolico, estado):
     if estado == 'descarga':
+        e = EstadoFU.objects.get(nombre='Descarga')
         orden = 'orden_descarga'
         indice = 1
     elif estado == 'premontaje':
+        e = EstadoFU.objects.get(nombre='Pre-montaje')
         orden = 'orden_premontaje'
         indice = 2
     elif estado == 'montaje':
+        e = EstadoFU.objects.get(nombre='Montaje')
         orden = 'orden_montaje'
         indice = 3
     elif estado == 'puestaenmarcha':
+        e = EstadoFU.objects.get(nombre='Puesta en marcha')
         orden = 'orden_puestaenmarcha'
         indice = 4
     else:
         return None
 
     lista = OrderedDict()
-    componentes = componentes_parque.componentes.all()
-    filtro = 'relacionesfu__' + orden
-    karws = {filtro + '__gt': 0}
-    id = 0
-    for c in componentes.filter(**karws).order_by(filtro):
-        lista[c.id]=c.nombre
-        id += 1
+
+    members = parque_eolico.membership_set.filter(estado = e).order_by('orden')
+    for m in members:
+        lista[m.componente.id] = m.componente.nombre
     return lista
+    # componentes = componentes_parque.componentes.all()
+    # filtro = 'relacionesfu__' + orden
+    # karws = {filtro + '__gt': 0}
+    # id = 0
+    # for c in componentes.filter(**karws).order_by(filtro):
+    #     lista[c.id]=c.nombre
+    #     id += 1
+    # return lista
 
-def addComponente(componentes_parque, new_componente):
-    aux = RelacionesFU.objects.filter(componentes_parque=componentes_parque)
-    if aux.exists():
-        maximos = aux.aggregate(Max('orden_descarga'),
-                                Max('orden_premontaje'),
-                                Max('orden_montaje'),
-                                Max('orden_puestaenmarcha'))
-        descarga = maximos['orden_descarga__max']
-        premontaje = maximos['orden_premontaje__max']
-        montaje = maximos['orden_montaje__max']
-        puestaenmarcha = maximos['orden_puestaenmarcha__max']
-    else:
-        descarga = 0
-        premontaje = 0
-        montaje = 0
-        puestaenmarcha = 0
-    [descarga, premontaje, montaje, puestaenmarcha] = getOrden(new_componente,
-                                                               descarga,
-                                                               premontaje,
-                                                               montaje,
-                                                               puestaenmarcha)
+def addComponente(parque_eolico, new_componente, estados):
+    #print(new_componente)
+    for e in estados:
+        aux = Membership(parque_eolico=parque_eolico,
+                         componente=new_componente,
+                         estado = e)
+        aux.save()
+    #aux = RelacionesFU.objects.filter(componentes_parque=componentes_parque)
+    # if aux.exists():
+    #     maximos = aux.aggregate(Max('orden_descarga'),
+    #                             Max('orden_premontaje'),
+    #                             Max('orden_montaje'),
+    #                             Max('orden_puestaenmarcha'))
+    #     descarga = maximos['orden_descarga__max']
+    #     premontaje = maximos['orden_premontaje__max']
+    #     montaje = maximos['orden_montaje__max']
+    #     puestaenmarcha = maximos['orden_puestaenmarcha__max']
+    # else:
+    #     descarga = 0
+    #     premontaje = 0
+    #     montaje = 0
+    #     puestaenmarcha = 0
+    # [descarga, premontaje, montaje, puestaenmarcha] = getOrden(new_componente,
+    #                                                            descarga,
+    #                                                            premontaje,
+    #                                                            montaje,
+    #                                                            puestaenmarcha)
+    #
+    # r = RelacionesFU(componentes_parque=componentes_parque,
+    #                  componente=new_componente,
+    #                  orden_descarga=descarga,
+    #                  orden_premontaje=premontaje,
+    #                  orden_montaje=montaje,
+    #                  orden_puestaenmarcha=puestaenmarcha)
+    # r.save()
 
-    r = RelacionesFU(componentes_parque=componentes_parque,
-                     componente=new_componente,
-                     orden_descarga=descarga,
-                     orden_premontaje=premontaje,
-                     orden_montaje=montaje,
-                     orden_puestaenmarcha=puestaenmarcha)
-    r.save()
+def deleteComponente(parque_eolico, del_componente):
+    elementos = Membership.objects.filter(parque_eolico=parque_eolico, componente=del_componente)
+    for m in elementos:
+        m.delete()
+    fixOrdenComponentes(parque_eolico)
+    # aux = RelacionesFU.objects.get(componentes_parque=componentes_parque, componente=del_componente)
+    # if aux.orden_descarga > 0:
+    #     aux2=RelacionesFU.objects.filter(componentes_parque=componentes_parque, orden_descarga__gt = aux.orden_descarga)
+    #     for c in aux2:
+    #         c.orden_descarga += -1
+    #         c.save()
+    # if aux.orden_premontaje > 0:
+    #     aux2=RelacionesFU.objects.filter(componentes_parque=componentes_parque, orden_premontaje__gt = aux.orden_premontaje)
+    #     for c in aux2:
+    #         c.orden_premontaje += -1
+    #         c.save()
+    # if aux.orden_montaje > 0:
+    #     aux2=RelacionesFU.objects.filter(componentes_parque=componentes_parque, orden_montaje__gt = aux.orden_montaje)
+    #     for c in aux2:
+    #         c.orden_montaje += -1
+    #         c.save()
+    # if aux.orden_puestaenmarcha > 0:
+    #     aux2=RelacionesFU.objects.filter(componentes_parque=componentes_parque, orden_puestaenmarcha__gt = aux.orden_puestaenmarcha)
+    #     for c in aux2:
+    #         c.orden_puestaenmarcha += -1
+    #         c.save()
+    # aux.delete()
+    # fixOrdenComponentes()
 
-def deleteComponente(componentes_parque, del_componente):
-    aux = RelacionesFU.objects.get(componentes_parque=componentes_parque, componente=del_componente)
-    if aux.orden_descarga > 0:
-        aux2=RelacionesFU.objects.filter(componentes_parque=componentes_parque, orden_descarga__gt = aux.orden_descarga)
-        for c in aux2:
-            c.orden_descarga += -1
-            c.save()
-    if aux.orden_premontaje > 0:
-        aux2=RelacionesFU.objects.filter(componentes_parque=componentes_parque, orden_premontaje__gt = aux.orden_premontaje)
-        for c in aux2:
-            c.orden_premontaje += -1
-            c.save()
-    if aux.orden_montaje > 0:
-        aux2=RelacionesFU.objects.filter(componentes_parque=componentes_parque, orden_montaje__gt = aux.orden_montaje)
-        for c in aux2:
-            c.orden_montaje += -1
-            c.save()
-    if aux.orden_puestaenmarcha > 0:
-        aux2=RelacionesFU.objects.filter(componentes_parque=componentes_parque, orden_puestaenmarcha__gt = aux.orden_puestaenmarcha)
-        for c in aux2:
-            c.orden_puestaenmarcha += -1
-            c.save()
-    aux.delete()
-    fixOrdenComponentes()
-
-def fixOrdenComponentes():
-    relaciones = ComponentesParque.objects.all()
-    filter_values = ['orden_descarga','orden_premontaje','orden_montaje','orden_puestaenmarcha']
-    for relacion in relaciones:
-        for f in filter_values:
-            karws = {f + '__gt': 0}
-            componentes = relacion.relacionesfu_set.filter(**karws).order_by(f)
-            pos = 1
-            for c in componentes:
-                setattr(c, f, pos)
-                c.save()
-                pos += 1
+def fixOrdenComponentes(parque_eolico):
+    estado = EstadoFU.objects.all()
+    for e in estado:
+        miembros = Membership.objects.filter(parque_eolico=parque_eolico, estado=e).order_by('orden')
+        orden = 1
+        for m in miembros:
+            m.orden = orden
+            m.save()
+            orden += 1
+    # relaciones = ComponentesParque.objects.all()
+    # filter_values = ['orden_descarga','orden_premontaje','orden_montaje','orden_puestaenmarcha']
+    # for relacion in relaciones:
+    #     for f in filter_values:
+    #         karws = {f + '__gt': 0}
+    #         componentes = relacion.relacionesfu_set.filter(**karws).order_by(f)
+    #         pos = 1
+    #         for c in componentes:
+    #             setattr(c, f, pos)
+    #             c.save()
+    #             pos += 1
 
 @login_required(login_url='ingresar')
 @permission_required('fu.add_componentesparque', raise_exception=True)
 def actividades(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     try:
-        componentes_parque = ComponentesParque.objects.get(parque=parque)
-    except ComponentesParque.DoesNotExist:
-        componentes_parque = ComponentesParque(parque=parque)
-        componentes_parque.save()
+        parque_eolico = ParqueEolico.objects.get(parque=parque)
+    except ParqueEolico.DoesNotExist:
+        parque_eolico = ParqueEolico(parque=parque)
+        parque_eolico.save()
 
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
@@ -1913,7 +1995,7 @@ def actividades(request,slug):
                 log_msg = "Se elimina componente del proyecto (actividad) para parque " + parque.nombre + \
                           " - Nombre " + deleteComponentesForm.cleaned_data['componente'].nombre
 
-                deleteComponente(componentes_parque,deleteComponentesForm.cleaned_data['componente'])
+                deleteComponente(parque_eolico,deleteComponentesForm.cleaned_data['componente'])
 
                 log = Log(texto=log_msg, tipo=3, user=request.user)
                 log.save()
@@ -1923,16 +2005,18 @@ def actividades(request,slug):
                 log_msg = "Se agrega componente al proyecto (actividad) para parque " + parque.nombre + \
                           " - Nombre " + choicesComponentesForm.cleaned_data['componente'].nombre
 
-                addComponente(componentes_parque,choicesComponentesForm.cleaned_data['componente'])
+                addComponente(parque_eolico,
+                              choicesComponentesForm.cleaned_data['componente'],
+                              choicesComponentesForm.cleaned_data['estadofu'])
                 log = Log(texto=log_msg, tipo=1, user=request.user)
                 log.save()
 
     choicesComponentesForm = AddComponentesForm(parque = parque)
     deleteComponentesForm = DeleteComponentesForm(parque = parque)
-    lista_descarga = getComponentesbyState(componentes_parque,'descarga')
-    lista_premontaje = getComponentesbyState(componentes_parque,'premontaje')
-    lista_montaje = getComponentesbyState(componentes_parque,'montaje')
-    lista_puestaenmarcha = getComponentesbyState(componentes_parque,'puestaenmarcha')
+    lista_descarga = getComponentesbyState(parque_eolico,'descarga')
+    lista_premontaje = getComponentesbyState(parque_eolico,'premontaje')
+    lista_montaje = getComponentesbyState(parque_eolico,'montaje')
+    lista_puestaenmarcha = getComponentesbyState(parque_eolico,'puestaenmarcha')
 
     actividades = OrderedDict()
     actividades['descarga']=lista_descarga
@@ -1957,28 +2041,42 @@ def actividades(request,slug):
          'titulos': titulos,
         })
 
-def ordenar_actividades(request, slug, estado):
+@csrf_exempt
+def status_componentes(request, slug):
+    if request.is_ajax() and request.POST:
+        componente_id = request.POST.get('id')
+        datos = []
+        #componente = Componente.objects.get(id=componente_id)
+        for e in Componente.objects.get(id=componente_id).estados.all():
+            datos.append(e.id)
+        return HttpResponse(json.dumps(datos), content_type='application/json')
+
+@csrf_exempt
+def ordenar_actividades(request, slug, str_estado):
     parque = get_object_or_404(ParqueSolar, slug=slug)
-    logger.debug("Ordenar Actividades, estado = " + estado)
+    parque_eolico = get_object_or_404(ParqueEolico, parque=parque)
+    logger.debug("Ordenar Actividades, estado = " + str_estado)
     response_data = {}
     response_data['files'] = []
-    componentes_parque = RelacionesFU.objects.filter(componentes_parque__parque=parque)
+    if str_estado == 'descarga':
+        estado = EstadoFU.objects.get(nombre='Descarga')
+    elif str_estado == 'premontaje':
+        estado = EstadoFU.objects.get(nombre='Pre-Montaje')
+    elif str_estado == 'montaje':
+        estado = EstadoFU.objects.get(nombre='Montaje')
+    elif str_estado == 'puestaenmarcha':
+        estado = EstadoFU.objects.get(nombre='Puesta en marcha')
+
     if request.method == 'POST':
         response = json.dumps([])
         post_dict = parser.parse(request.POST.urlencode())
         datos = post_dict['lista']
         for pos, val in datos.iteritems():
-            idx = pos +1
+            idx = pos + 1
             id = int(val['id'])
-            obj = componentes_parque.get(componente__id=id)
-            if estado == 'descarga':
-                obj.orden_descarga = idx
-            elif estado == 'premontaje':
-                obj.orden_premontaje = idx
-            elif estado == 'montaje':
-                obj.orden_montaje = idx
-            elif estado == 'puestaenmarcha':
-                obj.orden_puestaenmarcha = idx
+            componente = Componente.objects.get(id=id)
+            obj = Membership.objects.get(parque_eolico=parque_eolico, componente=componente, estado=estado)
+            obj.orden = idx
             obj.save()
         log_msg = "Cambio en orden de componentes para parque " + parque.nombre
         log = Log(texto=log_msg, tipo=2, user=request.user)
@@ -1988,12 +2086,12 @@ def ordenar_actividades(request, slug, estado):
             content_type="application/json"
         )
 
-def checkValidFile(ws, componentes_parque):
+def checkValidFile(ws, parque_eolico):
     fila = 4
     columna = 2
     valor = ws.cell(row=fila,column=columna).value
     while valor is not None:
-        elementos = componentes_parque.componentes.filter(nombre=valor)
+        elementos = parque_eolico.componentes.filter(nombre=valor)
         if elementos.count() <= 0:
             logger.debug('Archivo inválido')
             return -1
@@ -2061,11 +2159,11 @@ def configuracion(request,slug):
                    'form': form
                    })
 
-def readPlanFile(configuracion, componentes_parque):
+def readPlanFile(configuracion, parque_eolico):
     nombre_archivo = os.path.join(settings.MEDIA_ROOT, configuracion.plan.name)
     wb = load_workbook(nombre_archivo)
     ws = wb.active
-    last_row = checkValidFile(ws, componentes_parque)
+    last_row = checkValidFile(ws, parque_eolico)
     if last_row == -1:
         # Retorna falso, no se pudo leer este archivo correctamente.
         return False
@@ -2142,7 +2240,7 @@ def readPlanFile(configuracion, componentes_parque):
 
 def graficoPlanificacion(parque):
     configuracion = ConfiguracionFU.objects.get(parque=parque)
-    componentes_parque = ComponentesParque.objects.get(parque=parque)
+    parque_eolico = ParqueEolico.objects.get(parque=parque)
     aux = configuracion.fecha_inicio
     final = configuracion.fecha_final
     xvalues = {}
@@ -2165,7 +2263,7 @@ def graficoPlanificacion(parque):
             fecha_query = datetime.strptime(d, "%Y-W%W-%w")
             xlabels += '"'+ str(anho) + '-' + semana + '",'
             idy = 0
-            for componente in componentes_parque.componentes.all():
+            for componente in parque_eolico.componentes.all().distinct():
                 e = None
                 for aux_e in componente.estados.all():
                     if aux_e.idx == i:
@@ -2205,10 +2303,10 @@ def planificacion(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     try:
-        componentes_parque = ComponentesParque.objects.get(parque=parque)
-    except ComponentesParque.DoesNotExist:
-        componentes_parque = ComponentesParque(parque=parque)
-        componentes_parque.save()
+        parque_eolico = ParqueEolico.objects.get(parque=parque)
+    except ParqueEolico.DoesNotExist:
+        parque_eolico = ParqueEolico(parque=parque)
+        parque_eolico.save()
 
     contenido=ContenidoContainer()
     contenido.user=request.user
@@ -2233,7 +2331,7 @@ def planificacion(request,slug):
 
         if configuracion.plan:
             if configuracion.plan != configuracion.prev_plan:
-                readPlanFile(configuracion,componentes_parque)
+                readPlanFile(configuracion, parque_eolico)
                 log_msg = "Se agrega planificación para parque " + parque.nombre
                 log = Log(texto=log_msg, tipo=1, user=request.user)
                 log.save()
@@ -2278,10 +2376,10 @@ def download_config(request,slug):
         return
 
     try:
-        componentes_parque = ComponentesParque.objects.get(parque=parque)
-    except ComponentesParque.DoesNotExist:
-        componentes_parque = ComponentesParque(parque=parque)
-        componentes_parque.save()
+        parque_eolico = ParqueEolico.objects.get(parque=parque)
+    except ParqueEolico.DoesNotExist:
+        parque_eolico = ParqueEolico(parque=parque)
+        parque_eolico.save()
 
     aux = configuracion.fecha_inicio
     final = configuracion.fecha_final
@@ -2407,7 +2505,7 @@ def download_config(request,slug):
         planExist = True
 
     for e, titulo in estados.iteritems():
-        componentes = getComponentesbyState(componentes_parque,e)
+        componentes = getComponentesbyState(parque_eolico,e)
         if len(componentes) > 0:
             d = ws.cell(row=row, column=1, value=titulo)
             d.alignment = alignment1
@@ -2480,23 +2578,46 @@ def download_config(request,slug):
 # 2: El componente-estado ya fue ingresado
 # 1: El componente-estado está bloqueado por prerequisitos
 # 0: El componente-estado puede ser ingresado
-def getComponenteStatus(registros,idx,componente,relaciones):
+def getComponenteStatus(registros, idx, componente, miembros):
     aux = registros.filter(componente=componente, estado__idx=idx)
     if aux.count() > 0:
         return 2
 
     if idx == 1: # Estado descarga
         return 0
+    elif idx == 2: # Estado pre-montaje
+        estado = EstadoFU.objects.get(idx=2)
+        # Si el componentes tiene estados anteriores al pre-montaje
+        if miembros.filter(componente=componente, estado__idx__lt=2).count() > 0:
+            aux2 = registros.filter(componente=componente, estado__idx=1)
+            #
+            if aux2.count() > 0:
+                return 0
+            else:
+                return 1
+        else:
+            return 0
+
     elif idx == 3: # Estado montaje
+        estado = EstadoFU.objects.get(idx=3)
+        # Si ya está ingreasado Izado Cable HV, entonces el resto se puede ingresar
         if registros.filter(estado__idx=3,componente__nombre='Izado Cable HV').count() > 0:
             return 0
-        if componente.estados.all().filter(idx__lt=3).count() > 0:
-            aux2 = registros.filter(componente=componente, estado__idx=1) # Si está abierto el componente en descarga
-            if aux2.count()>0:
-                c_aux = relaciones.get(componente=componente)
+        #if componente.estados.all().filter(idx__lt=3).count() > 0:
+        # Si el componente tiene estados anteriores al montaje
+        prerequisitos = miembros.filter(componente=componente, estado__idx__lt=3)
+        if prerequisitos.count() > 0:
+            test = True
+            for prerequisito in prerequisitos:
+                # Se pide omitir pre-montaje de los prerequisitos
+                if prerequisito.estado.idx != 2:
+                    test = test and registros.filter(componente=componente, estado__idx=prerequisito.estado.idx).exists()
+            # Si ya se han registrado los prerequisitos del componente en descarga o pre-montaje
+            if test:
+                c_aux = miembros.get(componente=componente, estado=estado)
                 c_ids = []
-                for c in relaciones.filter(orden_montaje__lt=c_aux.orden_montaje, orden_montaje__gt=0):
-                    c_ids.append(c.componente.id)
+                for m in miembros.filter(estado = estado, orden__lt=c_aux.orden, orden__gt=0):
+                    c_ids.append(m.componente.id)
                 aux3 = registros.filter(componente_id__in=c_ids,estado__idx=3)
                 if aux3.count() == len(c_ids):
                     return 0
@@ -2504,22 +2625,25 @@ def getComponenteStatus(registros,idx,componente,relaciones):
                     return 1
             else:
                 return 1
+        # Si el componente no tiene estados anteriores al montaje
         else:
-            c_aux = relaciones.get(componente=componente)
+            c_aux = miembros.get(componente=componente, estado=estado)
             c_ids = []
-            for c in relaciones.filter(orden_montaje__lt=c_aux.orden_montaje, orden_montaje__gt=0):
-                c_ids.append(c.componente.id)
+            for m in miembros.filter(orden__lt=c_aux.orden, orden__gt=0):
+                c_ids.append(m.componente.id)
             aux3 = registros.filter(componente_id__in=c_ids, estado__idx=3)
             if aux3.count() == len(c_ids):
                 return 0
             else:
                 return 1
     elif idx == 4: # Estado puesta en marcha
+        estado_montaje = EstadoFU.objects.get(idx=3)
         c_ids = []
+        # Si ya está ingresado el izado, entonces se puede cualquiera
         if registros.filter(estado__idx=3,componente__nombre='Izado Cable HV').count() > 0:
             return 0
-        for c in relaciones.filter(orden_montaje__gt=0):
-            c_ids.append(c.componente.id)
+        for m in miembros.filter(estado=estado_montaje, orden__gt=0):
+            c_ids.append(m.componente.id)
         aux3 = registros.filter(componente_id__in=c_ids, estado__idx=3)
         if aux3.count() == len(c_ids):
             return 0
@@ -2541,10 +2665,10 @@ def ingreso(request,slug,slug_ag):
         configuracion = None
 
     try:
-        componentes_parque = ComponentesParque.objects.get(parque=parque)
-    except ComponentesParque.DoesNotExist:
-        componentes_parque = ComponentesParque(parque=parque)
-        componentes_parque.save()
+        parque_eolico = ParqueEolico.objects.get(parque=parque)
+    except ParqueEolico.DoesNotExist:
+        parque_eolico = ParqueEolico(parque=parque)
+        parque_eolico.save()
 
     contenido=ContenidoContainer()
     contenido.user=request.user
@@ -2561,6 +2685,15 @@ def ingreso(request,slug,slug_ag):
             if formDescarga.is_valid():
                 registro = formDescarga.save(commit=False)
                 estado = EstadoFU.objects.get(idx=1)
+            else:
+                messages.add_message(request, messages.ERROR, 'Registro no pudo realizarse')
+        elif 'formPremontaje' in request.POST:
+            if not request.user.has_perm('fu.add_registros'):
+                raise PermissionDenied
+            form = RegistroForm(request.POST)
+            if form.is_valid():
+                registro = form.save(commit=False)
+                estado = EstadoFU.objects.get(idx=2)
             else:
                 messages.add_message(request, messages.ERROR, 'Registro no pudo realizarse')
         elif 'formMontaje' in request.POST:
@@ -2612,67 +2745,90 @@ def ingreso(request,slug,slug_ag):
     componentes = OrderedDict()
 
     componentes['Descarga en Parque'] = {}
+    componentes['Pre-montaje'] = {}
     componentes['Montaje'] = {}
     componentes['Puesta en marcha'] = {}
 
     registros = Registros.objects.filter(parque=parque, aerogenerador=aerogenerador)
-    relaciones = RelacionesFU.objects.filter(componentes_parque = componentes_parque)
+    miembros = Membership.objects.filter(parque_eolico = parque_eolico)
 
     componentes['Descarga en Parque']['objetos'] = []
-    filtro = 'relacionesfu__orden_descarga'
-    karws = {filtro + '__gt': 0}
-    for c in componentes_parque.componentes.all().filter(**karws).order_by(filtro):
-        aux = getComponenteStatus(registros, 1, c, relaciones)
+    # filtro = 'relacionesfu__orden_descarga'
+    # karws = {filtro + '__gt': 0}
+    estado = EstadoFU.objects.get(nombre='Descarga')
+    for m in miembros.filter(estado=estado).order_by('orden'):
+        aux = getComponenteStatus(registros, 1, m.componente, miembros)
         objeto = {}
         color = 'bg-yellow-crusta'
         if aux == 2:
             color = 'bg-green-meadow'
-            reg = registros.get(componente=c,estado__idx=1)
+            reg = registros.get(componente=m.componente, estado__idx=1)
             objeto['tooltip'] = reg.fecha.strftime("%d/%m/%Y") + '<br>' + reg.no_serie
             objeto['created_by'] = reg.created_by.id
-        objeto['componente'] = c
+        objeto['componente'] = m.componente
         objeto['color'] = color
         objeto['status'] = aux
         objeto['estado'] = 1
         componentes['Descarga en Parque']['objetos'].append(objeto)
 
-    componentes['Montaje']['objetos']  = []
-    filtro = 'relacionesfu__orden_montaje'
-    karws = {filtro + '__gt': 0}
-    for c in componentes_parque.componentes.all().filter(**karws).order_by(filtro):
-        aux = getComponenteStatus(registros, 3, c, relaciones)
+    componentes['Pre-montaje']['objetos'] = []
+    # filtro = 'relacionesfu__orden_montaje'
+    # karws = {filtro + '__gt': 0}
+    estado = EstadoFU.objects.get(nombre='Pre-Montaje')
+    for m in miembros.filter(estado=estado).order_by('orden'):
+        aux = getComponenteStatus(registros, 2, m.componente, miembros)
         color = 'bg-grey-salt'
         objeto = {}
         if aux == 2:
             color = 'bg-green-meadow'
-            reg = registros.get(componente=c, estado__idx=3)
+            reg = registros.get(componente=m.componente, estado__idx=2)
             objeto['tooltip'] = reg.fecha.strftime("%d/%m/%Y")
             objeto['created_by'] = reg.created_by.id
         elif aux == 0:
             color = 'bg-yellow-crusta'
-        objeto['componente'] = c
+        objeto['componente'] = m.componente
+        objeto['color'] = color
+        objeto['status'] = aux
+        objeto['estado'] = 2
+        componentes['Pre-montaje']['objetos'].append(objeto)
+
+    componentes['Montaje']['objetos']  = []
+    # filtro = 'relacionesfu__orden_montaje'
+    # karws = {filtro + '__gt': 0}
+    estado = EstadoFU.objects.get(nombre='Montaje')
+    for m in miembros.filter(estado=estado).order_by('orden'):
+        aux = getComponenteStatus(registros, 3, m.componente, miembros)
+        color = 'bg-grey-salt'
+        objeto = {}
+        if aux == 2:
+            color = 'bg-green-meadow'
+            reg = registros.get(componente=m.componente, estado__idx=3)
+            objeto['tooltip'] = reg.fecha.strftime("%d/%m/%Y")
+            objeto['created_by'] = reg.created_by.id
+        elif aux == 0:
+            color = 'bg-yellow-crusta'
+        objeto['componente'] = m.componente
         objeto['color'] = color
         objeto['status'] = aux
         objeto['estado'] = 3
         componentes['Montaje']['objetos'].append(objeto)
 
-
     componentes['Puesta en marcha']['objetos']  = []
-    filtro = 'relacionesfu__orden_puestaenmarcha'
-    karws = {filtro + '__gt': 0}
-
-    for c in componentes_parque.componentes.all().filter(**karws).order_by(filtro):
-        aux = getComponenteStatus(registros, 4, c, relaciones)
+    # filtro = 'relacionesfu__orden_puestaenmarcha'
+    # karws = {filtro + '__gt': 0}
+    estado = EstadoFU.objects.get(nombre='Puesta en marcha')
+    for m in miembros.filter(estado=estado).order_by('orden'):
+        aux = getComponenteStatus(registros, 4, m.componente, miembros)
         color = 'bg-grey-salt'
         objeto = {}
         if aux == 2:
             color = 'bg-green-meadow'
-            reg = registros.get(componente=c, estado__idx=4)
+            reg = registros.get(componente=m.componente, estado__idx=4)
             objeto['tooltip'] = reg.fecha.strftime("%d/%m/%Y")
             objeto['created_by'] = reg.created_by.id
         elif aux == 0:
             color = 'bg-yellow-crusta'
-        objeto['componente'] = c
+        objeto['componente'] = m.componente
         objeto['color'] = color
         objeto['status'] = aux
         objeto['estado'] = 4
@@ -2680,10 +2836,12 @@ def ingreso(request,slug,slug_ag):
 
 
     componentes['Descarga en Parque']['id'] = 'descarga'
+    componentes['Pre-montaje']['id'] = 'premontaje'
     componentes['Montaje']['id'] = 'montaje'
     componentes['Puesta en marcha']['id'] = 'puestaenmarcha'
 
     componentes['Descarga en Parque']['icon'] = 'fa-map-marker'
+    componentes['Pre-montaje']['icon'] = 'fa-cog'
     componentes['Montaje']['icon'] = 'fa-cogs'
     componentes['Puesta en marcha']['icon'] = 'fa-thumbs-o-up'
 
@@ -2700,18 +2858,22 @@ def ingreso(request,slug,slug_ag):
         reg_ids = []
         for r in registros_aux:
             reg_ids.append(r.componente.id)
-        rel = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
-                                          componente__in=reg_ids).order_by('-orden_montaje')
+        # rel = RelacionesFU.objects.filter(componentes_parque=componentes_parque,
+        #                                   componente__in=reg_ids).order_by('-orden_montaje')
 
-        for r in rel:
+        estado_montaje = EstadoFU.objects.get(nombre='Montaje')
+        members = Membership.objects.filter(parque_eolico=parque_eolico,
+                                            componente__in=reg_ids,
+                                            estado = estado_montaje).order_by('-orden')
+        for m in members:
             path = os.path.join(settings.BASE_DIR, 'static/common/images/ag')
-            filename = path + '/' + r.componente.nombre + '.png'
+            filename = path + '/' + m.componente.nombre + '.png'
             if os.path.isfile(unicode(filename).encode('utf-8')):
                 [width, top, left] = get_image_data_ingreso(os.path.basename(filename))
                 pos['width'] = width
                 pos['top'] = top
                 pos['left'] = left
-                pos['img'] = 'common/images/ag/' + r.componente.nombre + '.png'
+                pos['img'] = 'common/images/ag/' + m.componente.nombre + '.png'
                 break
 
 
@@ -2889,15 +3051,16 @@ def nested_dict(n, type):
         return defaultdict(lambda: nested_dict(n-1, type))
 
 def dataPlanificacion(parque):
+    parque_eolico = ParqueEolico.objects.get(parque=parque)
     datos = nested_dict(2, int)
     filas = Node("Filas")
     columnas = Node("Columnas")
     estados = EstadoFU.objects.filter(idx__gt=0).order_by('id')
-    componentes_parque = ComponentesParque.objects.get(parque=parque).componentes.all()
-    filtros = {}
-    filtros[2] = 'relacionesfu__orden_descarga'
-    filtros[4] = 'relacionesfu__orden_montaje'
-    filtros[5] = 'relacionesfu__orden_puestaenmarcha'
+    # filtros = {}
+    # filtros[2] = 'relacionesfu__orden_descarga'
+    # filtros[4] = 'relacionesfu__orden_montaje'
+    # filtros[5] = 'relacionesfu__orden_puestaenmarcha'
+
     datos2 = OrderedDict()
     configuracion = ConfiguracionFU.objects.get(parque=parque)
     final = configuracion.fecha_final
@@ -2907,60 +3070,58 @@ def dataPlanificacion(parque):
     fila = 0
 
     for e in estados:
-        if e.id in filtros:
-            karws = {filtros[e.id] + '__gt': 0}
-            componentes = componentes_parque.filter(**karws).order_by(filtros[e.id])
-            if componentes.count() > 0:
-                n_fila = Node(e.nombre, filas)
-                for c in componentes:
-                    n2_fila = Node(c.nombre, n_fila)
-                    n_contractual = Node('Contractual', n2_fila)
-                    n_plan = Node('Plan', n2_fila)
-                    aux = configuracion.fecha_inicio
-                    columna = 0
-                    datos2[fila]=OrderedDict()
-                    datos2[fila +1 ] = OrderedDict()
-                    filtro_contractual = Contractual.objects.filter(parque=parque,
-                                                                  componente__nombre=c.nombre,
-                                                                  estado=e)
-                    filtro_plan = Plan.objects.filter(parque=parque,
-                                                    componente__nombre=c.nombre,
-                                                    estado=e)
-                    while aux < final:
-                        if last_anho != aux.year:
-                            try:
-                                n_anho =r.get(columnas, str(aux.year))
-                            except:
-                                n_anho = Node(str(aux.year),columnas)
-                            last_anho = aux.year
-                        if last_mes != aux.month:
-                            try:
-                                n_mes = r.get(n_anho, meses_espanol[str(aux.month)])
-                            except:
-                                n_mes = Node(meses_espanol[str(aux.month)],n_anho)
-                            last_mes = aux.month
+        miembros = Membership.objects.filter(parque_eolico=parque_eolico, estado = e)
+        if miembros.count() > 0:
+            n_fila = Node(e.nombre, filas)
+            for m in miembros:
+                n2_fila = Node(m.componente.nombre, n_fila)
+                n_contractual = Node('Contractual', n2_fila)
+                n_plan = Node('Plan', n2_fila)
+                aux = configuracion.fecha_inicio
+                columna = 0
+                datos2[fila]=OrderedDict()
+                datos2[fila +1 ] = OrderedDict()
+                filtro_contractual = Contractual.objects.filter(parque=parque,
+                                                              componente=m.componente,
+                                                              estado=e)
+                filtro_plan = Plan.objects.filter(parque=parque,
+                                                componente=m.componente,
+                                                estado=e)
+                while aux < final:
+                    if last_anho != aux.year:
                         try:
-                            n_semana = r.get(n_mes,str(aux.isocalendar()[1]))
+                            n_anho =r.get(columnas, str(aux.year))
                         except:
-                            n_semana = Node(str(aux.isocalendar()[1]), n_mes)
-                        d_str = str(aux.isocalendar()[0]) + "-W" + str(aux.isocalendar()[1]) + "-0"
-                        fecha_aux = datetime.strptime(d_str, "%Y-W%W-%w")
+                            n_anho = Node(str(aux.year), columnas)
+                        last_anho = aux.year
+                    if last_mes != aux.month:
                         try:
-                            plan = filtro_plan.get(fecha=fecha_aux)
-                            #datos[n_plan][n_semana] = plan.no_aerogeneradores
-                            datos2[fila+1][columna] = plan.no_aerogeneradores
-                        except Plan.DoesNotExist:
-                            pass
-                        try:
-                            contractual = filtro_contractual.get(fecha=fecha_aux)
-                            #datos[n_contractual][n_semana] = contractual.no_aerogeneradores
-                            datos2[fila][columna] = contractual.no_aerogeneradores
-                        except Contractual.DoesNotExist:
-                            pass
+                            n_mes = r.get(n_anho, meses_espanol[str(aux.month)])
+                        except:
+                            n_mes = Node(meses_espanol[str(aux.month)], n_anho)
+                        last_mes = aux.month
+                    try:
+                        n_semana = r.get(n_mes,str(aux.isocalendar()[1]))
+                    except:
+                        n_semana = Node(str(aux.isocalendar()[1]), n_mes)
+                    d_str = str(aux.isocalendar()[0]) + "-W" + str(aux.isocalendar()[1]) + "-0"
+                    fecha_aux = datetime.strptime(d_str, "%Y-W%W-%w")
+                    try:
+                        plan = filtro_plan.get(fecha=fecha_aux)
+                        #datos[n_plan][n_semana] = plan.no_aerogeneradores
+                        datos2[fila+1][columna] = plan.no_aerogeneradores
+                    except Plan.DoesNotExist:
+                        pass
+                    try:
+                        contractual = filtro_contractual.get(fecha=fecha_aux)
+                        #datos[n_contractual][n_semana] = contractual.no_aerogeneradores
+                        datos2[fila][columna] = contractual.no_aerogeneradores
+                    except Contractual.DoesNotExist:
+                        pass
 
-                        aux = aux + relativedelta.relativedelta(weeks=1)
-                        columna += 1
-                    fila += 2
+                    aux = aux + relativedelta.relativedelta(weeks=1)
+                    columna += 1
+                fila += 2
     return [filas,columnas,datos2]
 
 def printFilasHeader(ws,node,row,column,deep,alignment1=None):
@@ -3115,7 +3276,7 @@ def planificacionExcel(parque, wb):
 
     return wb
 
-def addUniqueNodo(nombre,padre,html = None):
+def addUniqueNodo(nombre, padre, html=None):
     r = Resolver('name')
     try:
         nodo = r.get(padre, nombre)
@@ -3127,71 +3288,71 @@ def addUniqueNodo(nombre,padre,html = None):
 
     return nodo
 
-def dataSeriesfechas(parque, html = None):
+def dataSeriesfechas(parque, html=None):
     datos = OrderedDict()
     filas = Node("Filas")
     columnas = Node("Columnas")
+    parque_eolico = ParqueEolico.objects.get(parque=parque)
     estados = EstadoFU.objects.filter(idx__gt=0).order_by('id')
-    componentes_parque = ComponentesParque.objects.get(parque=parque).componentes.all()
-    filtros = {}
-    filtros[2] = 'relacionesfu__orden_descarga'
-    filtros[4] = 'relacionesfu__orden_montaje'
-    filtros[5] = 'relacionesfu__orden_puestaenmarcha'
+
     configuracion = ConfiguracionFU.objects.get(parque=parque)
-    final = configuracion.fecha_final
-    last_anho = 0
-    last_mes = 0
     r = Resolver('name')
     ags = Aerogenerador.objects.filter(parque=parque,nombre__istartswith='WTG').order_by('idx')
     fila = 0
     filas_html = []
     columnas_html = []
-    suma_filas = [0] * (parque.no_aerogeneradores + 1)
+    total_filas = Membership.objects.filter(parque_eolico=parque_eolico, estado__id=2).count() * 2
+    total_filas += Membership.objects.filter(parque_eolico=parque_eolico).exclude(estado__id=2).count()
+    suma_filas = [0] * (total_filas + 1)
 
     for e in estados:
-        if e.id in filtros:
-            karws = {filtros[e.id] + '__gt': 0}
-            componentes = componentes_parque.filter(**karws).order_by(filtros[e.id])
-            if componentes.count() > 0:
-                n_fila = Node(e.nombre, filas)
-                for c in componentes:
-                    filtro_registros = Registros.objects.filter(parque=parque,componente=c,estado=e)
-                    n2_fila = Node(c.nombre, n_fila)
-                    datos[fila] = OrderedDict()
-                    n_fecha = Node('Fecha', n2_fila)
+        miembros = Membership.objects.filter(parque_eolico=parque_eolico, estado = e)
+        if miembros.count() > 0:
+            logger.debug('Estado: ' + e.nombre)
+            n_fila = Node(e.nombre, filas)
+            for m in miembros:
+                logger.debug(' - Componente: ' + m.componente.nombre)
+                filtro_registros = Registros.objects.filter(parque=parque,componente=m.componente,estado=e)
+                n2_fila = Node(m.componente.nombre, n_fila)
+                datos[fila] = OrderedDict()
+                n_fecha = Node('Fecha', n2_fila)
+                filas_html.append(
+                    {'Estado': e.nombre, 'Componente': m.componente.nombre, 'Item': 'Fecha', 'Fila': fila})
+                if e.id == 2:
+                    n_serie = Node('Serie', n2_fila)
                     filas_html.append(
-                        {'Estado': e.nombre, 'Componente': c.nombre, 'Item': 'Fecha', 'Fila': fila})
-                    if e.id == 2:
-                        n_serie = Node('Serie', n2_fila)
-                        filas_html.append(
-                            {'Estado': e.nombre, 'Componente': c.nombre, 'Item': 'Serie', 'Fila': fila+1})
-                        datos[fila+1] = OrderedDict()
-                    columna = 0
-                    for ag in ags:
-                        addUniqueNodo(ag.nombre,columnas,columnas_html)
+                        {'Estado': e.nombre, 'Componente': m.componente.nombre, 'Item': 'Serie', 'Fila': fila+1})
+                    datos[fila+1] = OrderedDict()
+                columna = 0
+                for ag in ags:
+                    addUniqueNodo(ag.nombre,columnas,columnas_html)
+                    try:
+                        r = filtro_registros.get(aerogenerador = ag)
+                        datos[fila][columna] = r.fecha.strftime('%d-%m-%Y')
                         try:
-                            r = filtro_registros.get(aerogenerador = ag)
-                            datos[fila][columna] = r.fecha.strftime('%d-%m-%Y')
+                            suma_filas[fila] += 1
+                        except:
+                            suma_filas[fila] = 1
+                        if e.id == 2:
+                            datos[fila+1][columna] = r.no_serie
                             try:
-                                suma_filas[fila] += 1
+                                suma_filas[fila+1] += 1
                             except:
-                                suma_filas[fila] = 1
-                            if e.id == 2:
-                                datos[fila+1][columna] = r.no_serie
-                                try:
-                                    suma_filas[fila+1] += 1
-                                except:
-                                    suma_filas[fila+1] = 1
-                        except Registros.DoesNotExist:
-                            pass
-                        columna += 1
-                    addUniqueNodo('Total', columnas, columnas_html)
+                                suma_filas[fila+1] = 1
+                    except Registros.DoesNotExist:
+                        pass
+                    columna += 1
+                addUniqueNodo('Total', columnas, columnas_html)
+                #datos[fila][columna] = suma_filas[fila]
+                try:
                     datos[fila][columna] = suma_filas[fila]
-                    if e.id == 2:
-                        datos[fila+1][columna] = suma_filas[fila+1]
-                        fila += 2
-                    else:
-                        fila += 1
+                except IndexError:
+                    print('Error')
+                if e.id == 2:
+                    datos[fila+1][columna] = suma_filas[fila+1]
+                    fila += 2
+                else:
+                    fila += 1
 
     if html is None:
         return [filas,columnas,datos]
@@ -3263,12 +3424,13 @@ def dataSeguimiento(parque,t, html = None):
     datos = OrderedDict()
     filas = Node("Filas")
     columnas = Node("Columnas")
+    parque_eolico = ParqueEolico.objects.get(parque=parque)
     estados = EstadoFU.objects.filter(idx__gt=0).order_by('id')
-    componentes_parque = ComponentesParque.objects.get(parque=parque).componentes.all()
-    filtros = {}
-    filtros[2] = 'relacionesfu__orden_descarga'
-    filtros[4] = 'relacionesfu__orden_montaje'
-    filtros[5] = 'relacionesfu__orden_puestaenmarcha'
+    # componentes_parque = ComponentesParque.objects.get(parque=parque).componentes.all()
+    # filtros = {}
+    # filtros[2] = 'relacionesfu__orden_descarga'
+    # filtros[4] = 'relacionesfu__orden_montaje'
+    # filtros[5] = 'relacionesfu__orden_puestaenmarcha'
     configuracion = ConfiguracionFU.objects.get(parque=parque)
     final = configuracion.fecha_final
 
@@ -3284,41 +3446,39 @@ def dataSeguimiento(parque,t, html = None):
     columnas_html = []
 
     for e in estados:
-        if e.id in filtros:
-            karws = {filtros[e.id] + '__gt': 0}
-            componentes = componentes_parque.filter(**karws).order_by(filtros[e.id])
-            if componentes.count() > 0:
-                n_fila = Node(e.nombre, filas)
-                for c in componentes:
-                    n2_fila = Node(c.nombre, n_fila)
-                    filas_html.append(
-                        {'Estado': e.nombre, 'Componente': c.nombre, 'Fila': fila})
-                    filtro_registros = Registros.objects.filter(parque=parque, componente=c, estado=e)
-                    columna = 0
-                    datos[fila] = OrderedDict()
-                    # Estadisticas primero
-                    addUniqueNodo('Total', columnas, columnas_html)
-                    datos[fila][columna] = parque.no_aerogeneradores
-                    columna += 1
-                    addUniqueNodo('Contractual', columnas, columnas_html)
-                    datos[fila][columna] = getContractual(parque,c,e,fecha_calculo)
-                    columna += 1
-                    addUniqueNodo('Plan', columnas, columnas_html)
-                    datos[fila][columna] = getPlan(parque,c,e,fecha_calculo)
-                    columna += 1
-                    addUniqueNodo('Real', columnas, columnas_html)
-                    datos[fila][columna] = getReal(parque,c,e,t)
-                    columna += 1
+        miembros = Membership.objects.filter(parque_eolico=parque_eolico, estado=e)
+        if miembros.count() > 0:
+            n_fila = Node(e.nombre, filas)
+            for m in miembros:
+                n2_fila = Node(m.componente.nombre, n_fila)
+                filas_html.append(
+                    {'Estado': e.nombre, 'Componente': m.componente.nombre, 'Fila': fila})
+                filtro_registros = Registros.objects.filter(parque=parque, componente=m.componente, estado=e)
+                columna = 0
+                datos[fila] = OrderedDict()
+                # Estadisticas primero
+                addUniqueNodo('Total', columnas, columnas_html)
+                datos[fila][columna] = parque.no_aerogeneradores
+                columna += 1
+                addUniqueNodo('Contractual', columnas, columnas_html)
+                datos[fila][columna] = getContractual(parque, m.componente, e, fecha_calculo)
+                columna += 1
+                addUniqueNodo('Plan', columnas, columnas_html)
+                datos[fila][columna] = getPlan(parque, m.componente, e, fecha_calculo)
+                columna += 1
+                addUniqueNodo('Real', columnas, columnas_html)
+                datos[fila][columna] = getReal(parque, m.componente, e, t)
+                columna += 1
 
-                    for ag in ags:
-                        addUniqueNodo(ag.nombre,columnas, columnas_html)
-                        try:
-                            r = filtro_registros.get(aerogenerador = ag)
-                            datos[fila][columna] = 'X'
-                        except Registros.DoesNotExist:
-                            pass
-                        columna += 1
-                    fila += 1
+                for ag in ags:
+                    addUniqueNodo(ag.nombre,columnas, columnas_html)
+                    try:
+                        r = filtro_registros.get(aerogenerador = ag)
+                        datos[fila][columna] = 'X'
+                    except Registros.DoesNotExist:
+                        pass
+                    columna += 1
+                fila += 1
 
     if html is None:
         return [filas,columnas,datos]
@@ -3388,11 +3548,12 @@ def dataTasaMontaje(parque,t, html = None):
     suma_fila = OrderedDict()
     filas = Node("Filas")
     columnas = Node("Columnas")
-    componentes_parque = ComponentesParque.objects.get(parque=parque).componentes.all()
-    filtros = {}
-    filtros[2] = 'relacionesfu__orden_descarga'
-    filtros[4] = 'relacionesfu__orden_montaje'
-    filtros[5] = 'relacionesfu__orden_puestaenmarcha'
+    parque_eolico = ParqueEolico.objects.get(parque=parque)
+    # componentes_parque = ComponentesParque.objects.get(parque=parque).componentes.all()
+    # filtros = {}
+    # filtros[2] = 'relacionesfu__orden_descarga'
+    # filtros[4] = 'relacionesfu__orden_montaje'
+    # filtros[5] = 'relacionesfu__orden_puestaenmarcha'
 
     configuracion = ConfiguracionFU.objects.get(parque=parque)
 
@@ -3412,9 +3573,10 @@ def dataTasaMontaje(parque,t, html = None):
 
     e = EstadoFU.objects.get(nombre='Montaje')
     e_descarga = EstadoFU.objects.get(nombre='Descarga')
-    n_componentes = componentes_parque.filter(relacionesfu__orden_montaje__gt=0, relacionesfu__orden_descarga__gt=0).count()
+    #n_componentes = componentes_parque.filter(relacionesfu__orden_montaje__gt=0, relacionesfu__orden_descarga__gt=0).count()
+    n_componentes = aerogeneradoresAMontar(parque_eolico)
 
-    [proyeccion,ultima_fecha] = calcularProyeccion(ComponentesParque.objects.get(parque=parque),t.isocalendar()[0],t.isocalendar()[1])
+    [proyeccion,ultima_fecha] = calcularProyeccion(parque_eolico, t.isocalendar()[0], t.isocalendar()[1])
 
     filas_html = []
     columnas_html = []
@@ -3432,14 +3594,17 @@ def dataTasaMontaje(parque,t, html = None):
         d_str = str(aux.isocalendar()[0]) + "-W" + str(aux.isocalendar()[1]) + "-0"
         fecha_aux = datetime.strptime(d_str, "%Y-W%W-%w")
 
-        karws = {filtros[e.id] + '__gt': 0, filtros[e.id] + '__lte': n_componentes}
-        componentes = componentes_parque.filter(**karws).order_by(filtros[e.id])
+        #karws = {filtros[e.id] + '__gt': 0, filtros[e.id] + '__lte': n_componentes}
+        #componentes = componentes_parque.filter(**karws).order_by(filtros[e.id])
+        miembros = Membership.objects.filter(parque_eolico=parque_eolico,
+                                             estado=e,
+                                             orden__range=(0, n_componentes))
         columna = 0
-        if componentes.count() > 0:
-            for c in componentes:
+        if miembros.count() > 0:
+            for m in miembros:
                 if aux <= fecha_informe:
-                    n_comp = addUniqueNodo(c.nombre, columnas,columnas_html)
-                    value = getReal(parque,c,e,fecha_aux)
+                    n_comp = addUniqueNodo(m.componente.nombre, columnas,columnas_html)
+                    value = getReal(parque, m.componente, e, fecha_aux)
 
                     if fila > 0 :
                         datos[fila][columna] = value - suma_columna[columna]
@@ -3452,10 +3617,9 @@ def dataTasaMontaje(parque,t, html = None):
 
                 columna += 1
 
-
         n_comp = addUniqueNodo('Total Semana',columnas, columnas_html)
         if aux <= fecha_informe:
-            datos[fila][columna] = round(float(suma_fila[fila])/ float(componentes.count()),2)
+            datos[fila][columna] = round(float(suma_fila[fila])/ float(miembros.count()),2)
         columna += 1
 
         n_comp = addUniqueNodo('Real', columnas, columnas_html)
@@ -3467,20 +3631,20 @@ def dataTasaMontaje(parque,t, html = None):
         columna += 1
 
         n_comp = addUniqueNodo('Contractual', columnas,columnas_html)
-        datos[fila][columna] = getContractual(parque,c,e,fecha_aux)
+        datos[fila][columna] = getContractual(parque, m.componente, e, fecha_aux)
         columna += 1
 
         n_comp = addUniqueNodo('Plan', columnas, columnas_html)
-        datos[fila][columna] = getPlan(parque, c, e, fecha_aux)
+        datos[fila][columna] = getPlan(parque, m.componente, e, fecha_aux)
         columna += 1
 
         n_comp = addUniqueNodo('Proyección', columnas, columnas_html)
 
         try:
-            datos[fila][columna] = round((proyeccion[fila]*parque.no_aerogeneradores)/100,2)
+            datos[fila][columna] = round((proyeccion[fila]*parque.no_aerogeneradores)/100, 2)
         except:
             if ( len(proyeccion) > 0 ):
-                datos[fila][columna] = round((proyeccion[-1]*parque.no_aerogeneradores)/100,2)
+                datos[fila][columna] = round((proyeccion[-1]*parque.no_aerogeneradores)/100, 2)
             else:
                 datos[fila][columna] = 0
         columna += 1
@@ -3498,10 +3662,11 @@ def dataTasaMontaje(parque,t, html = None):
         return [filas_html,columnas_html,datos]
 
 def tasaMontajeExcel(parque,wb,t):
+    parque_eolico = ParqueEolico.objects.get(parque=parque)
     [filas, columnas, datos] = dataTasaMontaje(parque, t)
-    componentes_parque = ComponentesParque.objects.get(parque=parque).componentes.all()
-    n_componentes = componentes_parque.filter(relacionesfu__orden_montaje__gt=0,
-                                              relacionesfu__orden_descarga__gt=0).count()
+    #componentes_parque = ComponentesParque.objects.get(parque=parque).componentes.all()
+    miembros = Membership.objects.filter(parque_eolico=parque_eolico)
+    n_componentes = aerogeneradoresAMontar(parque_eolico)
 
     sheet_name = 'Tasa de montaje'
     if sheet_name in wb.sheetnames:
@@ -3599,7 +3764,10 @@ def dataListadoParadas(parque,t, html = None):
         n_col = addUniqueNodo('WTG', columnas, columnas_html)
         datos[fila][0] = parada.aerogenerador.nombre
         n_col = addUniqueNodo('Componente', columnas, columnas_html)
-        datos[fila][1] = parada.componente.nombre
+        if parada.componente is not None:
+            datos[fila][1] = parada.componente.nombre
+        else:
+            datos[fila][1] = ''
         n_col = addUniqueNodo('Trabajo', columnas, columnas_html)
         datos[fila][2] = parada.trabajo.nombre
         n_col = addUniqueNodo('Hora Paralización', columnas, columnas_html)
@@ -3682,10 +3850,10 @@ def listadoParadasExcel(parque,wb,t):
     return wb
 
 def graficosFUExcel(parque,wb):
-    filtros = {}
-    filtros[1] = 'relacionesfu__orden_descarga'
-    filtros[3] = 'relacionesfu__orden_montaje'
-    filtros[4] = 'relacionesfu__orden_puestaenmarcha'
+    # filtros = {}
+    # filtros[1] = 'relacionesfu__orden_descarga'
+    # filtros[3] = 'relacionesfu__orden_montaje'
+    # filtros[4] = 'relacionesfu__orden_puestaenmarcha'
 
     sheet_name = 'Graficas'
     if sheet_name in wb.sheetnames:
@@ -3696,79 +3864,81 @@ def graficosFUExcel(parque,wb):
     ws.sheet_view.zoomScale = 80
     font_test = TextFont(typeface='Calibri')
 
-    componentes_parque = ComponentesParque.objects.get(parque=parque).componentes.all()
+    #componentes_parque = ComponentesParque.objects.get(parque=parque).componentes.all()
+    parque_eolico = ParqueEolico.objects.get(parque=parque)
+    miembros = Membership.objects.filter(parque_eolico=parque_eolico)
     estados = EstadoFU.objects.filter(idx__gt=0).order_by('id')
     n_graficos = 0
     cuenta_anterior = 0
     for e in estados:
-        if e.idx in filtros:
-            karws = {filtros[e.idx] + '__gt': 0}
-            componentes = componentes_parque.filter(**karws).order_by(filtros[e.idx])
+        # if e.idx in filtros:
+        #     karws = {filtros[e.idx] + '__gt': 0}
+        #     componentes = componentes_parque.filter(**karws).order_by(filtros[e.idx])
+        miembros = Membership.objects.filter(parque_eolico=parque_eolico, estado=e)
+        if miembros.count() > 0:
+            cuenta = miembros.distinct().count()
+            c = BarChart()
+            c.style =  2
+            data1 =  Reference(ws2, min_col=3, max_col=6 ,min_row=3+cuenta_anterior, max_row=3 + cuenta_anterior + cuenta-1)
+            categs = Reference(ws2, min_col=2, max_col=2, min_row=3+cuenta_anterior, max_row=3 + cuenta_anterior + cuenta-1)
+            cuenta_anterior += cuenta
+            c.add_data(data1,titles_from_data=False)
 
-            if componentes.count() > 0:
-                cuenta = componentes.count()
-                c = BarChart()
-                c.style =  2
-                data1 =  Reference(ws2, min_col=3, max_col=6 ,min_row=3+cuenta_anterior, max_row=3 + cuenta_anterior + cuenta-1)
-                categs = Reference(ws2, min_col=2, max_col=2, min_row=3+cuenta_anterior, max_row=3 + cuenta_anterior + cuenta-1)
-                cuenta_anterior += cuenta
-                c.add_data(data1,titles_from_data=False)
+            bgColor = []
+            bgColor.append(ColorChoice(srgbClr="a5a5a5"))
+            bgColor.append(ColorChoice(srgbClr="2E75B6"))
+            bgColor.append(ColorChoice(srgbClr="ED7D31"))
+            bgColor.append(ColorChoice(srgbClr="70AD47"))
+            legend_names = []
+            legend_names.append('C2')
+            legend_names.append('D2')
+            legend_names.append('E2')
+            legend_names.append('F2')
 
-                bgColor = []
-                bgColor.append(ColorChoice(srgbClr="a5a5a5"))
-                bgColor.append(ColorChoice(srgbClr="2E75B6"))
-                bgColor.append(ColorChoice(srgbClr="ED7D31"))
-                bgColor.append(ColorChoice(srgbClr="70AD47"))
-                legend_names = []
-                legend_names.append('C2')
-                legend_names.append('D2')
-                legend_names.append('E2')
-                legend_names.append('F2')
+            for i in range(0,4):
+                c.series[i].graphicalProperties.solidFill = bgColor[i]
+                c.series[i].dLbls = DataLabelList()
+                c.series[i].dLbls.showVal = True
+                cp = CharacterProperties(latin=font_test, sz=800)
+                c.series[i].dLbls.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
+                title = u"{0}!{1}".format('Seguimiento', legend_names[i])
+                title = SeriesLabel(strRef=StrRef(title))
+                c.series[i].tx = title
 
-                for i in range(0,4):
-                    c.series[i].graphicalProperties.solidFill = bgColor[i]
-                    c.series[i].dLbls = DataLabelList()
-                    c.series[i].dLbls.showVal = True
-                    cp = CharacterProperties(latin=font_test, sz=800)
-                    c.series[i].dLbls.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
-                    title = u"{0}!{1}".format('Seguimiento', legend_names[i])
-                    title = SeriesLabel(strRef=StrRef(title))
-                    c.series[i].tx = title
+            c.overlap = -20
+            c.set_categories(categs)
 
-                c.overlap = -20
-                c.set_categories(categs)
+            c.y_axis.scaling.min = 0
+            c.height = 10.22
+            c.width = 25.7
+            if e.nombre == 'Descarga':
+                c.title = 'Descarga en Parque'
+            else:
+                c.title = e.nombre
+            c.y_axis.title = 'Nº de Componentes'
+            c.legend.position = 'b'
+            lnAxis = LineProperties(noFill=True,w =0)
+            c.graphical_properties = GraphicalProperties(ln=lnAxis)
+            c.y_axis.spPr = GraphicalProperties(ln=lnAxis)
+            c.plot_area.graphicalProperties = GraphicalProperties(ln=lnAxis)
 
-                c.y_axis.scaling.min = 0
-                c.height = 10.22
-                c.width = 25.7
-                if e.nombre == 'Descarga':
-                    c.title = 'Descarga en Parque'
-                else:
-                    c.title = e.nombre
-                c.y_axis.title = 'Nº de Componentes'
-                c.legend.position = 'b'
-                lnAxis = LineProperties(noFill=True,w =0)
-                c.graphical_properties = GraphicalProperties(ln=lnAxis)
-                c.y_axis.spPr = GraphicalProperties(ln=lnAxis)
-                c.plot_area.graphicalProperties = GraphicalProperties(ln=lnAxis)
+            cp = CharacterProperties(latin=font_test, sz=900)
+            c.x_axis.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
+            c.y_axis.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
+            c.y_axis.title.tx.rich.p[0].r.rPr = cp
 
-                cp = CharacterProperties(latin=font_test, sz=900)
-                c.x_axis.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
-                c.y_axis.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
-                c.y_axis.title.tx.rich.p[0].r.rPr = cp
+            lnFont = LineProperties(prstDash = "solid", solidFill="244185")
+            cp2 =  CharacterProperties(latin=font_test, sz=1400, solidFill = "24C885")
 
-                lnFont = LineProperties(prstDash = "solid", solidFill="244185")
-                cp2 =  CharacterProperties(latin=font_test, sz=1400, solidFill = "24C885")
-
-                c.title.tx.rich.p[0].r.rPr = cp2
-                c.title.tx.rich.p[0].endParaRpr = cp2
-                c.title.tx.rich.p[0].r.rPr.solidFill.RGB="24C885"
-                #c.title.txPr = GraphicalProperties(solidFill="244185")
-                fila_grafico = 3 + 20 * (n_graficos)
-                pos = "B" + str(fila_grafico)
-                ws.add_chart(c, pos)
-                #ws.cell(row=fila_grafico,column=1,value=c.style)
-                n_graficos += 1
+            c.title.tx.rich.p[0].r.rPr = cp2
+            c.title.tx.rich.p[0].endParaRpr = cp2
+            c.title.tx.rich.p[0].r.rPr.solidFill.RGB="24C885"
+            #c.title.txPr = GraphicalProperties(solidFill="244185")
+            fila_grafico = 3 + 20 * (n_graficos)
+            pos = "B" + str(fila_grafico)
+            ws.add_chart(c, pos)
+            #ws.cell(row=fila_grafico,column=1,value=c.style)
+            n_graficos += 1
     ws3 = wb['Tasa de montaje']
 
     fila = 3
@@ -3778,8 +3948,7 @@ def graficosFUExcel(parque,wb):
         valor = ws3.cell(row=fila, column=3).value
 
     e = EstadoFU.objects.get(idx=3)
-    n_componentes = componentes_parque.filter(relacionesfu__orden_montaje__gt=0,
-                                              relacionesfu__orden_descarga__gt=0).count()
+    n_componentes = aerogeneradoresAMontar(parque_eolico)
 
     cols = n_componentes
     data_col = 3+cols+2

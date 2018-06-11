@@ -330,6 +330,22 @@
         });
     });
 
+    $("[name^='premontaje']").each(function( index ) {
+        $(this).click(function(index){
+            var id = $(this).attr('name').split('-')[1];
+            //console.log(componente_id);
+            //console.log($(this).attr('name'));
+            var element1 = $(this).parent().parent().siblings()[0];
+            var element2 = $(element1).children('div')[0];
+            var componente_name = $(element2).html();
+            //console.log(componente_name);
+            var titulo = 'Registro Pre-montaje ' + componente_name;
+            $('#descarga-titulo').html(titulo);
+            $('#registroForm').append('<input type="hidden" name="id" id="componente_id" value="' + id + '">');
+            $('#enviarRegistro').attr('name','formPremontaje');
+            $('#registro').modal();
+        });
+    });
 
     $("[name^='montaje']").each(function( index ) {
         $(this).click(function(index){

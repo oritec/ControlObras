@@ -30,6 +30,35 @@ class ComponentesParque(models.Model):
     def __str__(self):
         return 'Componentes Parque ' + '%s' % (self.parque.nombre)
 
+# Hay un evidente problema de nombre. ParqueSolar es un legacy name, que no tiene significado.
+@python_2_unicode_compatible
+class ParqueEolico(models.Model):
+    parque = models.ForeignKey(ParqueSolar, on_delete=models.CASCADE)
+    componentes = models.ManyToManyField(Componente, through='Membership', related_name='members')
+    def __str__(self):
+        return 'Componentes Parque Eolico' + '%s' % (self.parque.nombre)
+
+@python_2_unicode_compatible
+class Membership(models.Model):
+    parque_eolico = models.ForeignKey(ParqueEolico, on_delete=models.CASCADE)
+    componente = models.ForeignKey(Componente, on_delete=models.CASCADE)
+    estado = models.ForeignKey(EstadoFU, on_delete=models.CASCADE)
+    orden = models.SmallIntegerField()
+    class Meta:
+        unique_together = ("parque_eolico", "componente", "estado")
+    def __str__(self):
+        return 'Relacion Componente - Parque ' + '%s-%s' % (self.parque_eolico, self.componente.nombre)
+
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            aux=Membership.objects.filter(parque_eolico=self.parque_eolico,estado=self.estado).order_by('-orden')
+            if aux.count() == 0:
+                self.orden = 1
+            else:
+                last = aux[0]
+                self.orden = last.orden + 1
+        super(Membership, self).save()
+
 @python_2_unicode_compatible
 class RelacionesFU(models.Model):
     componentes_parque = models.ForeignKey(ComponentesParque, on_delete=models.CASCADE)

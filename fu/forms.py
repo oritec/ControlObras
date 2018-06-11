@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django import forms
 from vista.models import ParqueSolar,Aerogenerador
-from fu.models import ComponentesParque, Componente,RelacionesFU,ConfiguracionFU
+from fu.models import Componente, ConfiguracionFU, ParqueEolico, Membership
 from fu.models import EstadoFU, Registros, Paradas
 from datetime import date
 import logging
@@ -17,23 +17,27 @@ class ComponenteForm(forms.Form):
 
 class AddComponentesForm(forms.Form):
     componente = forms.ModelChoiceField(queryset=None)
+    estadofu = forms.ModelMultipleChoiceField(queryset=EstadoFU.objects.filter(idx__gte=1, idx__lte=4).order_by('idx'),
+                                              widget=forms.CheckboxSelectMultiple, required=False)
     def __init__(self, *args, **kwargs):
         parque = kwargs.pop('parque')
-        aux = ComponentesParque.objects.get(parque=parque)
+        parque_eolico = ParqueEolico.objects.get(parque=parque)
+        #aux = ComponentesParque.objects.get(parque=parque)
+        aux = Membership.objects.filter(parque_eolico=parque_eolico)
         list_id = []
-        for r in aux.componentes.all():
+        for r in parque_eolico.componentes.all().distinct():
             list_id.append(r.id)
         super(AddComponentesForm, self).__init__(*args, **kwargs)
         self.fields['componente'].queryset = Componente.objects.exclude(id__in=list_id)
-        self.fields['componente'].widget.attrs['class'] = 'bs-select form-control'
+        self.fields['componente'].widget.attrs['class'] = 'form-control select2'
 
 class DeleteComponentesForm(forms.Form):
     componente = forms.ModelChoiceField(queryset=None)
     def __init__(self, *args, **kwargs):
         parque = kwargs.pop('parque')
-        aux = ComponentesParque.objects.get(parque=parque)
+        parque_eolico = ParqueEolico.objects.get(parque=parque)
         list_id = []
-        for r in aux.componentes.all():
+        for r in parque_eolico.componentes.all().distinct():
             list_id.append(r.id)
         super(DeleteComponentesForm, self).__init__(*args, **kwargs)
         self.fields['componente'].queryset = Componente.objects.filter(id__in=list_id)

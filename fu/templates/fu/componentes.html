@@ -179,9 +179,13 @@
             $('#formModal').append('<input type="hidden" name="id" id="componente_id" value="' + id + '">');
             $('#id_nombre').val(nombre);
             console.log('[value=' + options.join('], [value=') + ']');
+            for (var i = 2; i < 6; i++) {
+                //console.log($("[nombre='estadofu'] ,[value="+options[i]+"]"));
+                $("[nombre=estadofu] ,[value="+i.toString()+"]").prop('checked', false);
+            }
             for (var i = 0; i < options.length; i++) {
                 console.log($("[nombre='estadofu'] ,[value="+options[i]+"]"));
-                $("[nombre=estadofu] [value="+options[i]+"]").prop("checked", true);
+                $("[nombre=estadofu] ,[value="+options[i]+"]").prop('checked', true);
             }
             $('#basic').modal();
         };

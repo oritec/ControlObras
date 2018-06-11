@@ -8,6 +8,9 @@
     <link href="{% static 'common/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css' %}" rel="stylesheet" type="text/css" />
     <link href="{% static 'common/assets/global/plugins/bootstrap-select/css/bootstrap-select.min.css' %}" rel="stylesheet" type="text/css" />
     <link href="{% static 'common/assets/global/plugins/jquery-nestable/jquery.nestable.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/assets/global/plugins/select2/css/select2.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/assets/global/plugins/select2/css/select2-bootstrap.min.css' %}" rel="stylesheet" type="text/css" />
+
     <!-- END PAGE LEVEL STYLES -->
 {% endblock %}
 
@@ -23,7 +26,7 @@
     {%  else %}
         <div class="row">
             <div class="col-md-12">
-                <input type="button" id="add_componente" data-target="#basic" data-toggle="modal" class="btn btn-sm green-steel" value="Agregar Componente a Proyecto"/>
+                <input type="button" id="add_componente" data-target="#basic" data-toggle="modal" class="btn btn-sm green-steel" value="Agregar Componente a Proyecto" onclick="addComponente('{% url 'fu:status_componentes' parque.slug %}');"/>
                 <input type="button" id="del_componente" data-target="#delete" data-toggle="modal" class="btn btn-sm red-soft" value="Eliminar Componente de Proyecto"/>
             </div>
         </div>
@@ -67,29 +70,46 @@
                     <span class="glyphicon glyphicon-plus" style="color:rgba(74,182,100,0.89);font-size:20px"></span>
                      <b>Agregar Componente</b> </h4>
             </div>
+            <form action="{% url 'fu:actividades' parque.slug %}" method="post" id="formModal" class="horizontal-form">
+            {% csrf_token %}
             <div class="modal-body">
-                <form action="{% url 'fu:actividades' parque.slug %}" method="post" id="formModal" class="horizontal-form">
-                {% csrf_token %}
                 <div class="form-body">
                     <div class="row">
-                        <div class="col-md-12">
+                        <div class="col-md-6">
                             <div class="form-group">
                                 <label class="control-label">{{ choicesComponentesForm.componente.label }}:</label>
                                 {{ choicesComponentesForm.componente }}
                                 <span class="help-block"> {{ choicesComponentesForm.componente.errors }} </span>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-md-checkboxes">
+                                <label style="color: #333333;">Estados posibles:</label>
+                                <div class="md-checkbox-list">
+                                {% for choice in choicesComponentesForm.estadofu %}
+                                    <div class="md-checkbox">
+                                        {{ choice.tag }}
+                                        <label for="{{ choice.id_for_label }}">
+                                            <span></span>
+                                            <span class="check"></span>
+                                            <span class="box"></span> {{ choice.choice_label }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                                </div>
+                                <span class="help-block"> {{ choicesComponentesForm.estadofu.errors }} </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn default" data-dismiss="modal" onclick="cancelComponente()">Cancelar</button>
                 <button type="submit" id='enviarmodal' class="btn green" name="addComponente">Agregar</button>
                     <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
-                </form>
                 <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
-
             </div>
+            </form>
         </div>
         <!-- /.modal-content -->
     </div>
@@ -145,8 +165,10 @@
     <script src="{% static 'common/assets/global/plugins/jquery-multi-select/js/jquery.multi-select.js' %}" type="text/javascript"></script>
     <script src="{% static 'common/assets/global/plugins/bootstrap-select/js/bootstrap-select.min.js' %}" type="text/javascript"></script>
     <script src="{% static 'common/assets/global/plugins/jquery-nestable/jquery.nestable.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/select2/js/select2.full.min.js' %}" type="text/javascript"></script>
 
     <script src="{% static 'common/js/tabla-componentes.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/js/actividades.js' %}" type="text/javascript"></script>
 
     <script type="text/javascript">
         function editModal(id,nombre,options){
@@ -188,6 +210,10 @@
         dropupAuto: false,
         liveSearch: true,
     });
+
+    $('#id_componente').css('width', '100%');
+
+
     {% for e, lista in actividades.items %}
     $('#nestable-{{ e }}').nestable({
         maxDepth:1,
