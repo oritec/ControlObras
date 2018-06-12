@@ -3779,7 +3779,10 @@ def dataListadoParadas(parque,t, html = None):
         n_col = addUniqueNodo('Motivo', columnas, columnas_html)
         datos[fila][6] = parada.motivo
         n_col = addUniqueNodo('Grúa', columnas, columnas_html)
-        datos[fila][7] = parada.grua.nombre
+        if parada.grua is not None:
+            datos[fila][7] = parada.grua.nombre
+        else:
+            datos[fila][7] = ''
         n_col = addUniqueNodo('Observaciones', columnas, columnas_html)
         datos[fila][8] = parada.observaciones
         filas_html.append({'Item': str(parada.id), 'Fila': fila})
