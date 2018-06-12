@@ -149,6 +149,11 @@
                         <a href="{% url 'ncr:observaciones-show' parque.slug observacion.id %}?printable=true" class="btn btn-sm grey-salt" target="_blank">
                             Vista Impresi&oacute;n <i class="fa fa-print"></i>
                         </a>
+                        {% if perms.ncr.add_revision %}
+                        <a href="" class="btn btn-sm purple-plum" style="margin-left:10px;">
+                            Duplicar Observaci&oacute;n <i class="fa fa-copy"></i>
+                        </a>
+                        {% endif %}
                     </div>
                 </div>
             {% else %}
