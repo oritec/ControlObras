@@ -150,7 +150,7 @@
                             Vista Impresi&oacute;n <i class="fa fa-print"></i>
                         </a>
                         {% if perms.ncr.add_revision %}
-                        <a href="" class="btn btn-sm purple-plum" style="margin-left:10px;">
+                        <a data-toggle="modal" href="#duplicar" class="btn btn-sm purple-plum" style="margin-left:10px;">
                             Duplicar Observaci&oacute;n <i class="fa fa-copy"></i>
                         </a>
                         {% endif %}
@@ -365,6 +365,38 @@
                 </div>
             </form>
                 <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+
+<div class="modal fade bs-modal-lg" id="duplicar" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">
+                    <span class="fa fa-copy" style="color:rgba(74,182,100,0.89);font-size:20px"></span>
+                     <b>Duplicar observación</b> </h4>
+            </div>
+            <form action="" method="post" id="formModal" class="horizontal-form">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-body">
+                    <div class="row">
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default" data-dismiss="modal" onclick="cancelComponente()">Cancelar</button>
+                <button type="submit" id='enviarmodal' class="btn green" name="addComponente">Agregar</button>
+                    <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
+            </div>
+            </form>
         </div>
         <!-- /.modal-content -->
     </div>

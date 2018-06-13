@@ -2762,7 +2762,17 @@ def ingreso(request,slug,slug_ag):
         color = 'bg-yellow-crusta'
         if aux == 2:
             color = 'bg-green-meadow'
-            reg = registros.get(componente=m.componente, estado__idx=1)
+            try:
+                reg = registros.get(componente=m.componente, estado__idx=1)
+            except Registros.MultipleObjectsReturned:
+                regs = registros.filter(componente=m.componente, estado__idx=1)
+                prev_reg = None
+                for reg in regs:
+                    if prev_reg is not None:
+                        prev_reg.delete()
+                    prev_reg = reg
+                    logger.debug('ERROR: Doble registro!')
+                    logger.debug(reg)
             objeto['tooltip'] = reg.fecha.strftime("%d/%m/%Y") + '<br>' + reg.no_serie
             objeto['created_by'] = reg.created_by.id
         objeto['componente'] = m.componente
