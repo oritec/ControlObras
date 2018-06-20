@@ -2629,7 +2629,7 @@ def getComponenteStatus(registros, idx, componente, miembros):
         else:
             c_aux = miembros.get(componente=componente, estado=estado)
             c_ids = []
-            for m in miembros.filter(orden__lt=c_aux.orden, orden__gt=0):
+            for m in miembros.filter(orden__lt=c_aux.orden, orden__gt=0, estado=estado):
                 c_ids.append(m.componente.id)
             aux3 = registros.filter(componente_id__in=c_ids, estado__idx=3)
             if aux3.count() == len(c_ids):
