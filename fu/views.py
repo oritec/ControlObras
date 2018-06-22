@@ -967,12 +967,305 @@ def posicionAerogeneradores(parque_eolico, fecha_calculo):
         pos[x]['top'] = 27.3
         pos[x]['left'] = 87.1
         pos[x]['zindex'] = 403
-    elif parque.codigo == 'MST-002.2':
-
+    elif parque.codigo == 'MST-002.2': # Sarco
         x = 'WTG03'
         pos[x]['width'] = 7.0
-        pos[x]['top'] = 19.5
-        pos[x]['left'] = 7.7
+        pos[x]['top'] = 24.2
+        pos[x]['left'] = 43.1
+        pos[x]['zindex'] = 403
+
+        x = 'WTG05'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 22.2
+        pos[x]['left'] = 48.3
+        pos[x]['zindex'] = 403
+
+        x = 'WTG07'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 20.9
+        pos[x]['left'] = 53.5
+        pos[x]['zindex'] = 403
+
+        x = 'WTG08'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 30.7
+        pos[x]['left'] = 42.7
+        pos[x]['zindex'] = 403
+
+        x = 'WTG09'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 29.9
+        pos[x]['left'] = 46.0
+        pos[x]['zindex'] = 403
+
+        x = 'WTG11'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 27.9
+        pos[x]['left'] = 51.8
+        pos[x]['zindex'] = 403
+
+        x = 'WTG12'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 27.1
+        pos[x]['left'] = 54.4
+        pos[x]['zindex'] = 403
+
+        x = 'WTG13'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 26.4
+        pos[x]['left'] = 56.4
+        pos[x]['zindex'] = 403
+
+        x = 'WTG15'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 24.3
+        pos[x]['left'] = 63.4
+        pos[x]['zindex'] = 403
+
+        x = 'WTG16'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 28.7
+        pos[x]['left'] = 71.1
+        pos[x]['zindex'] = 403
+
+        x = 'WTG18'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 30.7
+        pos[x]['left'] = 65.4
+        pos[x]['zindex'] = 403
+
+        x = 'WTG20'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 32.3
+        pos[x]['left'] = 61.1
+        pos[x]['zindex'] = 403
+
+        x = 'WTG24'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 35.6
+        pos[x]['left'] = 47.9
+        pos[x]['zindex'] = 403
+
+        x = 'WTG25'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 37.7
+        pos[x]['left'] = 42.5
+        pos[x]['zindex'] = 403
+
+        x = 'WTG26'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 37.0
+        pos[x]['left'] = 45.3
+        pos[x]['zindex'] = 403
+
+        x = 'WTG27'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 41.8
+        pos[x]['left'] = 55.5
+        pos[x]['zindex'] = 403
+
+        x = 'WTG28'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 41.3
+        pos[x]['left'] = 59.1
+        pos[x]['zindex'] = 403
+
+        x = 'WTG29'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 40.4
+        pos[x]['left'] = 62.2
+        pos[x]['zindex'] = 403
+
+        x = 'WTG30'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 39.4
+        pos[x]['left'] = 65.0
+        pos[x]['zindex'] = 403
+
+        x = 'WTG31'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 38.3
+        pos[x]['left'] = 67.8
+        pos[x]['zindex'] = 403
+
+        x = 'WTG32'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 37.5
+        pos[x]['left'] = 70.7
+        pos[x]['zindex'] = 403
+
+        x = 'WTG33'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 36.2
+        pos[x]['left'] = 73.2
+        pos[x]['zindex'] = 403
+
+        x = 'WTG34'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 34.3
+        pos[x]['left'] = 75.5
+        pos[x]['zindex'] = 403
+
+        x = 'WTG35'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 32.7
+        pos[x]['left'] = 77.4
+        pos[x]['zindex'] = 403
+
+        x = 'WTG36'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 19.3
+        pos[x]['left'] = 38.2
+        pos[x]['zindex'] = 403
+
+        x = 'WTG38'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 17.9
+        pos[x]['left'] = 42.7
+        pos[x]['zindex'] = 403
+
+        x = 'WTG39'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 22.6
+        pos[x]['left'] = 18.5
+        pos[x]['zindex'] = 403
+
+        x = 'WTG40'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 24.4
+        pos[x]['left'] = 16.5
+        pos[x]['zindex'] = 403
+
+        x = 'WTG41'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 27.1
+        pos[x]['left'] = 14.8
+        pos[x]['zindex'] = 403
+
+        x = 'WTG42'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 29.9
+        pos[x]['left'] = 22.4
+        pos[x]['zindex'] = 403
+
+        x = 'WTG43'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 17.7
+        pos[x]['left'] = 23.3
+        pos[x]['zindex'] = 403
+
+        x = 'WTG44'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 28.1
+        pos[x]['left'] = 29.3
+        pos[x]['zindex'] = 403
+
+        x = 'WTG45'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 33.6
+        pos[x]['left'] = 35.0
+        pos[x]['zindex'] = 403
+
+        x = 'WTG46'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 32.7
+        pos[x]['left'] = 36.7
+        pos[x]['zindex'] = 403
+
+        x = 'WTG47'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 26.6
+        pos[x]['left'] = 35.0
+        pos[x]['zindex'] = 403
+
+        x = 'WTG49'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 23.6
+        pos[x]['left'] = 23.4
+        pos[x]['zindex'] = 403
+
+        x = 'WTG51'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 21.8
+        pos[x]['left'] = 30.4
+        pos[x]['zindex'] = 403
+
+        x = 'WTG52'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 20.8
+        pos[x]['left'] = 33.4
+        pos[x]['zindex'] = 403
+
+        x = 'WTG54'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 20.0
+        pos[x]['left'] = 21.3
+        pos[x]['zindex'] = 403
+
+        x = 'WTG55'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 17.6
+        pos[x]['left'] = 23.4
+        pos[x]['zindex'] = 403
+
+        x = 'WTG57'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 16.2
+        pos[x]['left'] = 48.9
+        pos[x]['zindex'] = 403
+
+        x = 'WTG59'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 7.2
+        pos[x]['left'] = 29.6
+        pos[x]['zindex'] = 403
+
+        x = 'WTG61'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 5.0
+        pos[x]['left'] = 33.1
+        pos[x]['zindex'] = 403
+
+        x = 'WTG62'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 4.7
+        pos[x]['left'] = 35.1
+        pos[x]['zindex'] = 403
+
+        x = 'WTG64'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 15.8
+        pos[x]['left'] = 30.8
+        pos[x]['zindex'] = 403
+
+        x = 'WTG66'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 15.2
+        pos[x]['left'] = 33.3
+        pos[x]['zindex'] = 403
+
+        x = 'WTG67'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 14.6
+        pos[x]['left'] = 36.0
+        pos[x]['zindex'] = 403
+
+        x = 'WTG71'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 8.0
+        pos[x]['left'] = 42.1
+        pos[x]['zindex'] = 403
+
+        x = 'WTG72'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 13.0
+        pos[x]['left'] = 41.4
+        pos[x]['zindex'] = 403
+
+        x = 'WTG75'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 11.8
+        pos[x]['left'] = 46.4
         pos[x]['zindex'] = 403
 
         # x = 'WTG05'
@@ -1421,10 +1714,11 @@ def posicionAerogeneradores(parque_eolico, fecha_calculo):
                         pos[ag.nombre]['left'] = left
                         pos[ag.nombre]['img'] = nombre
                         break
-            #Pruebas
+            # Inicio Pruebas
             # path = os.path.join(settings.BASE_DIR, 'static/common/images/ag')
             # #filename = path + '/' + unicode(r.componente.nombre) + '.png'
             # filename = path + '/' + unicode('T1') + '.png'
+            # #filename = path + '/' + unicode('Pala 3') + '.png'
             # if os.path.isfile(unicode(filename).encode('utf-8')):
             #     found = True
             #     [nombre, width, top, left] = get_image_data(os.path.basename(filename),
@@ -1435,6 +1729,7 @@ def posicionAerogeneradores(parque_eolico, fecha_calculo):
             #     pos[ag.nombre]['left'] = left
             #     pos[ag.nombre]['img'] = nombre
             # found = True
+            # Fin Pruebas
             if not found:
                 pos[ag.nombre]['width'] = 0.5
                 try:
@@ -1500,13 +1795,13 @@ def get_image_data(filename, top_i, left_i):
 
 def get_plano3d_img(parque):
     if parque.codigo == 'PCR-001':
-        return  ['/common/images/plano-bicentenario.png','0px']
+        return  ['/common/images/plano-bicentenario.png','0px','85%']
     elif parque.codigo == 'MST-002.2':
-        return ['/common/images/plano-sarco.jpg','0px']
+        return ['/common/images/plano-sarco2.png','50px','2%']
     elif parque.codigo == 'MST-002.1':
-        return ['/common/images/plano-aurora.png','50px']
+        return ['/common/images/plano-aurora.png','50px','85%']
     else:
-        return ['/common/images/plano2.png','0px']
+        return ['/common/images/plano2.png','0px','85%']
 
 @login_required(login_url='ingresar')
 def dashboard(request,slug):
@@ -1606,7 +1901,7 @@ def dashboard(request,slug):
     logger.debug(thisweek)
 
 
-    [plano_3d, plano_3d_top] = get_plano3d_img(parque)
+    [plano_3d, plano_3d_top, boton_left] = get_plano3d_img(parque)
 
     return TemplateResponse(request, 'fu/dashboard.html',
                   {'cont': contenido,
@@ -1628,6 +1923,7 @@ def dashboard(request,slug):
                    'ag_ready': ag_ready,
                    'plano_3d': plano_3d,
                    'plano_3d_top': plano_3d_top,
+                   'boton_left': boton_left,
                    })
 
 @login_required(login_url='ingresar')

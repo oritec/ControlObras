@@ -1283,8 +1283,6 @@ def imagenes_aerogenerador(request,slug,slug_ag):
                     node_graficofull2 = node
                     break
 
-
-
     nodo_titulo = None
     nodo_data = None
     for node in nodevisitor.visit(node_columna):
