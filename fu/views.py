@@ -1814,13 +1814,13 @@ def get_image_data(filename, top_i, left_i):
 
 def get_plano3d_img(parque):
     if parque.codigo == 'PCR-001':
-        return  ['/common/images/plano-bicentenario.png','0px','85%']
+        return  ['/common/images/plano-bicentenario.png','0px','85%','0px']
     elif parque.codigo == 'MST-002.2':
-        return ['/common/images/plano-sarco2.png','50px','2%']
+        return ['/common/images/plano-sarco2.png','50px','2%','80px']
     elif parque.codigo == 'MST-002.1':
-        return ['/common/images/plano-aurora.png','50px','85%']
+        return ['/common/images/plano-aurora.png','50px','85%','80px']
     else:
-        return ['/common/images/plano2.png','0px','85%']
+        return ['/common/images/plano2.png','0px','85%','0px']
 
 @login_required(login_url='ingresar')
 def dashboard(request,slug):
@@ -1919,7 +1919,7 @@ def dashboard(request,slug):
     logger.debug(graficoAvancePost)
     logger.debug(thisweek)
 
-    [plano_3d, plano_3d_top, boton_left] = get_plano3d_img(parque)
+    [plano_3d, plano_3d_top, boton_left, plano_3d_top_zoom] = get_plano3d_img(parque)
 
     return TemplateResponse(request, 'fu/dashboard.html',
                   {'cont': contenido,
@@ -1942,6 +1942,7 @@ def dashboard(request,slug):
                    'plano_3d': plano_3d,
                    'plano_3d_top': plano_3d_top,
                    'boton_left': boton_left,
+                   'plano_3d_top_zoom': plano_3d_top_zoom,
                    })
 
 @login_required(login_url='ingresar')
