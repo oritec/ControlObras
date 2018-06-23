@@ -3232,6 +3232,10 @@ def get_image_data_ingreso(filename):
         width = 73
         top = 55
         left = 2
+    elif filename == 'Rotor.png':
+        width = 75
+        top = 10
+        left = 4  # OK
 
     return [width,top,left]
 
