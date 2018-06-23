@@ -104,6 +104,22 @@
         }
     },
     {
+        "model": "ncr.componente",
+        "pk": 14,
+        "fields": {
+            "nombre": "Adaptador",
+            "orden_punchlist": 14
+        }
+    },
+    {
+        "model": "ncr.componente",
+        "pk": 15,
+        "fields": {
+            "nombre": "T5",
+            "orden_punchlist": 15
+        }
+    },
+    {
         "model": "ncr.subcomponente",
         "pk": 1,
         "fields": {

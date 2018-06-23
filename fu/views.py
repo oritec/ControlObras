@@ -101,8 +101,7 @@ def graficoComponentes(parque_eolico,estado,fecha_calculo):
 
     # Los totales
     data_graficos = []
-    miembros = Membership.objects.filter(parque_eolico=parque_eolico,
-                                         estado= estado)
+    miembros = Membership.objects.filter(parque_eolico=parque_eolico, estado= estado).order_by('orden')
     for m in miembros:
         data_graficos.append({"name": m.componente.nombre, "y": max_aerogeneradores})
     data_full.append({"name": "Total", "data": data_graficos})
