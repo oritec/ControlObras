@@ -1790,6 +1790,11 @@ def get_image_data(filename, top_i, left_i):
         width = 4.2
         top = top_i + 8.4
         left = left_i + 1.4
+    elif filename == 'Rotor.png':
+        name = filename
+        width = 4.5
+        top = top_i + 5.4
+        left = left_i + 1.4
     return ['common/images/ag/'+name, width,top,left]
 
 def get_plano3d_img(parque):
