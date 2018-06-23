@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'^$', views.home, name='home'),
     url(r'^observaciones/(?P<slug_ag>[-\w\d]+)/listado_fotos', views.imagenes_aerogenerador, name='imagenes_aerogenerador'),
     url(r'^observaciones/resumen', views.observaciones_resumen, name='observaciones-resumen'),
+    url(r'^observaciones/duplicadas', views.observaciones_duplicadas, name='observaciones_duplicadas'),
     url(r'^observaciones/imagenes/ver', views.list_fotos, name='fotos-list'),
     url(r'^observaciones/(?P<observacion_id>[0-9]+)/ver', views.show_observacion, name='observaciones-show'),
     url(r'^observaciones/(?P<observacion_id>[0-9]+)/editar', views.add_observacion, name='observaciones-editar'),

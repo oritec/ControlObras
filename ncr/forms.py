@@ -150,6 +150,13 @@ class NCR(forms.Form):
 
 #        self.fields['aerogenerador'].widget.attrs['class'] = 'form-control'
 
+class DuplicarObservacionForm(forms.Form):
+    aerogenerador = forms.ModelMultipleChoiceField(queryset=Aerogenerador.objects.all(),required=False)
+    def __init__(self, *args, **kwargs):
+        parque = kwargs.pop('parque')
+        super(DuplicarObservacionForm, self).__init__(*args, **kwargs)
+        self.fields['aerogenerador'].queryset = Aerogenerador.objects.filter(parque=parque).order_by('idx')
+
 class Punchlist(forms.Form):
     aerogenerador = forms.ModelMultipleChoiceField(queryset=Aerogenerador.objects.all().order_by('idx'),required=False)
     fecha_from = forms.DateField(widget=forms.DateInput(format='%d-%m-%Y'), input_formats=('%d-%m-%Y',),

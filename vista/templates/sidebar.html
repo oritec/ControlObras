@@ -98,6 +98,12 @@
                                     <span class="title">Punchlist</span>
                                 </a>
                             </li>
+                            <li class="nav-item " id="menu2-duplicadas">
+                                <a href="{% url 'ncr:observaciones_duplicadas' parque.slug %}" class="nav-link ">
+                                    <i class="fa fa-caret-right"></i>
+                                    <span class="title">Duplicadas</span>
+                                </a>
+                            </li>
                         {% for wtg in aerogeneradores %}
                             <li class="nav-item " id="menu2-observaciones-{{ wtg.idx }}">
                                 <a href="{% url 'ncr:observaciones' parque.slug wtg.slug %}" class="nav-link ">

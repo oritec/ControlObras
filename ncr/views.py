@@ -9,7 +9,7 @@ from vista.models import ParqueSolar,Aerogenerador
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
-from forms import ObservacionForm, RevisionForm, RevisionFormFull, NCR, Punchlist
+from forms import ObservacionForm, RevisionForm, RevisionFormFull, NCR, Punchlist,DuplicarObservacionForm
 from ncr.models import Observacion, Revision, Fotos, Observador,Componente,Subcomponente,Tipo,Severidad,EstadoRevision,Prioridad
 from easy_pdf.rendering import render_to_pdf_response, render_to_pdf
 from vista.models import Aerogenerador
@@ -31,6 +31,7 @@ from datetime import datetime
 from django.core.exceptions import PermissionDenied
 from usuarios.models import Log
 from django.db import transaction
+from django.contrib import messages
 
 from slimit import ast
 from slimit.parser import Parser
@@ -153,6 +154,34 @@ def observaciones_resumen(request,slug):
                    'grafico_subcomponente': grafico_subcomponente,
                    'grafico_tipo': grafico_tipo,
                    'grafico_aerogenerador': grafico_aerogenerador,
+                   })
+
+@login_required(login_url='ingresar')
+def observaciones_duplicadas(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
+    contenido=ContenidoContainer()
+    contenido.user=request.user
+    contenido.titulo=u'Observaciones Duplicadas'
+    contenido.subtitulo='Parque '+parque.nombre
+    contenido.menu = ['menu-ncr', 'menu2-duplicadas']
+    observaciones = Observacion.objects.filter(parque=parque, copied=True)
+    url_append = ''
+    table_show_ag = True
+
+    if request.method == 'POST':
+        obs = Observacion.objects.get(id=int(request.POST['remover_id']))
+        obs.copied = False
+        obs.save()
+        messages.add_message(request, messages.SUCCESS, 'Observación removida del listado')
+
+    return TemplateResponse(request, 'ncr/duplicadas.html',
+                  {'cont': contenido,
+                   'parque': parque,
+                   'observaciones': observaciones,
+                   'url_append':url_append,
+                   'table_show_ag': table_show_ag,
+                   'aerogeneradores':aerogeneradores,
                    })
 
 @login_required(login_url='ingresar')
@@ -317,7 +346,38 @@ def show_observacion(request,slug,observacion_id):
             fotos[r.id].append(foto.imagen.url)
 
     template_name = 'ncr/showObservacion.html'
+    duplicarForm = None
+    if request.method == 'POST':
+        if 'duplicar' in request.POST:
+            duplicarForm = DuplicarObservacionForm(request.POST, parque=parque)
+            if duplicarForm.is_valid():
+                ags = duplicarForm.cleaned_data['aerogenerador']
+                for ag in ags:
+                    obs_pk = observacion.pk
+                    new_obs = observacion
+                    new_obs.pk = None
+                    new_obs.copied = True
+                    new_obs.aerogenerador = ag
+                    new_obs.save()
+                    observacion = Observacion.objects.get(pk=obs_pk)
+                    for rev in observacion.revision_set.all():
+                        rev_pk = rev.pk
+                        new_rev = rev
+                        new_rev.pk = None
+                        new_rev.observacion = new_obs
+                        new_rev.save()
+                        current_rev = Revision.objects.get(pk=rev_pk)
+                        for foto in current_rev.fotos_set.all():
+                            new_foto = foto
+                            new_foto.pk = None
+                            new_foto.revision = new_rev
+                            new_foto.save()
+                messages.add_message(request, messages.SUCCESS, 'Observación duplicada')
+            else:
+                messages.add_message(request, messages.ERROR, 'Problema al duplicar observación')
 
+    if duplicarForm is None:
+        duplicarForm = DuplicarObservacionForm(parque=parque)
 
     if 'printable' in request.GET:
         template_name = 'ncr/showObservacion-printable.html'
@@ -332,7 +392,8 @@ def show_observacion(request,slug,observacion_id):
          'main_fotos': main_fotos,
          'fotos': fotos,
          'aerogeneradores':aerogeneradores,
-         'breadcrumbs': breadcrumbs
+         'breadcrumbs': breadcrumbs,
+         'duplicarForm': duplicarForm
         })
 
 @login_required(login_url='ingresar')

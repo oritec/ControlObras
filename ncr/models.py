@@ -260,6 +260,7 @@ class Observacion(models.Model):
     no_serie = models.CharField(max_length=100, unique=False,null=True,blank=True,default='')
     severidad = models.ForeignKey('Severidad', on_delete=models.SET_NULL, null=True)
     prioridad = models.ForeignKey('Prioridad', on_delete=models.SET_NULL, null=True)
+    copied = models.BooleanField(default=False)
     created_by = models.ForeignKey(User)
     reported_by = models.ForeignKey(Observador)
     created_at = models.DateTimeField(auto_now_add=True)
