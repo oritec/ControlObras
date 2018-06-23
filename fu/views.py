@@ -310,11 +310,26 @@ def calcularProyeccionGrafico(parque_eolico, anho, semana):
             fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
     return [data_graficos,fecha_calculo]
 
-# Funcion para determinar cuantos aerogeneradores se deben montar...
+# Funcion para determinar cuantos aerogeneradores se deben montar. En realidad es el número de componentes de un WTG
 def aerogeneradoresAMontar(parque_eolico):
     estado_montaje = EstadoFU.objects.get(nombre='Montaje')
     estado_descarga = EstadoFU.objects.get(nombre='Descarga')
 
+    try:
+        c = Componente.objects.get(nombre='Izado Cable HV')
+    except Componente.DoesNotExist:
+        c = None
+
+    if c is not None:
+        try:
+            izado = Membership.objects.get(parque_eolico=parque_eolico,estado=estado_montaje, componente=c)
+            aux = Membership.objects.filter(parque_eolico=parque_eolico, estado=estado_montaje, orden__lt=izado.orden)
+            return aux.count()
+        except Membership.DoesNotExist:
+            logger.debug('No se encontró actividad de Izaje en parque')
+
+    # Si no encuentro el componente Izado, entonces el número de elementos es el numero de componentes que están en
+    # descarga y montaje
     aux = Membership.objects.filter(parque_eolico=parque_eolico,
                                     estado=estado_montaje)
     cuenta_total = 0
@@ -1903,7 +1918,6 @@ def dashboard(request,slug):
     graficoAvancePost = '{series:' + graficoAvance + '}'
     logger.debug(graficoAvancePost)
     logger.debug(thisweek)
-
 
     [plano_3d, plano_3d_top, boton_left] = get_plano3d_img(parque)
 
