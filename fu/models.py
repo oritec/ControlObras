@@ -125,6 +125,8 @@ class Registros(models.Model):
     fecha = models.DateField(blank=False, null=False)
     no_serie = models.CharField(max_length=100, unique=False, blank=False, null=True)
     created_by = models.ForeignKey(User)
+    class Meta:
+        unique_together = ("parque", "aerogenerador", "componente", "estado")
     def __str__(self):
         return 'Registro, parque=' + self.parque.nombre + ',aerogenerador='+ self.aerogenerador.nombre + \
                ',componente=' + self.componente.nombre + ',estado=' + self.estado.nombre + \
