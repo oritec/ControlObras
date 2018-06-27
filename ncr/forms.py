@@ -37,6 +37,9 @@ class ObservacionForm(forms.ModelForm):
         #self.fields['aerogenerador'] = forms.ChoiceField(
         #    choices=opciones
         #)
+        self.fields['componente'].queryset = self.fields['componente'].queryset.order_by('orden_punchlist')
+        self.fields['sub_componente'].queryset = self.fields['sub_componente'].queryset.order_by('orden_punchlist')
+        self.fields['tipo'].queryset = self.fields['tipo'].queryset.order_by('orden_punchlist')
         self.fields['parque'].widget = forms.HiddenInput()
         self.fields['aerogenerador'].widget.attrs['class'] = 'bs-select form-control'
         self.fields['aerogenerador'].widget.attrs['data-live-search'] = 'true'
@@ -125,9 +128,9 @@ class NCR(forms.Form):
     estado = forms.ModelMultipleChoiceField(queryset=EstadoRevision.objects.all(),required=False)
     severidad = forms.ModelMultipleChoiceField(queryset=Severidad.objects.all(),required=False)
     prioridad = forms.ModelMultipleChoiceField(queryset=Prioridad.objects.all(), required=False)
-    componente = forms.ModelMultipleChoiceField(queryset=Componente.objects.all(),required=False)
-    subcomponente = forms.ModelMultipleChoiceField(queryset=Subcomponente.objects.all(),required=False)
-    tipo = forms.ModelMultipleChoiceField(queryset=Tipo.objects.all(),required=False)
+    componente = forms.ModelMultipleChoiceField(queryset=Componente.objects.all().order_by('orden_punchlist'),required=False)
+    subcomponente = forms.ModelMultipleChoiceField(queryset=Subcomponente.objects.all().order_by('orden_punchlist'),required=False)
+    tipo = forms.ModelMultipleChoiceField(queryset=Tipo.objects.all().order_by('orden_punchlist'),required=False)
     clase = forms.MultipleChoiceField(choices=[('1', 'NCR'), ('0', 'Incidencia')],
                                           required=False, label="Categoría")
     punchlist = forms.MultipleChoiceField(choices=[('0', 'No'), ('1', 'Si')],
