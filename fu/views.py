@@ -46,6 +46,7 @@ from openpyxl.chart.text import RichText
 from datetime import datetime
 import base64
 from easy_pdf.rendering import render_to_pdf
+from django.core.exceptions import MultipleObjectsReturned
 
 meses_espanol={"1":"Enero",
        "2":"Febrero",
@@ -3127,7 +3128,18 @@ def ingreso(request,slug,slug_ag):
         objeto = {}
         if aux == 2:
             color = 'bg-green-meadow'
-            reg = registros.get(componente=m.componente, estado__idx=3)
+            try:
+                reg = registros.get(componente=m.componente, estado__idx=3)
+            except MultipleObjectsReturned:
+                regs = registros.filter(componente=m.componente, estado__idx=3)
+                prev_reg = None
+                for reg in regs:
+                    if prev_reg is not None:
+                        prev_reg.delete()
+                    prev_reg = reg
+                    logger.debug('ERROR: Doble registro!')
+                    logger.debug(reg)
+
             objeto['tooltip'] = reg.fecha.strftime("%d/%m/%Y")
             objeto['created_by'] = reg.created_by.id
         elif aux == 0:
