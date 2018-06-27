@@ -104,6 +104,14 @@
                                     <span class="title">Duplicadas</span>
                                 </a>
                             </li>
+                            {% if request.user.is_superuser %}
+                            <li class="nav-item " id="menu2-configuracion-ncr">
+                                <a href="{% url 'ncr:configuracion' parque.slug %}" class="nav-link ">
+                                    <i class="fa fa-caret-right"></i>
+                                    <span class="title">Configuración</span>
+                                </a>
+                            </li>
+                            {% endif %}
                         {% for wtg in aerogeneradores %}
                             <li class="nav-item " id="menu2-observaciones-{{ wtg.idx }}">
                                 <a href="{% url 'ncr:observaciones' parque.slug wtg.slug %}" class="nav-link ">

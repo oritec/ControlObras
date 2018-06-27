@@ -39,6 +39,8 @@ from slimit.visitors import nodevisitor
 
 import requests
 
+from django.db import IntegrityError
+
 logger = logging.getLogger('oritec')
 
 @login_required(login_url='ingresar')
@@ -1448,3 +1450,99 @@ def imagenes_aerogenerador(request,slug,slug_ag):
                                    }, content_type='application/pdf',
                                   filename= nombre_archivo,
                                   response_class=HttpResponse)
+
+@login_required(login_url='ingresar')
+def configuracion(request,slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
+    contenido = ContenidoContainer()
+    contenido.user = request.user
+    contenido.titulo = u'Edición'
+    contenido.subtitulo = 'Componentes, Sub-componentes y Tipo'
+    contenido.menu = ['menu-ncr', 'menu2-configuracion-ncr']
+
+    if request.method == 'POST':
+        logger.debug('ncr-configuracion')
+        if 'orden' in request.POST:
+            target = request.POST['target']
+            orden = json.loads(request.POST.get('orden'))
+            orden_actividad = 1
+            for obj in orden:
+                id = obj['id']
+                c = None
+                if target == 'componente':
+                    c = get_object_or_404(Componente, id=id)
+                elif target == 'subcomponente':
+                    c = get_object_or_404(Subcomponente,id=id)
+                elif target == 'tipo':
+                    c = get_object_or_404(Tipo, id=id)
+
+                if c is not None:
+                    c.orden_punchlist = orden_actividad
+                    c.save()
+                orden_actividad += 1
+
+        elif 'agregar' in request.POST:
+            nombre = request.POST['nombre']
+            target = request.POST['target']
+            c = None
+            if target == 'componente':
+                c = Componente(nombre=nombre)
+            elif target == 'subcomponente':
+                c = Subcomponente(nombre=nombre)
+            elif target == 'tipo':
+                c = Tipo(nombre=nombre)
+
+            if c is not None:
+                try:
+                    c.save()
+                    messages.add_message(request, messages.SUCCESS, target.title() + ' agregado con éxito')
+                except IntegrityError:
+                    messages.add_message(request, messages.ERROR, target.title() + ' ya existe')
+
+        elif 'editar' in request.POST:
+            # Falta un try para nombres duplicados (mostrar error)
+            id = int(request.POST['id'])
+            nombre = request.POST['nombre']
+            target = request.POST['target']
+            c = None
+            if target == 'componente':
+                c = get_object_or_404(Componente, id=id)
+            elif target == 'subcomponente':
+                c = get_object_or_404(Subcomponente, id=id)
+            elif target == 'tipo':
+                c = get_object_or_404(Tipo, id=id)
+
+            if c is not None:
+                c.nombre = nombre
+                try:
+                    c.save()
+                    messages.add_message(request, messages.SUCCESS, target.title() + ' editado con éxito')
+                except IntegrityError:
+                    messages.add_message(request, messages.ERROR, target.title() + ' ya existe')
+
+        elif 'eliminar' in request.POST:
+            id = int(request.POST['id'])
+            target = request.POST['target']
+            c = None
+            if target == 'componente':
+                c = get_object_or_404(Componente, id=id)
+            elif target == 'subcomponente':
+                c = get_object_or_404(Subcomponente, id=id)
+            elif target == 'tipo':
+                c = get_object_or_404(Tipo, id=id)
+
+            if c is not None:
+                c.delete()
+                messages.add_message(request, messages.SUCCESS, target.title() + ' eliminado con éxito')
+    componentes = Componente.objects.all().order_by('orden_punchlist')
+    subcomponentes = Subcomponente.objects.all().order_by('orden_punchlist')
+    tipos = Tipo.objects.all().order_by('orden_punchlist')
+
+    return TemplateResponse(request, 'ncr/configuracion.html',
+                            {'cont': contenido,
+                             'parque': parque,
+                             'aerogeneradores': aerogeneradores,
+                             'componentes': componentes,
+                             'subcomponentes': subcomponentes,
+                             'tipos': tipos})

@@ -118,8 +118,16 @@
                     margin:0px;
                 }
 
-                span {
-                    float: left;
+                .container {
+                    position: relative;
+                    text-align: center;
+                    color: black;
+                }
+
+                .bottom-left {
+                    position: absolute;
+                    bottom: 8px;
+                    left: 16px;
                 }
 
             </style>
@@ -269,7 +277,8 @@
             <tbody>
             {% for cuadro in main_fotos %}
                 {%  if forloop.counter0|divisibleby:"2" %} <tr> {% endif %}
-                <td style="text-align: center;"> <img src='{{ cuadro|get_item:"url" }}'/>
+                <td style="text-align: center;">
+                    <img src='{{ cuadro|get_item:"url" }}' style="width:100%;"/>
                     <div>
                         {{ cuadro|get_item:"texto" }}
                         {% if colores %}

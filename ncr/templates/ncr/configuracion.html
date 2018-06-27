@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load customtags %}
+{% load tz %}
+{% load sekizai_tags %}
+
+{% block css %}
+    <!-- BEGIN PAGE LEVEL STYLES -->
+    <link href="{% static 'common/css/jquery.nestable.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL STYLES -->
+{% endblock %}
+
+{% block contenido %}
+    {% if parque.no_aerogeneradores == 0 %}
+        <div class="row">
+            <div class="col-md-11 col-md-offset-1">
+                <h4>Por favor, ingresar la informaci&oacute;n del parque (Configuraci&oacute;n).</h4>
+            </div>
+        </div>
+    {%  else %}
+        <div class="row">
+            <div class="portlet box blue-sharp" style="margin-left:30px;margin-right:30px;">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-tag"></i> Componentes
+                    </div>
+                    <a href="javascript:void(0)" data-target="componente" data-action="agregar" class="btn btn-circle btn-xs green-jungle pull-right" style="margin-top: 10px;" >
+                        <i class="fa fa-plus"></i>
+                        Agregar
+                    </a>
+                </div>
+                <div class="portlet-body">
+                    <p class="text-muted">
+                        El orden de los componentes influye en el orden de visualización en informe punchlist y cuadros de selección.
+                        Arrastra el nombre de los componentes para cambiar el orden.
+                    </p>
+                    <div class="dd nestable" data-url="{% url 'ncr:configuracion' parque.slug %}" data-target="componente">
+                        <ol class="dd-list" data-type="root">
+                            {% for elemento in componentes %}
+                                <li class="dd-item" data-id="{{ elemento.id }}">
+                                    <div class="dd-handle-container">
+                                        <div class="dd-handle" style="display: inline-block;">
+                                            {{ elemento.nombre }}
+                                        </div>
+                                        <a href="javascript:void(0);" class="btn btn-circle btn-xs red-haze pull-right add_composicion" data-target="componente" data-action="eliminar" data-id="{{ elemento.id }}" style="margin-right:5px;display: inline-block">
+                                            <i class="fa fa-trash-o"></i>
+                                            Eliminar
+                                        </a>
+
+                                        <a href="javascript:void(0);" class="btn btn-circle btn-xs yellow-saffron pull-right add_composicion" data-target="componente" data-action="editar" data-id="{{ elemento.id }}" style="margin-right:5px;display: inline-block">
+                                            <i class="fa fa-edit"></i>
+                                            Editar
+                                        </a>
+
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="portlet box grey-salsa" style="margin-left:30px;margin-right:30px;">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-tags"></i> Subcomponentes
+                    </div>
+                    <a href="javascript:void(0)" data-target="subcomponente" data-action="agregar" class="btn btn-circle btn-xs green-jungle pull-right" style="margin-top: 10px;" >
+                        <i class="fa fa-plus"></i>
+                        Agregar
+                    </a>
+                </div>
+                <div class="portlet-body">
+                    <p class="text-muted">
+                        El orden de los subcomponentes influye en el orden de los cuadros de selección.
+                        Arrastra el nombre de los subcomponentes para cambiar el orden.
+                    </p>
+                    <div class="dd nestable"  data-url="{% url 'ncr:configuracion' parque.slug %}" data-target="subcomponente">
+                        <ol class="dd-list" data-type="root">
+                            {% for elemento in subcomponentes %}
+                                <li class="dd-item" data-id="{{ elemento.id }}">
+                                    <div class="dd-handle-container">
+                                        <div class="dd-handle" style="display: inline-block;">
+                                            {{ elemento.nombre }}
+                                        </div>
+                                        <a href="javascript:void(0);" class="btn btn-circle btn-xs red-haze pull-right add_composicion" data-target="subcomponente" data-action="eliminar" data-id="{{ elemento.id }}" style="margin-right:5px;display: inline-block">
+                                            <i class="fa fa-trash-o"></i>
+                                            Eliminar
+                                        </a>
+
+                                        <a href="javascript:void(0);" class="btn btn-circle btn-xs yellow-saffron pull-right add_composicion" data-target="subcomponente" data-action="editar" data-id="{{ elemento.id }}" style="margin-right:5px;display: inline-block">
+                                            <i class="fa fa-edit"></i>
+                                            Editar
+                                        </a>
+
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="portlet box purple-plum" style="margin-left:30px;margin-right:30px;">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-pencil"></i> Tipos
+                    </div>
+                    <a href="javascript:void(0)" data-target="tipo" data-action="agregar" class="btn btn-circle btn-xs green-jungle pull-right" style="margin-top: 10px;" >
+                        <i class="fa fa-plus"></i>
+                        Agregar
+                    </a>
+                </div>
+                <div class="portlet-body">
+                    <p class="text-muted">
+                        El orden de los tipos influye en el orden de los cuadros de selección.
+                        Arrastra el nombre de los tipos para cambiar el orden.
+                    </p>
+                    <div class="dd nestable" data-url="{% url 'ncr:configuracion' parque.slug %}" data-target="tipo">
+                        <ol class="dd-list" data-type="root">
+                            {% for elemento in tipos %}
+                                <li class="dd-item" data-id="{{ elemento.id }}">
+                                    <div class="dd-handle-container">
+                                        <div class="dd-handle" style="display: inline-block;">
+                                            {{ elemento.nombre }}
+                                        </div>
+                                        <a href="javascript:void(0);" class="btn btn-circle btn-xs red-haze pull-right add_composicion" data-target="tipo" data-action="eliminar" data-id="{{ elemento.id }}" style="margin-right:5px;display: inline-block">
+                                            <i class="fa fa-trash-o"></i>
+                                            Eliminar
+                                        </a>
+
+                                        <a href="javascript:void(0);" class="btn btn-circle btn-xs yellow-saffron pull-right add_composicion" data-target="tipo" data-action="editar" data-id="{{ elemento.id }}" style="margin-right:5px;display: inline-block">
+                                            <i class="fa fa-edit"></i>
+                                            Editar
+                                        </a>
+
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="modal fade" id="agregar" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">
+                        <span class="glyphicon glyphicon-plus" style="color:rgba(57,225,62,0.89);font-size:20px"></span>
+                         <b id="titulo_agregar" style="text-transform:capitalize;">Agregar Actividad</b> </h4>
+                </div>
+                <form action="{% url 'ncr:configuracion' parque.slug %}" method="post" id="form_agregar">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Nombre: </label>
+                            <input name="nombre" id="form_agregar_nombre" class="form-control"/>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="hidden" name="target" id="agregar_form_target" value="0">
+                        <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" id='boton_actividad' class="btn green-steel" name="agregar">Agregar</button>
+                        <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                    </div>
+                </form>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+
+    <div class="modal fade" id="editar" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">
+                        <span class="glyphicon glyphicon-pencil" style="color:rgba(222,225,28,0.89);font-size:20px"></span>
+                         <b id="titulo_editar" style="text-transform:capitalize;"></b> </h4>
+                </div>
+                <form action="{% url 'ncr:configuracion' parque.slug %}" method="post" id="form_editar">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Nombre: </label>
+                            <input name="nombre" id="editar_form_nombre" class="form-control"/>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="hidden" name="target" id="editar_form_target" value="0">
+                        <input type="hidden" name="id" id="editar_form_id" value="0">
+                        <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" id='boton_actividad' class="btn green-steel" name="editar">Editar</button>
+                        <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                    </div>
+                </form>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+
+    <div class="modal fade" id="eliminar" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">
+                        <span class="glyphicon glyphicon-exclamation-sign" style="color:rgba(255, 63, 0, 0.89);font-size:20px"></span>
+                         <b>Advertencia</b> </h4>
+                </div>
+                <div class="modal-body">
+                     <h5><b>&iquest;Seguro que desea eliminar el elemento? Esto dejará huérfanas las observaciones de este elemento.</b> </h5>
+                </div>
+                <div class="modal-footer">
+                    <form action="{% url 'ncr:configuracion' parque.slug %}" method="post" id="form_eliminar">
+                        {% csrf_token %}
+                        <input type="hidden" name="target" id="eliminar_form_target" value="0">
+                        <input type="hidden" name="id" id="eliminar_form_id" value="0">
+                        <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" id='enviarmodal' class="btn red" name="eliminar">Borrar</button>
+                        <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                    </form>
+                    <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script src="{% static 'common/jquery-nestable/jquery.nestable.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'common/js/ncr-configuracion.js' %}" type="text/javascript"></script>
+{% endblock %}
+
+{% block jquery %}
+
+
+{% endblock %}
+

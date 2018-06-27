@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^observaciones/informeNCR', views.informeNCR, name='informeNCR'),
     url(r'^observaciones/punchlist', views.punchlist, name='punchlist'),
     url(r'^observaciones/(?P<slug_ag>[-\w\d]+)', views.observaciones, name='observaciones'),
-    url(r'^observadores', views.observadores, name='observadores')
+    url(r'^observadores', views.observadores, name='observadores'),
+    url(r'^configuracion', views.configuracion, name='configuracion')
 
 ]

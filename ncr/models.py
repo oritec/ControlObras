@@ -8,6 +8,7 @@ from vista.models import Aerogenerador
 from django.template import defaultfilters
 #from vista.models import ParqueSolar
 import logging
+
 logger = logging.getLogger('oritec')
 
 @python_2_unicode_compatible
@@ -25,21 +26,44 @@ class Componente(models.Model):
     def graphText(self):
         return '%s' % (self.nombre)
 
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            aux = Componente.objects.all().order_by('orden_punchlist').last()
+            if aux:
+                self.orden_punchlist = aux.orden_punchlist + 1
+        super(Componente, self).save()
+
 @python_2_unicode_compatible
 class Subcomponente(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
+    # por legacy de componente
+    orden_punchlist = models.IntegerField()
     def __str__(self):
         return '%s' % (self.nombre)
     def graphText(self):
         return '%s' % (self.nombre)
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            aux = Subcomponente.objects.all().order_by('orden_punchlist').last()
+            if aux:
+                self.orden_punchlist = aux.orden_punchlist + 1
+        super(Subcomponente, self).save()
 
 @python_2_unicode_compatible
 class Tipo(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
+    # por legacy de componente
+    orden_punchlist = models.IntegerField()
     def __str__(self):
         return '%s' % (self.nombre)
     def graphText(self):
         return '%s' % (self.nombre)
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            aux = Tipo.objects.all().order_by('orden_punchlist').last()
+            if aux:
+                self.orden_punchlist = aux.orden_punchlist + 1
+        super(Tipo, self).save()
 
 @python_2_unicode_compatible
 class Severidad(models.Model):
