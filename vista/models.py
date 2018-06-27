@@ -95,6 +95,8 @@ class ParqueSolar(models.Model):
                 DJANGO_TYPE = 'image/jpeg'
             elif original_image.name.lower().endswith(".PNG"):
                 DJANGO_TYPE = 'image/png'
+            elif original_image.name.lower().endswith(".jpeg"):
+                DJANGO_TYPE = 'image/jpeg'
 
         if DJANGO_TYPE == 'image/jpeg':
             PIL_TYPE = 'jpeg'
