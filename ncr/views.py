@@ -945,12 +945,15 @@ def listFotos(resultados):
 
 def listFotos_v2(resultados):
     main_fotos = []
-    for observacion in resultados:
+    resultados2 = resultados.order_by('componente__orden_punchlist','id')
+    numero = 1
+    for observacion in resultados2:
         r=observacion.revision_set.all().order_by('-id')[0]
         results = Fotos.objects.filter(revision=r, principal=True).order_by('orden')
         count = 1
         for f in results:
             cuadro_foto = {}
+            cuadro_foto['numero'] = numero
             cuadro_foto['url'] = f.reporte_img.url
             cuadro_foto['texto'] = 'OBS_' + observacion.parque.codigo + '-' + observacion.aerogenerador.nombre + \
                                     '-' + str(observacion.observacion_id)
@@ -959,6 +962,7 @@ def listFotos_v2(resultados):
                 count += 1
             cuadro_foto['status'] = observacion.estado.nombre
             main_fotos.append(cuadro_foto)
+        numero += 1
     return main_fotos
 
 def punchlistResults(parque, aerogenerador, form):

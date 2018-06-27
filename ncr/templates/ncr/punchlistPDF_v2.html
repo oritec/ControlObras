@@ -118,6 +118,10 @@
                     margin:0px;
                 }
 
+                span {
+                    float: left;
+                }
+
             </style>
         {%endblock%}
         {% block extra_style %}{% endblock %}
@@ -268,21 +272,19 @@
                 <td style="text-align: center;"> <img src='{{ cuadro|get_item:"url" }}'/>
                     <div>
                         {{ cuadro|get_item:"texto" }}
-                    {% if colores %}
-                        <span style="padding-left:10px">
-                            {% if cuadro|get_item:"status" == 'Solucionado' %}
-                            <img src='data:image/png;base64,{{ img_solucionado }}' height="20px" width="20px"/>
-                            {% elif cuadro|get_item:"status" == 'Parcialmente Solucionado' %}
-                            <img src='data:image/png;base64,{{ img_parcialsolucionado }}' height="20px" width="20px"/>
-                            {% elif cuadro|get_item:"status" == 'No Solucionado' %}
-                            <img src='data:image/png;base64,{{ img_nosolucionado }}' height="20px" width="20px"/>
-                            {% endif %}
-                        </span>
-                    {% endif %}
-
+                        {% if colores %}
+                            <span style="padding-left:10px">
+                                {% if cuadro|get_item:"status" == 'Solucionado' %}
+                                <img src='data:image/png;base64,{{ img_solucionado }}' height="20px" width="20px"/>
+                                {% elif cuadro|get_item:"status" == 'Parcialmente Solucionado' %}
+                                <img src='data:image/png;base64,{{ img_parcialsolucionado }}' height="20px" width="20px"/>
+                                {% elif cuadro|get_item:"status" == 'No Solucionado' %}
+                                <img src='data:image/png;base64,{{ img_nosolucionado }}' height="20px" width="20px"/>
+                                {% endif %}
+                            </span>
+                        {% endif %}
                     </div>
                 </td>
-
                 {%  if not forloop.counter0|divisibleby:"2"  %} </tr> {% endif %}
             {% endfor %}
             </tbody>
