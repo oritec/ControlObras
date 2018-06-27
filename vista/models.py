@@ -130,12 +130,11 @@ class ParqueSolar(models.Model):
         )
         original_image.seek(0)
 
-
-
     def save(self, *args, **kwargs):
         self.slug = defaultfilters.slugify(self.codigo)
 
         updateThumbnail = True
+
         if self.pk is not None:
             orig = ParqueSolar.objects.get(pk=self.pk)
             if orig.logo == self.logo:

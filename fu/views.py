@@ -2039,7 +2039,7 @@ def dashboard_diario(request,slug):
     except Componente.DoesNotExist:
         ag_ready = 0
 
-    [plano_3d, plano_3d_top] = get_plano3d_img(parque)
+    [plano_3d, plano_3d_top, boton_left, plano_3d_top_zoom] = get_plano3d_img(parque)
 
     return TemplateResponse(request, 'fu/dashboard-diario.html',
                   {'cont': contenido,
@@ -2059,8 +2059,10 @@ def dashboard_diario(request,slug):
                    'montados':montados,
                    'mechanical': mechanical,
                    'ag_ready': ag_ready,
-                   'plano_3d':plano_3d,
+                   'plano_3d': plano_3d,
                    'plano_3d_top': plano_3d_top,
+                   'boton_left': boton_left,
+                   'plano_3d_top_zoom': plano_3d_top_zoom,
                    })
 
 @login_required(login_url='ingresar')
@@ -3754,7 +3756,12 @@ def seriesfechasExcel(parque,wb):
 
     printDataExcel(ws, datos, 3, 4,alignment3,14)
 
+    if not parque.logo_excel:
+        parque.create_excel_logo()
+        parque.save()
+
     img1 = Image(parque.logo_excel)
+
     img2 = Image(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo-excel.png'))
     ws.add_image(img1, 'A1')
     ws.add_image(img2, 'K1')
