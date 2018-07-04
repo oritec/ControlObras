@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.shortcuts import render
 from django.template.response import TemplateResponse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -23,7 +22,6 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.enum.style import WD_STYLE_TYPE
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.contrib import messages
@@ -372,6 +370,34 @@ def word_insert_pagebreak(document, logo_archivo, dr,codigo_informe):
     row_cells[2].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
     document.add_paragraph(style='Espacio')
 
+def fix_image_rotation(foto):
+    from PIL import Image
+    from PIL import ExifTags
+    from cStringIO import StringIO
+
+    image = Image.open(StringIO(foto.imagen.read()))
+    for orientation in ExifTags.TAGS.keys():
+        if ExifTags.TAGS[orientation] == 'Orientation':
+            # logger.debug('orientacion')
+            break
+    exif = dict(image._getexif().items())
+    # We use our PIL Image object to create the thumbnail, which already
+    # has a thumbnail() convenience method that contrains proportions.
+    # Additionally, we use Image.ANTIALIAS to make the image look better.
+    # Without antialiasing the image pattern artifacts may result.
+    if exif[orientation] == 3:
+        image = image.rotate(180, expand=True)
+    elif exif[orientation] == 6:
+        image = image.rotate(270, expand=True)
+    elif exif[orientation] == 8:
+        image = image.rotate(90, expand=True)
+
+
+    temp_handle = StringIO()
+    image.save(temp_handle, format='jpeg')
+    temp_handle.seek(0)
+    return temp_handle
+
 @login_required(login_url='ingresar')
 def create_dr_word(request, slug, dr_id):
     dr = get_object_or_404(DR, id=dr_id)
@@ -475,9 +501,9 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(133), height=Mm(100))
+                img_temp = fix_image_rotation(foto)
+                r.add_picture(img_temp, width=Mm(133), height=Mm(100))
                 p = document.add_paragraph('Ilustración ' + str(foto_count) + '. ' + composicion.pie)
                 p.alignment = WD_ALIGN_PARAGRAPH.LEFT
                 p.style = 'Pie'
@@ -486,9 +512,9 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(75.2), height=Mm(100))
+                r.add_picture(img_temp, width=Mm(75.2), height=Mm(100))
                 p = document.add_paragraph('Ilustración ' + str(foto_count) + '. ' + composicion.pie)
                 p.alignment = WD_ALIGN_PARAGRAPH.LEFT
                 p.style = 'Pie'
@@ -498,15 +524,15 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(72), height=Mm(97))
+                r.add_picture(img_temp, width=Mm(72), height=Mm(97))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(72), height=Mm(97))
+                r.add_picture(img_temp, width=Mm(72), height=Mm(97))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
 
                 p = document.add_paragraph('Ilustración ' + str(foto_count) + '. ' + composicion.pie)
@@ -517,15 +543,15 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(85), height=Mm(64))
+                r.add_picture(img_temp, width=Mm(85), height=Mm(64))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(85), height=Mm(64))
+                r.add_picture(img_temp, width=Mm(85), height=Mm(64))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
 
                 p = document.add_paragraph('Ilustración ' + str(foto_count) + '. ' + composicion.pie)
@@ -537,23 +563,23 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(72), height=Mm(97))
+                r.add_picture(img_temp, width=Mm(72), height=Mm(97))
                 cell_toadd = row_cells[0]
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(72), height=Mm(48))
+                r.add_picture(img_temp, width=Mm(72), height=Mm(48))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
                 # foto 3
                 row_cells = table.rows[1].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=2)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(72), height=Mm(48))
+                r.add_picture(img_temp, width=Mm(72), height=Mm(48))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
                 cell_toadd.merge(row_cells[0])
                 p = document.add_paragraph('Ilustración ' + str(foto_count) + '. ' + composicion.pie)
@@ -564,23 +590,23 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(72), height=Mm(48))
+                r.add_picture(img_temp, width=Mm(72), height=Mm(48))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(72), height=Mm(97))
+                r.add_picture(img_temp, width=Mm(72), height=Mm(97))
                 cell_toadd = row_cells[1]
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
                 # foto 3
                 row_cells = table.rows[1].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=2)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(72), height=Mm(48))
+                r.add_picture(img_temp, width=Mm(72), height=Mm(48))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 cell_toadd.merge(row_cells[1])
                 p = document.add_paragraph('Ilustración ' + str(foto_count) + '. ' + composicion.pie)
@@ -591,21 +617,21 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(57), height=Mm(75))
+                img_temp = fix_image_rotation(foto)
+                r.add_picture(img_temp, width=Mm(57), height=Mm(75))
                 #row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(57), height=Mm(75))
+                r.add_picture(img_temp, width=Mm(57), height=Mm(75))
                 #row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
                 # foto 3
-                foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                foto = FotosDR.objects.get(composicion=composicion, orden=2)
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[2].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(57), height=Mm(75))
+                r.add_picture(img_temp, width=Mm(57), height=Mm(75))
                 #row_cells[2].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
 
                 p = document.add_paragraph('Ilustración ' + str(foto_count) + '. ' + composicion.pie)
@@ -617,29 +643,29 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(70), height=Mm(52.6))
+                r.add_picture(img_temp, width=Mm(70), height=Mm(52.6))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(70), height=Mm(52.6))
+                r.add_picture(img_temp, width=Mm(70), height=Mm(52.6))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
                 # foto 3
                 row_cells = table.rows[1].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=2)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(70), height=Mm(52.6))
+                r.add_picture(img_temp, width=Mm(70), height=Mm(52.6))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 4
                 row_cells = table.rows[1].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=3)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(70), height=Mm(52.6))
+                r.add_picture(img_temp, width=Mm(70), height=Mm(52.6))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
 
                 p = document.add_paragraph('Ilustración ' + str(foto_count) + '. ' + composicion.pie)
@@ -650,34 +676,34 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(50), height=Mm(70))
+                r.add_picture(img_temp, width=Mm(50), height=Mm(70))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 cell_toadd_1 = row_cells[0]
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(50), height=Mm(35))
+                r.add_picture(img_temp, width=Mm(50), height=Mm(35))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
                 # foto 3
                 row_cells = table.rows[1].cells
                 cell_toadd_1.merge(row_cells[0])
 
                 foto = FotosDR.objects.get(composicion=composicion, orden=2)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(50), height=Mm(70))
+                r.add_picture(img_temp, width=Mm(50), height=Mm(70))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
                 cell_toadd_2 = row_cells[1]
                 # foto 4
                 row_cells = table.rows[2].cells
                 cell_toadd_2.merge(row_cells[1])
                 foto = FotosDR.objects.get(composicion=composicion, orden=3)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(50), height=Mm(35))
+                r.add_picture(img_temp, width=Mm(50), height=Mm(35))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
 
                 p = document.add_paragraph('Ilustración ' + str(foto_count) + '. ' + composicion.pie)
@@ -689,17 +715,17 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(43), height=Mm(64))
+                r.add_picture(img_temp, width=Mm(43), height=Mm(64))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 row_cells[0].width = Mm(43)
                 cell_toadd_1 = row_cells[0]
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(65), height=Mm(48))
+                r.add_picture(img_temp, width=Mm(65), height=Mm(48))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
                 row_cells[1].width = Mm(65)
                 cell_toadd_2 = row_cells[1]
@@ -712,9 +738,9 @@ def create_dr_word(request, slug, dr_id):
                 cell_toadd_1.merge(row_cells[0])
 
                 foto = FotosDR.objects.get(composicion=composicion, orden=2)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(65), height=Mm(48))
+                r.add_picture(img_temp, width=Mm(65), height=Mm(48))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
                 row_cells[1].width = Mm(65)
                 cell_toadd_3 = row_cells[1]
@@ -722,9 +748,9 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[3].cells
                 cell_toadd_3.merge(row_cells[1])
                 foto = FotosDR.objects.get(composicion=composicion, orden=3)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(43), height=Mm(32))
+                r.add_picture(img_temp, width=Mm(43), height=Mm(32))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 row_cells[0].width = Mm(43)
                 p = document.add_paragraph('Ilustración ' + str(foto_count) + '. ' + composicion.pie)
@@ -740,32 +766,32 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(ancho), height=Mm(alto))
+                r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[0].width = Mm(ancho)
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(ancho), height=Mm(alto))
+                r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[1].width = Mm(ancho)
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
                 # foto 3
                 row_cells = table.rows[1].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=2)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(ancho), height=Mm(alto))
+                r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[0].width = Mm(ancho)
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 4
                 row_cells = table.rows[1].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=3)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(ancho), height=Mm(alto))
+                r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[1].width = Mm(ancho)
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
 
@@ -774,6 +800,7 @@ def create_dr_word(request, slug, dr_id):
                 p.style = 'Pie'
                 # Ocupa 2 paginas
                 foto_count += 1
+            # 6 fotos
             elif composicion.tipo == '6H':
                 ancho = 85
                 alto = 64
@@ -784,48 +811,48 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(ancho), height=Mm(alto))
+                r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[0].width = Mm(ancho)
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(ancho), height=Mm(alto))
+                r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[1].width = Mm(ancho)
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
                 # foto 3
                 row_cells = table.rows[1].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=2)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(ancho), height=Mm(alto))
+                r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[0].width = Mm(ancho)
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 4
                 row_cells = table.rows[1].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=3)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(ancho), height=Mm(alto))
+                r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[1].width = Mm(ancho)
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
                 # foto 5
                 row_cells = table.rows[2].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=4)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(ancho), height=Mm(alto))
+                r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[0].width = Mm(ancho)
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 6
                 row_cells = table.rows[2].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=5)
-                foto_filename = settings.BASE_DIR + foto.imagen.url
+                img_temp = fix_image_rotation(foto)
                 r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(foto_filename, width=Mm(ancho), height=Mm(alto))
+                r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[1].width = Mm(ancho)
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
 
@@ -844,7 +871,7 @@ def create_dr_word(request, slug, dr_id):
     #core_properties = document.core_properties
     #core_properties.title =
     #core_properties.comments = 'Fecha: ' + dr.fecha.strftime("%d/%m/%Y")
-
+    import StringIO
     target_stream = StringIO.StringIO()
     document.save(target_stream)
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')

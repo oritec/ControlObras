@@ -5,8 +5,7 @@ var TableDatatablesManaged = function () {
         var table = $('#tabla-ncr');
 
         // begin first table
-        table.dataTable({
-
+        var jtable = table.dataTable({
             // Internationalisation. For more info refer to http://datatables.net/manual/i18n
             "language": {
                 "lengthMenu": " _MENU_ &nbsp resultados",
@@ -66,11 +65,7 @@ var TableDatatablesManaged = function () {
             "order": [
                 [1, "asc"]
             ], // set first column as a default sort by asc
-
-
         });
-
-        var tableWrapper = jQuery('#tabla-ncr_wrapper');
 
         table.find('.group-checkable').change(function () {
             var set = jQuery(this).attr("data-set");
@@ -90,22 +85,19 @@ var TableDatatablesManaged = function () {
             //$(this).parents('tr').toggleClass("active");
         });
 
+        table.find('.group-checkable').prop("checked", true);
+        table.find('.group-checkable').change();
     }
 
-
     return {
-
         //main function to initiate the module
         init: function () {
             if (!jQuery().dataTable) {
                 return;
             }
-
             initTable1();
         }
-
     };
-
 }();
 
 

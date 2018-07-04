@@ -841,6 +841,8 @@ def informeNCR(request,slug):
                 return response
             if 'pdf' in request.POST:
                 logger.debug('PDF')
+                aux = list(map(int, request.POST.getlist('observaciones')))
+                resultados = resultados.filter(id__in=aux)
                 resultados = resultados.order_by('aerogenerador__idx')
                 imagenes = listFotos_v2(resultados)
                 if "colores" in request.POST:
