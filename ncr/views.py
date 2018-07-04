@@ -1063,7 +1063,7 @@ def generateWord(parque, aerogenerador,form, incluir_fotos = True):
             try:
                 aux.add_picture(archivo, width=Cm(7.5))
                 p = row_cells[celda].add_paragraph()
-                p.text = '#' + r['numero'] + '   ' + r['texto']
+                p.text = '#' + str(r['numero']) + '   ' + r['texto']
                 aux2 = p.add_run()
                 if r['status'] == 'Solucionado':
                     status_img = os.path.join(settings.BASE_DIR, 'static/common/images/check-mark-3-64.gif')
