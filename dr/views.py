@@ -380,17 +380,21 @@ def fix_image_rotation(foto):
         if ExifTags.TAGS[orientation] == 'Orientation':
             # logger.debug('orientacion')
             break
-    exif = dict(image._getexif().items())
-    # We use our PIL Image object to create the thumbnail, which already
-    # has a thumbnail() convenience method that contrains proportions.
-    # Additionally, we use Image.ANTIALIAS to make the image look better.
-    # Without antialiasing the image pattern artifacts may result.
-    if exif[orientation] == 3:
-        image = image.rotate(180, expand=True)
-    elif exif[orientation] == 6:
-        image = image.rotate(270, expand=True)
-    elif exif[orientation] == 8:
-        image = image.rotate(90, expand=True)
+
+    try:
+        exif = dict(image._getexif().items())
+        # We use our PIL Image object to create the thumbnail, which already
+        # has a thumbnail() convenience method that contrains proportions.
+        # Additionally, we use Image.ANTIALIAS to make the image look better.
+        # Without antialiasing the image pattern artifacts may result.
+        if exif[orientation] == 3:
+            image = image.rotate(180, expand=True)
+        elif exif[orientation] == 6:
+            image = image.rotate(270, expand=True)
+        elif exif[orientation] == 8:
+            image = image.rotate(90, expand=True)
+    except AttributeError:
+        logger.debug('AttributeError')
 
 
     temp_handle = StringIO()
