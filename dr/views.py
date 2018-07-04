@@ -378,15 +378,15 @@ def fix_image_rotation(foto):
     image = Image.open(StringIO(foto.imagen.read()))
 
     try:
-        DJANGO_TYPE = foto.file.content_type
+        DJANGO_TYPE = foto.imagen.content_type
     except Exception as e:
-        if foto.name.lower().endswith(".jpg"):
+        if foto.imagen.name.lower().endswith(".jpg"):
             DJANGO_TYPE = 'image/jpeg'
-        elif foto.name.lower().endswith(".png"):
+        elif foto.imagen.name.lower().endswith(".png"):
             DJANGO_TYPE = 'image/png'
-        elif foto.name.lower().endswith(".JPG"):
+        elif foto.imagen.name.lower().endswith(".JPG"):
             DJANGO_TYPE = 'image/jpeg'
-        elif foto.name.lower().endswith(".PNG"):
+        elif foto.imagen.name.lower().endswith(".PNG"):
             DJANGO_TYPE = 'image/png'
 
     if DJANGO_TYPE == 'image/jpeg':
