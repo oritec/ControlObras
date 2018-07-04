@@ -280,7 +280,7 @@
                 <td style="text-align: center;">
                     <img src='{{ cuadro|get_item:"url" }}' style="width:100%;"/>
                     <div>
-                        {{ cuadro|get_item:"texto" }}
+                        <b style="padding-right: 10px">#{{ cuadro|get_item:"numero" }}</b> -- {{ cuadro|get_item:"texto" }}
                         {% if colores %}
                             <span style="padding-left:10px">
                                 {% if cuadro|get_item:"status" == 'Solucionado' %}

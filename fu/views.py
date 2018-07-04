@@ -3794,7 +3794,7 @@ def dataSeguimiento(parque,t, html = None):
     columnas_html = []
 
     for e in estados:
-        miembros = Membership.objects.filter(parque_eolico=parque_eolico, estado=e)
+        miembros = Membership.objects.filter(parque_eolico=parque_eolico, estado=e).order_by('orden')
         if miembros.count() > 0:
             n_fila = Node(e.nombre, filas)
             for m in miembros:
@@ -4225,7 +4225,7 @@ def graficosFUExcel(parque,wb):
         # if e.idx in filtros:
         #     karws = {filtros[e.idx] + '__gt': 0}
         #     componentes = componentes_parque.filter(**karws).order_by(filtros[e.idx])
-        miembros = Membership.objects.filter(parque_eolico=parque_eolico, estado=e)
+        miembros = Membership.objects.filter(parque_eolico=parque_eolico, estado=e).order_by('orden')
         if miembros.count() > 0:
             cuenta = miembros.distinct().count()
             c = BarChart()
@@ -4233,65 +4233,68 @@ def graficosFUExcel(parque,wb):
             data1 =  Reference(ws2, min_col=3, max_col=6 ,min_row=3+cuenta_anterior, max_row=3 + cuenta_anterior + cuenta-1)
             categs = Reference(ws2, min_col=2, max_col=2, min_row=3+cuenta_anterior, max_row=3 + cuenta_anterior + cuenta-1)
             cuenta_anterior += cuenta
-            c.add_data(data1,titles_from_data=False)
+            # 2018-07-03 Se solicita que no se muestre este gráfico
+            if e.nombre != 'Pre-montaje':
+                c.add_data(data1,titles_from_data=False)
 
-            bgColor = []
-            bgColor.append(ColorChoice(srgbClr="a5a5a5"))
-            bgColor.append(ColorChoice(srgbClr="2E75B6"))
-            bgColor.append(ColorChoice(srgbClr="ED7D31"))
-            bgColor.append(ColorChoice(srgbClr="70AD47"))
-            legend_names = []
-            legend_names.append('C2')
-            legend_names.append('D2')
-            legend_names.append('E2')
-            legend_names.append('F2')
+                bgColor = []
+                bgColor.append(ColorChoice(srgbClr="a5a5a5"))
+                bgColor.append(ColorChoice(srgbClr="2E75B6"))
+                bgColor.append(ColorChoice(srgbClr="ED7D31"))
+                bgColor.append(ColorChoice(srgbClr="70AD47"))
+                legend_names = []
+                legend_names.append('C2')
+                legend_names.append('D2')
+                legend_names.append('E2')
+                legend_names.append('F2')
 
-            for i in range(0,4):
-                c.series[i].graphicalProperties.solidFill = bgColor[i]
-                c.series[i].dLbls = DataLabelList()
-                c.series[i].dLbls.showVal = True
-                cp = CharacterProperties(latin=font_test, sz=800)
-                c.series[i].dLbls.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
-                title = u"{0}!{1}".format('Seguimiento', legend_names[i])
-                title = SeriesLabel(strRef=StrRef(title))
-                c.series[i].tx = title
+                for i in range(0,4):
+                    c.series[i].graphicalProperties.solidFill = bgColor[i]
+                    c.series[i].dLbls = DataLabelList()
+                    c.series[i].dLbls.showVal = True
+                    cp = CharacterProperties(latin=font_test, sz=800)
+                    c.series[i].dLbls.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
+                    title = u"{0}!{1}".format('Seguimiento', legend_names[i])
+                    title = SeriesLabel(strRef=StrRef(title))
+                    c.series[i].tx = title
 
-            c.overlap = -20
-            c.set_categories(categs)
+                c.overlap = -20
+                c.set_categories(categs)
 
-            c.y_axis.scaling.min = 0
-            c.height = 10.22
-            c.width = 25.7
-            if e.nombre == 'Descarga':
-                c.title = 'Descarga en Parque'
-            else:
-                c.title = e.nombre
-            c.y_axis.title = 'Nº de Componentes'
-            c.legend.position = 'b'
-            lnAxis = LineProperties(noFill=True,w =0)
-            c.graphical_properties = GraphicalProperties(ln=lnAxis)
-            c.y_axis.spPr = GraphicalProperties(ln=lnAxis)
-            c.plot_area.graphicalProperties = GraphicalProperties(ln=lnAxis)
+                c.y_axis.scaling.min = 0
+                c.height = 10.22
+                c.width = 25.7
+                if e.nombre == 'Descarga':
+                    c.title = 'Descarga en Parque'
+                else:
+                    c.title = e.nombre
+                c.y_axis.title = 'Nº de Componentes'
+                c.legend.position = 'b'
+                lnAxis = LineProperties(noFill=True,w =0)
+                c.graphical_properties = GraphicalProperties(ln=lnAxis)
+                c.y_axis.spPr = GraphicalProperties(ln=lnAxis)
+                c.plot_area.graphicalProperties = GraphicalProperties(ln=lnAxis)
 
-            cp = CharacterProperties(latin=font_test, sz=900)
-            c.x_axis.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
-            c.y_axis.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
-            c.y_axis.title.tx.rich.p[0].r.rPr = cp
+                cp = CharacterProperties(latin=font_test, sz=900)
+                c.x_axis.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
+                c.y_axis.txPr = RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
+                c.y_axis.title.tx.rich.p[0].r.rPr = cp
 
-            lnFont = LineProperties(prstDash = "solid", solidFill="244185")
-            cp2 =  CharacterProperties(latin=font_test, sz=1400, solidFill = "24C885")
+                lnFont = LineProperties(prstDash = "solid", solidFill="244185")
+                cp2 =  CharacterProperties(latin=font_test, sz=1400, solidFill = "24C885")
 
-            c.title.tx.rich.p[0].r.rPr = cp2
-            c.title.tx.rich.p[0].endParaRpr = cp2
-            c.title.tx.rich.p[0].r.rPr.solidFill.RGB="24C885"
-            #c.title.txPr = GraphicalProperties(solidFill="244185")
-            fila_grafico = 3 + 20 * (n_graficos)
-            pos = "B" + str(fila_grafico)
-            ws.add_chart(c, pos)
-            #ws.cell(row=fila_grafico,column=1,value=c.style)
-            n_graficos += 1
+                c.title.tx.rich.p[0].r.rPr = cp2
+                c.title.tx.rich.p[0].endParaRpr = cp2
+                c.title.tx.rich.p[0].r.rPr.solidFill.RGB="24C885"
+                #c.title.txPr = GraphicalProperties(solidFill="244185")
+                fila_grafico = 3 + 20 * (n_graficos)
+                pos = "B" + str(fila_grafico)
+                ws.add_chart(c, pos)
+                #ws.cell(row=fila_grafico,column=1,value=c.style)
+                n_graficos += 1
+
+    # Gráfica de tasa de montaje
     ws3 = wb['Tasa de montaje']
-
     fila = 3
     valor = ws3.cell(row=fila,column = 3).value
     while valor is not None:
@@ -4302,7 +4305,7 @@ def graficosFUExcel(parque,wb):
     n_componentes = aerogeneradoresAMontar(parque_eolico)
 
     cols = n_componentes
-    data_col = 3+cols+2
+    data_col = 3 + cols + 2
     c = LineChart()
     data2 = Reference(ws3, min_col=data_col, max_col=data_col + 4 -1, min_row=2, max_row=fila - 2)
     categs = Reference(ws3, min_col=3, min_row=3, max_row=fila -2)

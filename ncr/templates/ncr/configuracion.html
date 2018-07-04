@@ -155,7 +155,8 @@
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
                     <h4 class="modal-title">
                         <span class="glyphicon glyphicon-plus" style="color:rgba(57,225,62,0.89);font-size:20px"></span>
-                         <b id="titulo_agregar" style="text-transform:capitalize;">Agregar Actividad</b> </h4>
+                        <b id="titulo_agregar" style="text-transform:capitalize;">Agregar Actividad</b>
+                    </h4>
                 </div>
                 <form action="{% url 'ncr:configuracion' parque.slug %}" method="post" id="form_agregar">
                     {% csrf_token %}
@@ -185,7 +186,8 @@
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
                     <h4 class="modal-title">
                         <span class="glyphicon glyphicon-pencil" style="color:rgba(222,225,28,0.89);font-size:20px"></span>
-                         <b id="titulo_editar" style="text-transform:capitalize;"></b> </h4>
+                        <b id="titulo_editar" style="text-transform:capitalize;"></b>
+                    </h4>
                 </div>
                 <form action="{% url 'ncr:configuracion' parque.slug %}" method="post" id="form_editar">
                     {% csrf_token %}
@@ -216,7 +218,8 @@
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
                     <h4 class="modal-title">
                         <span class="glyphicon glyphicon-exclamation-sign" style="color:rgba(255, 63, 0, 0.89);font-size:20px"></span>
-                         <b>Advertencia</b> </h4>
+                        <b>Advertencia</b>
+                    </h4>
                 </div>
                 <div class="modal-body">
                      <h5><b>&iquest;Seguro que desea eliminar el elemento? Esto dejará huérfanas las observaciones de este elemento.</b> </h5>

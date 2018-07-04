@@ -945,17 +945,27 @@ def listFotos(resultados):
             main_fotos[res.id] = results[0].reporte_img.url
     return main_fotos
 
-def listFotos_v2(resultados):
+def listFotos_v2(resultados, punchlist_orden=False):
     main_fotos = []
-    resultados2 = resultados.order_by('componente__orden_punchlist','id')
+    # Solicitud Felix 26-06-2018, colocar el numero de la tabla anterior.
+    numeros = {}
     numero = 1
+    for obs in resultados:
+        numeros[obs.id] = numero
+        numero += 1
+
+    if punchlist_orden:
+        resultados2 = resultados.order_by('componente__orden_punchlist','id')
+    else:
+        resultados2 = resultados
+
     for observacion in resultados2:
         r=observacion.revision_set.all().order_by('-id')[0]
         results = Fotos.objects.filter(revision=r, principal=True).order_by('orden')
         count = 1
         for f in results:
             cuadro_foto = {}
-            cuadro_foto['numero'] = numero
+            cuadro_foto['numero'] = numeros[observacion.id]
             cuadro_foto['url'] = f.reporte_img.url
             cuadro_foto['texto'] = 'OBS_' + observacion.parque.codigo + '-' + observacion.aerogenerador.nombre + \
                                     '-' + str(observacion.observacion_id)
@@ -964,7 +974,6 @@ def listFotos_v2(resultados):
                 count += 1
             cuadro_foto['status'] = observacion.estado.nombre
             main_fotos.append(cuadro_foto)
-        numero += 1
     return main_fotos
 
 def punchlistResults(parque, aerogenerador, form):
@@ -975,7 +984,7 @@ def punchlistResults(parque, aerogenerador, form):
                                    fecha_observacion__lte=form.cleaned_data['fecha_to'])
     if not reparadas:
         resultados = resultados.exclude(estado__nombre__exact='Solucionado').exclude(cerrado=True)
-    main_fotos = listFotos_v2(resultados)
+
     if aerogenerador.nombre == u'General':
         titulo = 'LISTADO DE OBSERVACIONES GENERALES'
     elif aerogenerador.nombre == u'Puerto':
@@ -983,6 +992,7 @@ def punchlistResults(parque, aerogenerador, form):
     else:
         titulo = 'LISTADO DE PENDIENTES AEROGENERADOR ' + aerogenerador.nombre
     resultados = resultados.order_by('componente__orden_punchlist','id')
+    main_fotos = listFotos_v2(resultados, True)
     return [resultados, main_fotos, titulo]
 
 def generateWord(parque, aerogenerador,form, incluir_fotos = True):
@@ -1053,7 +1063,7 @@ def generateWord(parque, aerogenerador,form, incluir_fotos = True):
             try:
                 aux.add_picture(archivo, width=Cm(7.5))
                 p = row_cells[celda].add_paragraph()
-                p.text = r['texto']
+                p.text = '#' + r['numero'] + '   ' + r['texto']
                 aux2 = p.add_run()
                 if r['status'] == 'Solucionado':
                     status_img = os.path.join(settings.BASE_DIR, 'static/common/images/check-mark-3-64.gif')
@@ -1082,6 +1092,7 @@ def punchlist(request,slug):
     resultados = None
 
     show_fotos = False
+
     if request.method == 'POST':
         logger.debug('informePunchlist Post')
         form = Punchlist(request.POST, parque=parque)
@@ -1132,7 +1143,7 @@ def punchlist(request,slug):
                     estados = form.cleaned_data['estados']
                     fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
                     nombre = 'PL_' + parque.codigo + '-' + ag.nombre + '_' + fecha_str + '.pdf'
-                    respuesta = generatePdf(parque,resultados,main_fotos,titulo,request,
+                    respuesta = generatePdf(parque,resultados, main_fotos, titulo, request,
                                             show_fotos=show_fotos,
                                             colores=colores,
                                             estados=estados,
@@ -1168,7 +1179,6 @@ def punchlist(request,slug):
                     buff.close()
                     response.write(ret_zip)
                     return response
-
 
     return TemplateResponse(request, 'ncr/punchlist.html',
         {'cont': contenido,

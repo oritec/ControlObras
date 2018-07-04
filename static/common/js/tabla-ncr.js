@@ -1,7 +1,5 @@
 var TableDatatablesManaged = function () {
 
-
-
     var initTable1 = function () {
 
         var table = $('#tabla-ncr');
@@ -56,23 +54,41 @@ var TableDatatablesManaged = function () {
             "pagingType": "bootstrap_full_number",
             "columnDefs": [
                 {  // set default column settings
-                    'orderable': true,
-                    'targets': [0]
+                    'orderable': false,
+                    'targets': [0,-1]
                 }, 
                 {
-                    "searchable": true,
-                    "targets": [0]
+                    "searchable": false,
+                    "targets": [0,-1]
                 }
             ],
 
             "order": [
-                [0, "asc"]
+                [1, "asc"]
             ], // set first column as a default sort by asc
 
 
         });
 
         var tableWrapper = jQuery('#tabla-ncr_wrapper');
+
+        table.find('.group-checkable').change(function () {
+            var set = jQuery(this).attr("data-set");
+            var checked = jQuery(this).is(":checked");
+            jQuery(set).each(function () {
+                if (checked) {
+                    $(this).prop("checked", true);
+                    //$(this).parents('tr').addClass("active");
+                } else {
+                    $(this).prop("checked", false);
+                    //$(this).parents('tr').removeClass("active");
+                }
+            });
+        });
+
+        table.on('change', 'tbody tr .checkboxes', function () {
+            //$(this).parents('tr').toggleClass("active");
+        });
 
     }
 
