@@ -376,6 +376,26 @@ def fix_image_rotation(foto):
     from cStringIO import StringIO
 
     image = Image.open(StringIO(foto.imagen.read()))
+
+    try:
+        DJANGO_TYPE = image.file.content_type
+    except Exception as e:
+        if image.name.lower().endswith(".jpg"):
+            DJANGO_TYPE = 'image/jpeg'
+        elif image.name.lower().endswith(".png"):
+            DJANGO_TYPE = 'image/png'
+        elif image.name.lower().endswith(".JPG"):
+            DJANGO_TYPE = 'image/jpeg'
+        elif image.name.lower().endswith(".PNG"):
+            DJANGO_TYPE = 'image/png'
+
+    if DJANGO_TYPE == 'image/jpeg':
+        PIL_TYPE = 'jpeg'
+        FILE_EXTENSION = 'jpg'
+    elif DJANGO_TYPE == 'image/png':
+        PIL_TYPE = 'png'
+        FILE_EXTENSION = 'png'
+
     for orientation in ExifTags.TAGS.keys():
         if ExifTags.TAGS[orientation] == 'Orientation':
             # logger.debug('orientacion')
@@ -398,7 +418,7 @@ def fix_image_rotation(foto):
 
 
     temp_handle = StringIO()
-    image.save(temp_handle, format='jpeg')
+    image.save(temp_handle, format=PIL_TYPE)
     temp_handle.seek(0)
     return temp_handle
 
