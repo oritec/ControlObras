@@ -194,7 +194,7 @@
                             {% endfor %}
                         </ul>
                     </li>
-                    {% if request.user.is_superuser %}
+                    {% if perms.dr.change_dr %}
                     <li class="nav-item" id="menu-dr">
                         <a href="javascript:;" class="nav-link nav-toggle">
                             <i class="fa fa-calendar"></i>

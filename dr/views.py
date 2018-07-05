@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.template.response import TemplateResponse
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from vista.functions import *
 from django.shortcuts import get_object_or_404
 from vista.models import ParqueSolar, Aerogenerador
@@ -31,6 +31,7 @@ logger = logging.getLogger('oritec')
 
 
 @login_required(login_url='ingresar')
+@permission_required('dr.change_dr', raise_exception=True)
 def listado(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
@@ -51,6 +52,7 @@ def listado(request, slug):
 
 
 @login_required(login_url='ingresar')
+@permission_required('dr.change_dr', raise_exception=True)
 def agregar(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
@@ -97,6 +99,7 @@ def agregar(request, slug):
 
 
 @login_required(login_url='ingresar')
+@permission_required('dr.change_dr', raise_exception=True)
 def editar(request, slug, dr_id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     dr = get_object_or_404(DR, id=dr_id)
@@ -170,6 +173,7 @@ def editar(request, slug, dr_id):
 
 
 @login_required(login_url='ingresar')
+@permission_required('dr.change_dr', raise_exception=True)
 def borrar(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
 
@@ -190,6 +194,7 @@ def borrar(request, slug):
 
 
 @login_required(login_url='ingresar')
+@permission_required('dr.change_dr', raise_exception=True)
 def actividad_agregar(request, slug, dr_id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     dr = get_object_or_404(DR, id=dr_id)
@@ -220,6 +225,7 @@ def actividad_agregar(request, slug, dr_id):
 
 
 @login_required(login_url='ingresar')
+@permission_required('dr.change_dr', raise_exception=True)
 def actividad_eliminar(request, slug, dr_id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     #dr = get_object_or_404(DR, id=dr_id)
@@ -233,6 +239,7 @@ def actividad_eliminar(request, slug, dr_id):
 
 
 @login_required(login_url='ingresar')
+@permission_required('dr.change_dr', raise_exception=True)
 def composicion_eliminar(request, slug, dr_id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     #dr = get_object_or_404(DR, id=dr_id)
@@ -320,6 +327,7 @@ def composicion_ajax(request, slug):
 
 
 @login_required(login_url='ingresar')
+@permission_required('dr.change_dr', raise_exception=True)
 def composicion_agregar(request, slug, dr_id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     dr = get_object_or_404(DR, id=dr_id)
@@ -436,6 +444,7 @@ def fix_image_rotation(foto):
 
 
 @login_required(login_url='ingresar')
+@permission_required('dr.change_dr', raise_exception=True)
 def create_dr_word(request, slug, dr_id):
     dr = get_object_or_404(DR, id=dr_id)
     nombre_archivo = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/dr/dr.docx'
