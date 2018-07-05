@@ -29,8 +29,9 @@ from django.contrib import messages
 import logging
 logger = logging.getLogger('oritec')
 
+
 @login_required(login_url='ingresar')
-def listado(request,slug):
+def listado(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido = ContenidoContainer()
@@ -48,8 +49,9 @@ def listado(request,slug):
                              'filas': drs
                              })
 
+
 @login_required(login_url='ingresar')
-def agregar(request,slug):
+def agregar(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido = ContenidoContainer()
@@ -92,6 +94,7 @@ def agregar(request,slug):
                              'form': form,
                              'back_url': reverse('dr:listado', args=[parque.slug])
                              })
+
 
 @login_required(login_url='ingresar')
 def editar(request, slug, dr_id):
@@ -165,6 +168,7 @@ def editar(request, slug, dr_id):
                              'actividades':actividades
                              })
 
+
 @login_required(login_url='ingresar')
 def borrar(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
@@ -183,6 +187,7 @@ def borrar(request, slug):
         log.save()
         messages.add_message(request, messages.SUCCESS, 'Reporte Eliminado')
         return HttpResponseRedirect(request.POST['back_url'])
+
 
 @login_required(login_url='ingresar')
 def actividad_agregar(request, slug, dr_id):
@@ -213,6 +218,7 @@ def actividad_agregar(request, slug, dr_id):
                 messages.add_message(request, messages.SUCCESS, 'Actividad editada correctamente')
         return HttpResponseRedirect(reverse('dr:editar', args=[parque.slug,dr.id]))
 
+
 @login_required(login_url='ingresar')
 def actividad_eliminar(request, slug, dr_id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
@@ -224,6 +230,7 @@ def actividad_eliminar(request, slug, dr_id):
             actividad.delete()
             messages.add_message(request, messages.SUCCESS, 'Actividad eliminada')
         return HttpResponseRedirect(reverse('dr:editar', args=[parque.slug, dr_id]))
+
 
 @login_required(login_url='ingresar')
 def composicion_eliminar(request, slug, dr_id):
@@ -237,8 +244,9 @@ def composicion_eliminar(request, slug, dr_id):
             messages.add_message(request, messages.SUCCESS, 'Composición eliminada')
     return HttpResponseRedirect(reverse('dr:editar', args=[parque.slug, dr_id]))
 
+
 @csrf_exempt
-def actividad_ajax(request,slug):
+def actividad_ajax(request, slug):
     if request.is_ajax() and request.POST:
         pk = request.POST.get('id')
         info = {}
@@ -247,8 +255,9 @@ def actividad_ajax(request,slug):
         info['id'] = pk
         return HttpResponse(json.dumps(info), content_type='application/json')
 
+
 @csrf_exempt
-def composicion_ajax(request,slug):
+def composicion_ajax(request, slug):
     if request.is_ajax() and request.POST:
         composicion_id = request.POST.get('composicion_id')
         actividad_id = request.POST.get('actividad_id')
@@ -309,6 +318,7 @@ def composicion_ajax(request,slug):
 
         return HttpResponse(json.dumps(info), content_type='application/json')
 
+
 @login_required(login_url='ingresar')
 def composicion_agregar(request, slug, dr_id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
@@ -357,7 +367,8 @@ def composicion_agregar(request, slug, dr_id):
 
         return HttpResponseRedirect(reverse('dr:editar', args=[parque.slug,dr.id]))
 
-def word_insert_pagebreak(document, logo_archivo, dr,codigo_informe):
+
+def word_insert_pagebreak(document, logo_archivo, dr, codigo_informe):
     document.add_page_break()
     table = document.add_table(rows=1, cols=3, style="TablaHeader")
     row_cells = table.rows[0].cells
@@ -369,6 +380,7 @@ def word_insert_pagebreak(document, logo_archivo, dr,codigo_informe):
     row_cells[2].paragraphs[0].add_run('Fecha: ' + dr.fecha.strftime("%d/%m/%Y"))
     row_cells[2].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
     document.add_paragraph(style='Espacio')
+
 
 def fix_image_rotation(foto):
     from PIL import Image
@@ -421,6 +433,7 @@ def fix_image_rotation(foto):
     image.save(temp_handle, format=PIL_TYPE)
     temp_handle.seek(0)
     return temp_handle
+
 
 @login_required(login_url='ingresar')
 def create_dr_word(request, slug, dr_id):
@@ -908,6 +921,7 @@ def create_dr_word(request, slug, dr_id):
     response.write(ret_word)
     return response
 
+
 @csrf_exempt
 def dr_ordenar(request, slug, dr_id):
     if request.is_ajax() and request.POST:
@@ -927,5 +941,5 @@ def dr_ordenar(request, slug, dr_id):
                     composicion.orden = orden_composicion
                     composicion.save()
                     orden_composicion += 1
-            orden_actividad += 0
+            orden_actividad += 1
         return HttpResponse(json.dumps('OK'), content_type='application/json')
