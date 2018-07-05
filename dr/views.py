@@ -390,7 +390,7 @@ def word_insert_pagebreak(document, logo_archivo, dr, codigo_informe):
     document.add_paragraph(style='Espacio')
 
 
-def fix_image_rotation(foto):
+def fix_image_rotation(foto, draft):
     from PIL import Image
     from PIL import ExifTags
     from cStringIO import StringIO
@@ -436,7 +436,9 @@ def fix_image_rotation(foto):
     except AttributeError:
         logger.debug('AttributeError')
 
-
+    if draft:
+        THUMBNAIL_SIZE = (500, 500)
+        image.thumbnail(THUMBNAIL_SIZE, Image.ANTIALIAS)
     temp_handle = StringIO()
     image.save(temp_handle, format=PIL_TYPE)
     temp_handle.seek(0)
@@ -454,7 +456,11 @@ def create_dr_word(request, slug, dr_id):
     temp_doc = Document()
     #document.styles.add_style('ListBullet', temp_doc.styles['ListBullet'].type)
     #document.styles.add_style('List Paragraph', temp_doc.styles['List Paragraph'].type)
-
+    aux_get = request.GET.get('draft', '0')
+    if aux_get == '0':
+        draft = False
+    else:
+        draft = True
     codigo_informe = 'DR_' + dr.parque.codigo.upper() + '-' + '%03d' % dr.numero
 
     section = document.sections[0]
@@ -548,7 +554,7 @@ def create_dr_word(request, slug, dr_id):
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
                 r = row_cells[0].paragraphs[0].add_run()
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r.add_picture(img_temp, width=Mm(133), height=Mm(100))
                 p = document.add_paragraph('Ilustración ' + str(foto_count) + '. ' + composicion.pie)
                 p.alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -558,7 +564,7 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[0].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(75.2), height=Mm(100))
                 p = document.add_paragraph('Ilustración ' + str(foto_count) + '. ' + composicion.pie)
@@ -570,13 +576,13 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[0].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(72), height=Mm(97))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[1].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(72), height=Mm(97))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -589,13 +595,13 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[0].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(85), height=Mm(64))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[1].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(85), height=Mm(64))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -609,21 +615,21 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[0].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(72), height=Mm(97))
                 cell_toadd = row_cells[0]
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[1].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(72), height=Mm(48))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
                 # foto 3
                 row_cells = table.rows[1].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=2)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[1].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(72), height=Mm(48))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -636,13 +642,13 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[0].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(72), height=Mm(48))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[1].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(72), height=Mm(97))
                 cell_toadd = row_cells[1]
@@ -650,7 +656,7 @@ def create_dr_word(request, slug, dr_id):
                 # foto 3
                 row_cells = table.rows[1].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=2)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[0].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(72), height=Mm(48))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
@@ -664,18 +670,18 @@ def create_dr_word(request, slug, dr_id):
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
                 r = row_cells[0].paragraphs[0].add_run()
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r.add_picture(img_temp, width=Mm(57), height=Mm(75))
                 #row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[1].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(57), height=Mm(75))
                 #row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
                 # foto 3
                 foto = FotosDR.objects.get(composicion=composicion, orden=2)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[2].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(57), height=Mm(75))
                 #row_cells[2].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -689,27 +695,27 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[0].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(70), height=Mm(52.6))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[1].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(70), height=Mm(52.6))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
                 # foto 3
                 row_cells = table.rows[1].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=2)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[0].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(70), height=Mm(52.6))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 4
                 row_cells = table.rows[1].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=3)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[1].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(70), height=Mm(52.6))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -722,14 +728,14 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[0].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(50), height=Mm(70))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 cell_toadd_1 = row_cells[0]
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[1].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(50), height=Mm(35))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -738,7 +744,7 @@ def create_dr_word(request, slug, dr_id):
                 cell_toadd_1.merge(row_cells[0])
 
                 foto = FotosDR.objects.get(composicion=composicion, orden=2)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[1].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(50), height=Mm(70))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -747,7 +753,7 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[2].cells
                 cell_toadd_2.merge(row_cells[1])
                 foto = FotosDR.objects.get(composicion=composicion, orden=3)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[0].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(50), height=Mm(35))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
@@ -761,7 +767,7 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[0].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(43), height=Mm(64))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
@@ -769,7 +775,7 @@ def create_dr_word(request, slug, dr_id):
                 cell_toadd_1 = row_cells[0]
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[1].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(65), height=Mm(48))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -784,7 +790,7 @@ def create_dr_word(request, slug, dr_id):
                 cell_toadd_1.merge(row_cells[0])
 
                 foto = FotosDR.objects.get(composicion=composicion, orden=2)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[1].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(65), height=Mm(48))
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -794,7 +800,7 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[3].cells
                 cell_toadd_3.merge(row_cells[1])
                 foto = FotosDR.objects.get(composicion=composicion, orden=3)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[0].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(43), height=Mm(32))
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
@@ -812,14 +818,14 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[0].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[0].width = Mm(ancho)
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[1].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[1].width = Mm(ancho)
@@ -827,7 +833,7 @@ def create_dr_word(request, slug, dr_id):
                 # foto 3
                 row_cells = table.rows[1].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=2)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[0].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[0].width = Mm(ancho)
@@ -835,7 +841,7 @@ def create_dr_word(request, slug, dr_id):
                 # foto 4
                 row_cells = table.rows[1].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=3)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[1].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[1].width = Mm(ancho)
@@ -857,14 +863,14 @@ def create_dr_word(request, slug, dr_id):
                 row_cells = table.rows[0].cells
                 # foto 1
                 foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[0].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[0].width = Mm(ancho)
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 2
                 foto = FotosDR.objects.get(composicion=composicion, orden=1)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[1].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[1].width = Mm(ancho)
@@ -872,7 +878,7 @@ def create_dr_word(request, slug, dr_id):
                 # foto 3
                 row_cells = table.rows[1].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=2)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[0].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[0].width = Mm(ancho)
@@ -880,7 +886,7 @@ def create_dr_word(request, slug, dr_id):
                 # foto 4
                 row_cells = table.rows[1].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=3)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[1].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[1].width = Mm(ancho)
@@ -888,7 +894,7 @@ def create_dr_word(request, slug, dr_id):
                 # foto 5
                 row_cells = table.rows[2].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=4)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[0].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[0].width = Mm(ancho)
@@ -896,7 +902,7 @@ def create_dr_word(request, slug, dr_id):
                 # foto 6
                 row_cells = table.rows[2].cells
                 foto = FotosDR.objects.get(composicion=composicion, orden=5)
-                img_temp = fix_image_rotation(foto)
+                img_temp = fix_image_rotation(foto, draft)
                 r = row_cells[1].paragraphs[0].add_run()
                 r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
                 row_cells[1].width = Mm(ancho)

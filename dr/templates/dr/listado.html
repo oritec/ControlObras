@@ -50,6 +50,9 @@
                                         <a href="{% url 'dr:reporte_dr_word' parque.slug fila.id %}" class="btn btn-circle btn-xs blue-madison">
                                             <i class="fa fa-file-word-o"></i> Reporte
                                         </a>
+                                        <a href="{% url 'dr:reporte_dr_word' parque.slug fila.id %}?draft=1" class="btn btn-circle btn-xs green-soft">
+                                            <i class="fa fa-file-word-o"></i> Draft
+                                        </a>
                                         <a href="{% url 'dr:editar' parque.slug fila.id %}" class="btn btn-circle btn-xs yellow-saffron">
                                             <i class="fa fa-edit"></i> Editar
                                         </a>
