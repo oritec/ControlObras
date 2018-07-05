@@ -437,7 +437,7 @@ def fix_image_rotation(foto, draft):
         logger.debug('AttributeError')
 
     if draft:
-        THUMBNAIL_SIZE = (500, 500)
+        THUMBNAIL_SIZE = (200, 200)
         image.thumbnail(THUMBNAIL_SIZE, Image.ANTIALIAS)
     temp_handle = StringIO()
     image.save(temp_handle, format=PIL_TYPE)
