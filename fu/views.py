@@ -47,8 +47,9 @@ from datetime import datetime
 import base64
 from easy_pdf.rendering import render_to_pdf
 from django.core.exceptions import MultipleObjectsReturned
+import json
 
-meses_espanol={"1":"Enero",
+meses_espanol = {"1":"Enero",
        "2":"Febrero",
        "3":"Marzo",
        "4":"Abril",
@@ -62,10 +63,11 @@ meses_espanol={"1":"Enero",
        "12":"Diciembre",
        }
 
-import json
+
 logger = logging.getLogger('oritec')
 
-def getContractual(parque,componente,estado,fecha):
+
+def getContractual(parque, componente, estado, fecha):
     c = Contractual.objects.filter(parque=parque,
                                    componente=componente,
                                    estado=estado,
@@ -75,7 +77,8 @@ def getContractual(parque,componente,estado,fecha):
     else:
         return c['no_aerogeneradores__sum']
 
-def getPlan(parque,componente,estado,fecha):
+
+def getPlan(parque, componente, estado, fecha):
     c = Plan.objects.filter(parque=parque,
                             componente=componente,
                             estado=estado,
@@ -86,14 +89,16 @@ def getPlan(parque,componente,estado,fecha):
     else:
         return c['no_aerogeneradores__sum']
 
-def getReal(parque,componente,estado,fecha):
+
+def getReal(parque, componente, estado, fecha):
     c = Registros.objects.filter(parque=parque,
                                  componente=componente,
                                  estado=estado,
                                  fecha__lte=fecha)
     return c.count()
 
-def graficoComponentes(parque_eolico,estado,fecha_calculo):
+
+def graficoComponentes(parque_eolico, estado, fecha_calculo):
     data_full = []
     # Me entrega el domingo final de esa semana.
 
@@ -134,7 +139,8 @@ def graficoComponentes(parque_eolico,estado,fecha_calculo):
     datos = serializeGrafico(data_full)
     return datos
 
-def calcularProyeccion(parque_eolico,anho,semana):
+
+def calcularProyeccion(parque_eolico, anho, semana):
     d = str(anho) + '-W' + str(semana)
     # Se calcula solo con los datos de hasta la semana pasada
     r = datetime.strptime(d + '-0', "%Y-W%W-%w") - relativedelta.relativedelta(weeks=1)
@@ -220,6 +226,7 @@ def calcularProyeccion(parque_eolico,anho,semana):
             d = str(fecha.isocalendar()[0]) + '-W' + str(semana_calculo)
             fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
     return [data_graficos,fecha_calculo]
+
 
 def calcularProyeccionGrafico(parque_eolico, anho, semana):
     d = str(anho) + '-W' + str(semana)
@@ -311,6 +318,7 @@ def calcularProyeccionGrafico(parque_eolico, anho, semana):
             fecha_calculo = datetime.strptime(d + '-0', "%Y-W%W-%w")
     return [data_graficos,fecha_calculo]
 
+
 # Funcion para determinar cuantos aerogeneradores se deben montar. En realidad es el número de componentes de un WTG
 def aerogeneradoresAMontar(parque_eolico):
     estado_montaje = EstadoFU.objects.get(nombre='Montaje')
@@ -341,6 +349,7 @@ def aerogeneradoresAMontar(parque_eolico):
 
     return cuenta_total
 
+
 def aerogeneradoresMontados(parque_eolico,fecha):
     parque = parque_eolico.parque
 
@@ -365,6 +374,7 @@ def aerogeneradoresMontados(parque_eolico,fecha):
                                  estado=estado_montaje,
                                  fecha__lte=fecha)
     return c.count()
+
 
 def porcentajeAvance(parque_eolico,fecha,componentes_montaje=None):
     parque = parque_eolico.parque
@@ -397,6 +407,7 @@ def porcentajeAvance(parque_eolico,fecha,componentes_montaje=None):
 
     valor = valor / max_aerogeneradores * 100
     return valor
+
 
 def graficoAvances(parque_eolico,anho,semana,actual_date,data_proyeccion):
     data_full = []
@@ -493,14 +504,14 @@ def graficoAvances(parque_eolico,anho,semana,actual_date,data_proyeccion):
     datos = serializeGrafico(data_full)
     return datos
 
+
 def posicionAerogeneradores(parque_eolico, fecha_calculo):
     parque = parque_eolico.parque
     d = str(fecha_calculo.isocalendar()[0]) + '-W' + str(fecha_calculo.isocalendar()[1])
-    fecha = datetime.strptime(d + '-0', "%Y-W%W-%w")
     estado = EstadoFU.objects.get(idx=3)
     pos = OrderedDict()
     for ag in Aerogenerador.objects.filter(parque=parque):
-        pos[ag.nombre]={}
+        pos[ag.nombre] = {}
 
     if parque.codigo == 'CLI-001':
         pos['WTG01']['width'] = 7.0
@@ -1165,13 +1176,13 @@ def posicionAerogeneradores(parque_eolico, fecha_calculo):
 
         x = 'WTG43'
         pos[x]['width'] = 7.0
-        pos[x]['top'] = 17.7
-        pos[x]['left'] = 23.3
+        pos[x]['top'] = 28.7
+        pos[x]['left'] = 27.0
         pos[x]['zindex'] = 403
 
         x = 'WTG44'
         pos[x]['width'] = 7.0
-        pos[x]['top'] = 28.1
+        pos[x]['top'] = 28.0
         pos[x]['left'] = 29.3
         pos[x]['zindex'] = 403
 
@@ -1757,6 +1768,7 @@ def posicionAerogeneradores(parque_eolico, fecha_calculo):
 
     return pos
 
+
 def get_image_data(filename, top_i, left_i):
     name = '0.png'
     try:
@@ -1813,6 +1825,7 @@ def get_image_data(filename, top_i, left_i):
         left = left_i + 1.4
     return ['common/images/ag/'+name, width,top,left]
 
+
 def get_plano3d_img(parque):
     if parque.codigo == 'PCR-001':
         return  ['/common/images/plano-bicentenario.png','0px','85%','0px']
@@ -1822,6 +1835,7 @@ def get_plano3d_img(parque):
         return ['/common/images/plano-aurora.png','50px','85%','80px']
     else:
         return ['/common/images/plano2.png','0px','85%','0px']
+
 
 @login_required(login_url='ingresar')
 def dashboard(request,slug):
@@ -1946,6 +1960,7 @@ def dashboard(request,slug):
                    'plano_3d_top_zoom': plano_3d_top_zoom,
                    })
 
+
 @login_required(login_url='ingresar')
 def dashboard_diario(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
@@ -2065,6 +2080,7 @@ def dashboard_diario(request,slug):
                    'plano_3d_top_zoom': plano_3d_top_zoom,
                    })
 
+
 @login_required(login_url='ingresar')
 def avance(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
@@ -2089,6 +2105,7 @@ def avance(request,slug):
                    'aerogeneradores': aerogeneradores,
                    'pos_ag': pos_ag,
                    })
+
 
 @login_required(login_url='ingresar')
 @permission_required('fu.add_componente', raise_exception=True)
@@ -2152,6 +2169,7 @@ def componente(request,slug):
          'componentes': componentes,
         })
 
+
 def getOrden(componente, d,p,m,pm):
     ret_d = 0
     ret_p = 0
@@ -2167,6 +2185,7 @@ def getOrden(componente, d,p,m,pm):
         elif e.idx == 4:
             ret_pm = pm + 1
     return [ret_d,ret_p,ret_m,ret_pm]
+
 
 def getComponentesbyState(parque_eolico, estado):
     if estado == 'descarga':
@@ -2202,6 +2221,7 @@ def getComponentesbyState(parque_eolico, estado):
     #     lista[c.id]=c.nombre
     #     id += 1
     # return lista
+
 
 def addComponente(parque_eolico, new_componente, estados):
     #print(new_componente)
@@ -2239,6 +2259,7 @@ def addComponente(parque_eolico, new_componente, estados):
     #                  orden_puestaenmarcha=puestaenmarcha)
     # r.save()
 
+
 def deleteComponente(parque_eolico, del_componente):
     elementos = Membership.objects.filter(parque_eolico=parque_eolico, componente=del_componente)
     for m in elementos:
@@ -2268,6 +2289,7 @@ def deleteComponente(parque_eolico, del_componente):
     # aux.delete()
     # fixOrdenComponentes()
 
+
 def fixOrdenComponentes(parque_eolico):
     estado = EstadoFU.objects.all()
     for e in estado:
@@ -2288,6 +2310,7 @@ def fixOrdenComponentes(parque_eolico):
     #             setattr(c, f, pos)
     #             c.save()
     #             pos += 1
+
 
 @login_required(login_url='ingresar')
 @permission_required('fu.add_componentesparque', raise_exception=True)
@@ -2359,6 +2382,7 @@ def actividades(request,slug):
          'titulos': titulos,
         })
 
+
 @csrf_exempt
 def status_componentes(request, slug):
     if request.is_ajax() and request.POST:
@@ -2368,6 +2392,7 @@ def status_componentes(request, slug):
         for e in Componente.objects.get(id=componente_id).estados.all():
             datos.append(e.id)
         return HttpResponse(json.dumps(datos), content_type='application/json')
+
 
 @csrf_exempt
 def ordenar_actividades(request, slug, str_estado):
@@ -2404,6 +2429,7 @@ def ordenar_actividades(request, slug, str_estado):
             content_type="application/json"
         )
 
+
 def checkValidFile(ws, parque_eolico):
     fila = 4
     columna = 2
@@ -2418,6 +2444,7 @@ def checkValidFile(ws, parque_eolico):
 
     return fila
 
+
 def getLastColumn(ws):
     fila = 3
     columna = 4
@@ -2427,6 +2454,7 @@ def getLastColumn(ws):
         columna = columna + 2
         valor = ws.cell(row=fila, column=columna).value
     return columna
+
 
 @login_required(login_url='ingresar')
 @permission_required('fu.add_configuracionfu', raise_exception=True)
@@ -2476,6 +2504,7 @@ def configuracion(request,slug):
                    'aerogeneradores': aerogeneradores,
                    'form': form
                    })
+
 
 def readPlanFile(configuracion, parque_eolico):
     nombre_archivo = os.path.join(settings.MEDIA_ROOT, configuracion.plan.name)
@@ -2556,6 +2585,7 @@ def readPlanFile(configuracion, parque_eolico):
         fila += 2
     return True
 
+
 def graficoPlanificacion(parque):
     configuracion = ConfiguracionFU.objects.get(parque=parque)
     parque_eolico = ParqueEolico.objects.get(parque=parque)
@@ -2615,6 +2645,7 @@ def graficoPlanificacion(parque):
         plan_values[i] = plan
         contractual_values[i] = contractual
     return [xvalues,yvalues,plan_values,contractual_values]
+
 
 @login_required(login_url='ingresar')
 def planificacion(request,slug):
@@ -2684,6 +2715,7 @@ def planificacion(request,slug):
                    'contractual': contractual,
                    'thisweek': thisweek
                    })
+
 
 @login_required(login_url='ingresar')
 def download_config(request,slug):
@@ -2893,6 +2925,7 @@ def download_config(request,slug):
     response.write(ret_excel)
     return response
 
+
 # 2: El componente-estado ya fue ingresado
 # 1: El componente-estado está bloqueado por prerequisitos
 # 0: El componente-estado puede ser ingresado
@@ -2971,6 +3004,7 @@ def getComponenteStatus(registros, idx, componente, miembros):
         return 1
 
     return 1
+
 
 @login_required(login_url='ingresar')
 def ingreso(request,slug,slug_ag):
@@ -3228,6 +3262,7 @@ def ingreso(request,slug,slug_ag):
                    'pos':pos,
                    })
 
+
 def get_image_data_ingreso(filename):
     if filename == 'Pala 3.png':
         width = 75
@@ -3268,6 +3303,7 @@ def get_image_data_ingreso(filename):
 
     return [width,top,left]
 
+
 @login_required(login_url='ingresar')
 def paradas(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
@@ -3301,6 +3337,7 @@ def paradas(request,slug):
             'aerogeneradores': aerogeneradores,
             'paradas': paradas,
         })
+
 
 @login_required(login_url='ingresar')
 @permission_required('fu.add_paradas', raise_exception=True)
@@ -3346,6 +3383,7 @@ def add_paradas(request,slug):
             'aerogeneradores': aerogeneradores,
         })
 
+
 @login_required(login_url='ingresar')
 def edit_paradas(request,slug,id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
@@ -3387,11 +3425,13 @@ def edit_paradas(request,slug,id):
             'edit_parada': edit_parada,
         })
 
+
 def nested_dict(n, type):
     if n == 1:
         return defaultdict(type)
     else:
         return defaultdict(lambda: nested_dict(n-1, type))
+
 
 def dataPlanificacion(parque):
     parque_eolico = ParqueEolico.objects.get(parque=parque)
@@ -3467,6 +3507,7 @@ def dataPlanificacion(parque):
                 fila += 2
     return [filas,columnas,datos2]
 
+
 def printFilasHeader(ws,node,row,column,deep,alignment1=None):
     deep +=1
     bgColor = Color(rgb="283861")
@@ -3503,6 +3544,7 @@ def printFilasHeader(ws,node,row,column,deep,alignment1=None):
 
     return row
 
+
 def printColumnasHeader(ws,node,row,column,deep):
     deep +=1
     bgColor = Color(rgb="283861")
@@ -3531,12 +3573,14 @@ def printColumnasHeader(ws,node,row,column,deep):
                        end_column=column  - 1)
     return column
 
+
 def getHojas(node, hojas):
     if len(node.children) == 0:
         hojas.append(node)
     else:
         for level in node.children:
             getHojas(level,hojas)
+
 
 def printDataExcel(ws,datos, initial_row,initial_col,alignment = None, column_width = None):
     thin = Side(border_style="thin", color="000000")
@@ -3565,6 +3609,7 @@ def printDataExcel(ws,datos, initial_row,initial_col,alignment = None, column_wi
     if column_width is not None:
         for columna in range(initial_col,initial_col+max_col+1):
             ws.column_dimensions[get_column_letter(columna)].width = column_width
+
 
 def planificacionExcel(parque, wb):
     [filas,columnas,datos] = dataPlanificacion(parque)
@@ -3619,6 +3664,7 @@ def planificacionExcel(parque, wb):
 
     return wb
 
+
 def addUniqueNodo(nombre, padre, html=None):
     r = Resolver('name')
     try:
@@ -3630,6 +3676,7 @@ def addUniqueNodo(nombre, padre, html=None):
             html.append(nombre)
 
     return nodo
+
 
 def dataSeriesfechas(parque, html=None):
     datos = OrderedDict()
@@ -3702,6 +3749,7 @@ def dataSeriesfechas(parque, html=None):
     else:
         return [filas_html,columnas_html,datos]
 
+
 def seriesfechasExcel(parque,wb):
     [filas, columnas, datos] = dataSeriesfechas(parque)
     sheet_name = 'Número de series y fecha'
@@ -3768,6 +3816,7 @@ def seriesfechasExcel(parque,wb):
 
     return wb
 
+
 def dataSeguimiento(parque,t, html = None):
     datos = OrderedDict()
     filas = Node("Filas")
@@ -3833,6 +3882,7 @@ def dataSeguimiento(parque,t, html = None):
     else:
         return [filas_html,columnas_html,datos]
 
+
 def seguimientoExcel(parque,wb,t):
     [filas, columnas, datos] = dataSeguimiento(parque,t)
     sheet_name = 'Seguimiento'
@@ -3889,6 +3939,7 @@ def seguimientoExcel(parque,wb,t):
     ws.add_image(img2, 'K1')
 
     return wb
+
 
 def dataTasaMontaje(parque,t, html = None):
     datos = OrderedDict()
@@ -4009,6 +4060,7 @@ def dataTasaMontaje(parque,t, html = None):
     else:
         return [filas_html,columnas_html,datos]
 
+
 def tasaMontajeExcel(parque,wb,t):
     parque_eolico = ParqueEolico.objects.get(parque=parque)
     [filas, columnas, datos] = dataTasaMontaje(parque, t)
@@ -4092,6 +4144,7 @@ def tasaMontajeExcel(parque,wb,t):
 
     return wb
 
+
 def dataListadoParadas(parque,t, html = None):
     datos = OrderedDict()
     filas = Node("Filas")
@@ -4140,6 +4193,7 @@ def dataListadoParadas(parque,t, html = None):
         return [filas,columnas,datos]
     else:
         return [filas_html,columnas_html,datos]
+
 
 def listadoParadasExcel(parque,wb,t):
     [filas, columnas, datos] = dataListadoParadas(parque, t)
@@ -4199,6 +4253,7 @@ def listadoParadasExcel(parque,wb,t):
     ws.add_image(img2, 'H1')
 
     return wb
+
 
 def graficosFUExcel(parque,wb):
     # filtros = {}
@@ -4354,6 +4409,7 @@ def graficosFUExcel(parque,wb):
 
     return wb
 
+
 def reporteExcelFU(parque,t,nombre):
     if parque.excel_fu:
         wb = load_workbook(parque.excel_fu.file.name)
@@ -4377,6 +4433,7 @@ def reporteExcelFU(parque,t,nombre):
     response.write(ret_excel)
 
     return response
+
 
 def reportePdfFU(parque,t):
     with open(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo.png'), "rb") as image_file:
@@ -4461,6 +4518,7 @@ def reportePdfFU(parque,t):
                          'paradas': paradas
                          })
     return pdf
+
 
 @login_required(login_url='ingresar')
 def reportes(request,slug):
