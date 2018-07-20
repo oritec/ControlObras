@@ -9,6 +9,7 @@ import logging
 
 logger = logging.getLogger('oritec')
 
+
 @python_2_unicode_compatible
 class DR(models.Model):
     parque = models.ForeignKey('vista.ParqueSolar', on_delete=models.CASCADE)
@@ -17,11 +18,14 @@ class DR(models.Model):
     climatologia = models.CharField(max_length=100, unique=False)
     sitio = models.CharField(max_length=100, unique=False)
     actividades = models.CharField(max_length=500, unique=False)
+    hora_entrada = models.TimeField()
+    hora_salida = models.TimeField()
     created_by = models.ForeignKey(User)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return '%s' % (self.actividades)
+
 
 @python_2_unicode_compatible
 class ActividadDR(models.Model):
@@ -32,6 +36,7 @@ class ActividadDR(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return '%s' % (self.descripcion)
+
 
 @python_2_unicode_compatible
 class ComposicionDR(models.Model):
@@ -44,17 +49,20 @@ class ComposicionDR(models.Model):
     def __str__(self):
         return '%s' % (self.descripcion)
 
+
 def dr_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'dr/dr_{0}/actividad_{1}/{2}'.format(instance.composicion.actividad.dr.id,
                                       instance.composicion.actividad.id,
                                       filename)
 
+
 def thumbnail_dr_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'dr/dr_{0}/actividad_{1}/thumbnails/{2}'.format(instance.composicion.actividad.dr.id,
                                                 instance.composicion.actividad.id,
                                                 filename)
+
 
 @python_2_unicode_compatible
 class FotosDR(models.Model):

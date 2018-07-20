@@ -541,7 +541,14 @@ def create_dr_word(request, slug, dr_id):
     p = r.add_paragraph()
     for idx in range(1, 4):
         r = r.merge(row_cells[idx])
-
+    # Fechas inicio y termino
+    row_cells = table.add_row().cells
+    r = row_cells[0]
+    r = r.merge(row_cells[1])
+    row_cells[2].paragraphs[0].add_run('Hora Entrada:  ').bold = True
+    row_cells[2].paragraphs[0].add_run(dr.hora_entrada.strftime("%H:%M"))
+    row_cells[3].paragraphs[0].add_run('Hora Salida:  ').bold = True
+    row_cells[3].paragraphs[0].add_run(dr.hora_entrada.strftime("%H:%M"))
     document.add_paragraph('')
     # Inserta fotos
     foto_count = 1
@@ -929,6 +936,8 @@ def create_dr_word(request, slug, dr_id):
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     fecha_str = dr.fecha.strftime("%d%m%y")
     nombre = codigo_informe + '_' + fecha_str + '.docx'
+    if draft:
+        nombre = 'DRAFT-' + nombre
     response['Content-Disposition'] = 'attachment; filename=' + nombre
     target_stream.flush()
     ret_word = target_stream.getvalue()

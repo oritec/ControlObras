@@ -3,7 +3,7 @@ $( document ).ready(function() {
     $('#composicion').on('show.bs.modal', function (e) {
         console.log('show modal composicion');
         if (typeof e.relatedTarget != "undefined") {
-            $("#composicion_pie").val('');
+            //$("#composicion_pie").val('');
             var select_val = $('#composicion_nofotos').val();
             console.log(select_val);
             if ( select_val != null){
@@ -104,7 +104,11 @@ $( document ).ready(function() {
     $('.add_composicion').click(function( e) {
         var act_id = $(this).attr("act_id");
         $("#act_id").val(act_id);
-
+        //console.log('add_composicion');
+        var texto = $(this).siblings('.dd-handle').html().trim().substring(0,50);
+        console.log(texto);
+        console.log($("#composicion_pie"));
+        $("#composicion_pie").val(texto);
     });
     //$('#file_input_1').fileinput();
 });

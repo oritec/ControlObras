@@ -11,7 +11,7 @@ class DRForm(forms.ModelForm):
 
     class Meta:
         model = DR
-        fields = ['parque','fecha', 'numero', 'climatologia','sitio','actividades']
+        fields = ['parque','fecha', 'numero', 'climatologia','sitio','actividades', 'hora_entrada', 'hora_salida']
         labels = {
             'actividades': 'Actividades Principales',
             'numero': 'Número',
@@ -26,6 +26,7 @@ class DRForm(forms.ModelForm):
         self.fields['climatologia'].widget.attrs['class'] = 'form-control'
         self.fields['sitio'].widget.attrs['class'] = 'form-control'
         self.fields['actividades'].widget.attrs['class'] = 'form-control'
-
+        self.fields['hora_entrada'].widget.attrs['class'] = 'form-control timepicker'
+        self.fields['hora_salida'].widget.attrs['class'] = 'form-control timepicker'
 
 
