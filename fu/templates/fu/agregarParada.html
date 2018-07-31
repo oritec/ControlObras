@@ -116,10 +116,18 @@
                         <div class="form-actions">
                             <div class="row">
                                 <div class="col-md-offset-3 col-md-9">
-                                    {% if perms.fu.edit_paradas or edit_parada.created_by == user %}
-                                    <button type="submit" class="btn green">
-                                        <i class="fa fa-save"></i> Guardar
-                                    </button>
+                                    {% if edit_parada %}
+                                        {% if perms.fu.edit_paradas or edit_parada.created_by == user %}
+                                        <button type="submit" class="btn green">
+                                            <i class="fa fa-save"></i> Guardar
+                                        </button>
+                                        {% endif %}
+                                    {% else %}
+                                        {% if perms.fu.add_paradas %}
+                                        <button type="submit" class="btn green">
+                                            <i class="fa fa-save"></i> Guardar
+                                        </button>
+                                        {% endif %}
                                     {% endif %}
                                     <a href="{{ back_url }}" class="btn default">Cancelar</a>
                                 </div>
