@@ -5,7 +5,6 @@ import os
 import StringIO
 from collections import OrderedDict, defaultdict
 from dateutil import relativedelta
-from datetime import datetime
 import numpy as np
 from anytree import Node, Resolver
 
@@ -18,6 +17,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
+from django.utils.timezone import localtime
 from vista.models import ParqueSolar, Aerogenerador
 from vista.functions import *
 from fu.forms import ComponenteForm, AddComponentesForm, ConfiguracionFUForm,PlanificacionForm,DeleteComponentesForm
@@ -4145,7 +4145,7 @@ def tasaMontajeExcel(parque,wb,t):
     return wb
 
 
-def dataListadoParadas(parque,t, html = None):
+def dataListadoParadas(parque, t, html=None):
     datos = OrderedDict()
     filas = Node("Filas")
     columnas = Node("Columnas")
@@ -4172,9 +4172,9 @@ def dataListadoParadas(parque,t, html = None):
         n_col = addUniqueNodo('Trabajo', columnas, columnas_html)
         datos[fila][2] = parada.trabajo.nombre
         n_col = addUniqueNodo('Hora Paralización', columnas, columnas_html)
-        datos[fila][3] = parada.fecha_inicio.strftime('%d-%m-%Y %H:%M')
+        datos[fila][3] = localtime(parada.fecha_inicio).strftime('%d-%m-%Y %H:%M')
         n_col = addUniqueNodo('Hora fin Paralización', columnas, columnas_html)
-        datos[fila][4] = parada.fecha_final.strftime('%d-%m-%Y %H:%M')
+        datos[fila][4] = localtime(parada.fecha_final).strftime('%d-%m-%Y %H:%M')
         n_col = addUniqueNodo('Duración Paralización (h)', columnas, columnas_html)
         datos[fila][5] = parada.duracion
         n_col = addUniqueNodo('Motivo', columnas, columnas_html)
@@ -4195,7 +4195,7 @@ def dataListadoParadas(parque,t, html = None):
         return [filas_html,columnas_html,datos]
 
 
-def listadoParadasExcel(parque,wb,t):
+def listadoParadasExcel(parque, wb, t):
     [filas, columnas, datos] = dataListadoParadas(parque, t)
     sheet_name = 'Listado de paradas'
     if sheet_name in wb.sheetnames:
@@ -4223,7 +4223,7 @@ def listadoParadasExcel(parque,wb,t):
     ws.column_dimensions["A"].width = 6
 
     printColumnasHeader(ws, columnas, 2, 2, 0)
-    printFilasHeader(ws, filas, 3, 1, 0,Alignment(horizontal="center"))
+    printFilasHeader(ws, filas, 3, 1, 0, Alignment(horizontal="center"))
     for cell_range in ws.merged_cell_ranges:
         rows = ws[cell_range]
         if len(rows) > 1:
@@ -4521,7 +4521,7 @@ def reportePdfFU(parque,t):
 
 
 @login_required(login_url='ingresar')
-def reportes(request,slug):
+def reportes(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()

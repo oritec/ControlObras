@@ -36,7 +36,7 @@ if platform == "linux" or platform == "linux2":
         # If you are using git, you can also automatically configure the
         # release based on the git info.
         'release': raven.fetch_git_sha(os.path.abspath(BASE_DIR)),
-        'ignore_exceptions' : [
+        'ignore_exceptions': [
             'Http404',
             'django.exceptions.http.Http404',
             'django.exceptions.*'
@@ -151,7 +151,7 @@ DATE_INPUT_FORMATS = ('%d-%m-%Y')
 
 STATIC_URL = '/static/'
 #STATIC_ROOT = os.path.join(BASE_DIR,'static')
-MEDIA_ROOT = os.path.join(BASE_DIR,'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 STATICFILES_DIRS = (
@@ -176,7 +176,7 @@ LOGGING = {
         },
         'verbose': {
             'format': '[%(asctime)s] %(levelname)s %(message)s',
-            'datefmt' : "%d/%b/%Y %H:%M"
+            'datefmt': "%d/%b/%Y %H:%M"
         },
     },
     'handlers': {
@@ -189,13 +189,13 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': BASE_DIR+'/app.log',
-            'formatter':'verbose'
+            'formatter': 'verbose'
         },
         'file_scripts': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': BASE_DIR+'/app-scripts.log',
-            'formatter':'verbose'
+            'formatter': 'verbose'
         },
     },
     'loggers': {
