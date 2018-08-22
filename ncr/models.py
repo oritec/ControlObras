@@ -11,11 +11,13 @@ import logging
 
 logger = logging.getLogger('oritec')
 
+
 @python_2_unicode_compatible
 class Observador(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
     def __str__(self):
         return '%s' % (self.nombre)
+
 
 @python_2_unicode_compatible
 class Componente(models.Model):
@@ -33,6 +35,7 @@ class Componente(models.Model):
                 self.orden_punchlist = aux.orden_punchlist + 1
         super(Componente, self).save()
 
+
 @python_2_unicode_compatible
 class Subcomponente(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
@@ -48,6 +51,7 @@ class Subcomponente(models.Model):
             if aux:
                 self.orden_punchlist = aux.orden_punchlist + 1
         super(Subcomponente, self).save()
+
 
 @python_2_unicode_compatible
 class Tipo(models.Model):
@@ -65,6 +69,7 @@ class Tipo(models.Model):
                 self.orden_punchlist = aux.orden_punchlist + 1
         super(Tipo, self).save()
 
+
 @python_2_unicode_compatible
 class Severidad(models.Model):
     nombre = models.CharField(max_length=2, unique=True)
@@ -73,6 +78,7 @@ class Severidad(models.Model):
     def graphText(self):
         return 'Nivel ' + '%s' % (self.nombre)
 
+
 @python_2_unicode_compatible
 class EstadoRevision(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
@@ -80,6 +86,7 @@ class EstadoRevision(models.Model):
         return '%s' % (self.nombre)
     def graphText(self):
         return '%s' % (self.nombre)
+
 
 @python_2_unicode_compatible
 class Prioridad(models.Model):
@@ -91,6 +98,7 @@ class Prioridad(models.Model):
     def __str__(self):
         return '%s' % (self.nombre)
 
+
 def rev_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'fotos/parque_{0}/observacion_{1}/revision_{2}/{3}'.format(instance.revision.observacion.parque.id,
@@ -98,12 +106,14 @@ def rev_directory_path(instance, filename):
                                                                       instance.revision.id,
                                                                       filename)
 
+
 def thumbnails_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'thumbnails/parque_{0}/observacion_{1}/revision_{2}/{3}'.format(instance.revision.observacion.parque.id,
                                                                            instance.revision.observacion.id,
                                                                            instance.revision.id,
                                                                            filename)
+
 
 class Fotos(models.Model):
     revision = models.ForeignKey('Revision', on_delete=models.CASCADE)
@@ -266,6 +276,7 @@ class Fotos(models.Model):
         # Force an UPDATE SQL query if we're editing the image to avoid integrity exception
         super(Fotos, self).save(force_update=force_update)
 
+
 @python_2_unicode_compatible
 class Observacion(models.Model):
     parque = models.ForeignKey('vista.ParqueSolar', on_delete=models.CASCADE)
@@ -327,6 +338,7 @@ class Observacion(models.Model):
             self.prioridad = aux2.prioridad
 
         super(Observacion, self).save(*args, **kwargs)  # Call the "real" save() method.
+
 
 @python_2_unicode_compatible
 class Revision(models.Model):

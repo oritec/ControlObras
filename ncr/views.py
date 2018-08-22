@@ -632,8 +632,9 @@ def set_orden(request,slug):
     else:
         return HttpResponse('fail')
 
+
 @login_required(login_url='ingresar')
-def add_revision(request,slug,observacion_id, revision_id = 0):
+def add_revision(request, slug, observacion_id, revision_id=0):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     edit_revision = None
@@ -699,34 +700,38 @@ def add_revision(request,slug,observacion_id, revision_id = 0):
          'edit_revision': edit_revision,
         })
 
+
 def generateExcelNCR(resultados):
     wb = Workbook()
     ws = wb.active
     ws.title = "ReporteNCR"
     # Titulos
     ws['A1'] = '#'
-    ws['B1'] = 'WTG'
-    ws['C1'] = 'Estado'
-    ws['D1'] = 'Severidad'
-    ws['E1'] = 'Prioridad'
-    ws['F1'] = 'Componente'
-    ws['G1'] = 'Subcomponente'
-    ws['H1'] = 'Tipo'
-    ws['I1'] = 'Descripcion'
+    ws['B1'] = 'Codigo'
+    ws['C1'] = 'WTG'
+    ws['D1'] = 'Estado'
+    ws['E1'] = 'Severidad'
+    ws['F1'] = 'Prioridad'
+    ws['G1'] = 'Componente'
+    ws['H1'] = 'Subcomponente'
+    ws['I1'] = 'Tipo'
+    ws['J1'] = 'Descripcion'
     row = 1
     for r in resultados:
         row += 1
+        codigo = 'OBS_' + r.parque.codigo + '-' + r.aerogenerador.nombre + '-' + str(r.observacion_id)
         ws.cell(row=row, column=1, value=str(row-1))
-        ws.cell(row=row, column=2,value=r.aerogenerador.nombre)
-        ws.cell(row=row, column=3, value=r.estado.nombre)
-        ws.cell(row=row, column=4, value=r.severidad.nombre)
-        ws.cell(row=row, column=5, value=r.prioridad.nombre)
-        ws.cell(row=row, column=6, value=r.componente.nombre)
-        ws.cell(row=row, column=7, value=r.sub_componente.nombre)
-        ws.cell(row=row, column=8, value=r.tipo.nombre)
-        ws.cell(row=row, column=9, value=r.nombre)
+        ws.cell(row=row, column=2, value=codigo)
+        ws.cell(row=row, column=3, value=r.aerogenerador.nombre)
+        ws.cell(row=row, column=4, value=r.estado.nombre)
+        ws.cell(row=row, column=5, value=r.severidad.nombre)
+        ws.cell(row=row, column=6, value=r.prioridad.nombre)
+        ws.cell(row=row, column=7, value=r.componente.nombre)
+        ws.cell(row=row, column=8, value=r.sub_componente.nombre)
+        ws.cell(row=row, column=9, value=r.tipo.nombre)
+        ws.cell(row=row, column=10, value=r.nombre)
 
-    tab = Table(displayName="NCR", ref="A1:I"+str(row))
+    tab = Table(displayName="NCR", ref="A1:J"+str(row))
     style = TableStyleInfo(name="TableStyleMedium9", showFirstColumn=False,
                            showLastColumn=False, showRowStripes=True, showColumnStripes=False)
     tab.tableStyleInfo = style
@@ -741,6 +746,7 @@ def generateExcelNCR(resultados):
     target_stream = StringIO.StringIO()
     wb.save(target_stream)
     return target_stream
+
 
 @login_required(login_url='ingresar')
 def informeNCR(request,slug):
@@ -862,9 +868,9 @@ def informeNCR(request,slug):
 
                 respuesta = generatePdf(parque,resultados,imagenes,request.POST['titulo'],request,
                                         colores=colores,
-                                        estados = estados,
+                                        estados=estados,
                                         fecha=fecha,
-                                        nombre = nombre)
+                                        nombre=nombre)
                 respuesta['Content-Disposition'] = 'attachment; filename="' + nombre + '"'
                 return respuesta
 
@@ -882,13 +888,14 @@ def informeNCR(request,slug):
          'graficos':graficos,
         })
 
-def generatePdf(parque,resultados,imagenes, titulo,
-                request = None,
+
+def generatePdf(parque, resultados, imagenes, titulo,
+                request=None,
                 show_fotos=True,
-                colores = True,
-                estados = True,
-                fecha = date.today,
-                nombre = ''):
+                colores=True,
+                estados=True,
+                fecha=date.today,
+                nombre=''):
 
     with open(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo.png'), "rb") as image_file:
         logo_saroen = base64.b64encode(image_file.read())
