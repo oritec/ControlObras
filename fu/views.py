@@ -319,7 +319,7 @@ def calcularProyeccionGrafico(parque_eolico, anho, semana):
     return [data_graficos,fecha_calculo]
 
 
-# Funcion para determinar cuantos aerogeneradores se deben montar. En realidad es el número de componentes de un WTG
+# En realidad es el número de componentes de un WTG para considerar que el aerogenerador ya está montado
 def aerogeneradoresAMontar(parque_eolico):
     estado_montaje = EstadoFU.objects.get(nombre='Montaje')
     estado_descarga = EstadoFU.objects.get(nombre='Descarga')
@@ -1907,7 +1907,7 @@ def dashboard(request,slug):
     fecha_inicial = datetime.strptime(d + '-0', "%Y-W%W-%w")
 
     avance = porcentajeAvance(parque_eolico,last_day_week)
-    montados = aerogeneradoresMontados(parque_eolico,last_day_week)
+    montados = aerogeneradoresMontados(parque_eolico, last_day_week)
     try:
         componente = Componente.objects.get(nombre="Mechanical Completion")
         estado = EstadoFU.objects.get(idx=3)
@@ -2952,7 +2952,7 @@ def getComponenteStatus(registros, idx, componente, miembros):
     elif idx == 3: # Estado montaje
         estado = EstadoFU.objects.get(idx=3)
         # Si ya está ingreasado Izado Cable HV, entonces el resto se puede ingresar
-        if registros.filter(estado__idx=3,componente__nombre='Izado Cable HV').count() > 0:
+        if registros.filter(estado__idx=3, componente__nombre='Izado Cable HV').count() > 0:
             return 0
         #if componente.estados.all().filter(idx__lt=3).count() > 0:
         # Si el componente tiene estados anteriores al montaje
