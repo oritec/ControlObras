@@ -268,7 +268,10 @@ def calcularProyeccionGrafico(parque_eolico, anho, semana):
                                      componente__in=componentes_montaje,
                                      estado=estado_montaje,
                                      fecha__lte=fecha_calculo)
-        valor = float(c.count()) / ag_montar
+        if ag_montar == 0:
+            valor = 0
+        else:
+            valor = float(c.count()) / ag_montar
         if not first:
             if valor != 0:
                 first = True
@@ -2216,20 +2219,20 @@ def posicion_aerogeneradores(parque_eolico, fecha_calculo):
                         pos[ag.nombre]['img'] = nombre
                         break
             # Inicio Pruebas
-            path = os.path.join(settings.BASE_DIR, 'static/common/images/ag')
-            # filename = path + '/' + unicode(r.componente.nombre) + '.png'
-            filename = path + '/' + unicode('T1') + '.png'
-            # filename = path + '/' + unicode('Pala 3') + '.png'
-            if os.path.isfile(unicode(filename).encode('utf-8')):
-                found = True
-                [nombre, width, top, left] = get_image_data(os.path.basename(filename),
-                                                            pos[ag.nombre]['top'],
-                                                            pos[ag.nombre]['left'])
-                pos[ag.nombre]['width'] = width
-                pos[ag.nombre]['top'] = top
-                pos[ag.nombre]['left'] = left
-                pos[ag.nombre]['img'] = nombre
-            found = True
+            # path = os.path.join(settings.BASE_DIR, 'static/common/images/ag')
+            # # filename = path + '/' + unicode(r.componente.nombre) + '.png'
+            # filename = path + '/' + unicode('T1') + '.png'
+            # # filename = path + '/' + unicode('Pala 3') + '.png'
+            # if os.path.isfile(unicode(filename).encode('utf-8')):
+            #     found = True
+            #     [nombre, width, top, left] = get_image_data(os.path.basename(filename),
+            #                                                 pos[ag.nombre]['top'],
+            #                                                 pos[ag.nombre]['left'])
+            #     pos[ag.nombre]['width'] = width
+            #     pos[ag.nombre]['top'] = top
+            #     pos[ag.nombre]['left'] = left
+            #     pos[ag.nombre]['img'] = nombre
+            # found = True
             # Fin Pruebas
             if not found:
                 pos[ag.nombre]['width'] = 0.5
