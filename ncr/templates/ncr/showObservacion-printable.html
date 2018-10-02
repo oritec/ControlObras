@@ -60,7 +60,7 @@
                             <li> <b>Descipci&oacute;n:</b> {{ observacion.nombre }}</li>
                             <li> <b>Detalle:</b> {{ revision.descripcion }}</li>
                             <li> <b>Punchlist:</b> {% if observacion.punchlist %} S&iacute; {% else %} No {% endif %}</li>
-                            <li> <b>Reportado por:</b> {{ observacion.reported_by }} </li>
+                            <li> <b>Reportado por:</b> {% if observacion.reported_by  %}{{ observacion.reported_by }}{% else %}-{% endif %} </li>
                             <li> <b>Creado por:</b> {{ observacion.created_by }} </li>
                         </ul>
                     </div>
@@ -74,7 +74,7 @@
                             <li> <b>Prioridad:</b> {{ revision.prioridad }}</li>
                             <li> <b>Descripci&oacute;n:</b> {{ revision.nombre }}</li>
                             <li> <b>Detalle:</b> {% if revision.descripcion is not None %}{{ revision.descripcion }}{% else %} - {% endif %}</li>
-                            <li> <b>Reportado por:</b> {{ revision.reported_by }} </li>
+                            <li> <b>Reportado por:</b> {% if revision.reported_by  %}{{ revision.reported_by }}{% else %}-{% endif %} </li>
                             <li> <b>Creado por:</b> {{ revision.created_by }} </li>
                         </ul>
                     </div>

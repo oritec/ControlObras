@@ -22,7 +22,7 @@ if __name__ == '__main__':
     observaciones = Observacion.objects.all().order_by('id')
     for observacion in Observacion.objects.using('backup').filter(reported_by__in=lista_observadores):
         if observacion not in observaciones:
-            observacion.reported_by_id = 5
+            observacion.reported_by = None
             lista_observaciones.append(observacion)
             if observacion.parque.nombre not in cuenta_parque:
                 cuenta_parque[observacion.parque.nombre] = 1
@@ -52,7 +52,7 @@ if __name__ == '__main__':
             for foto in revision.fotos_set.all():
                 lista_fotos.append(foto)
             revision.observacion.id = new_obs.id
-            revision.reported_by_id = 5
+            revision.reported_by = None
             revision_dict = revision.__dict__
             for k in revision_dict.keys():
                 if k.startswith('_'):
