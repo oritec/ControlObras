@@ -1,0 +1,103 @@
+{% load staticfiles %}
+{% load customtags %}
+<!DOCTYPE html>
+
+<!--[if IE 8]> <html lang="en" class="ie8 no-js"> <![endif]-->
+<!--[if IE 9]> <html lang="en" class="ie9 no-js"> <![endif]-->
+<!--[if !IE]><!-->
+<html lang="en">
+<!--<![endif]-->
+<!-- BEGIN HEAD -->
+<head>
+<meta charset="utf-8"/>
+<title>Saroen Global | Sistema </title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+
+<!-- BEGIN GLOBAL MANDATORY STYLES -->
+<link href="{% static 'common/fonts/OpenSans.css' %}" rel="stylesheet" type="text/css"/>
+<link href="{% static 'common/assets/global/plugins/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'common/assets/global/plugins/simple-line-icons/simple-line-icons.min.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'common/assets/global/plugins/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'common/assets/global/plugins/bootstrap-switch/css/bootstrap-switch.min.css' %}" rel="stylesheet" type="text/css" />
+<!-- END GLOBAL MANDATORY STYLES -->
+
+<!-- BEGIN THEME STYLES -->
+<link href="{% static 'common/assets/global/css/components.min.css' %}" rel="stylesheet" id="style_components" type="text/css" />
+<link href="{% static 'common/assets/global/css/plugins.min.css' %}" rel="stylesheet" type="text/css" />
+<!-- END THEME STYLES -->
+<!-- BEGIN THEME LAYOUT STYLES -->
+<link href="{% static 'common/assets/layouts/layout/css/layout.min.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'common/assets/layouts/layout/css/themes/light.css' %}" rel="stylesheet" type="text/css" id="style_color" />
+<!-- END THEME LAYOUT STYLES -->
+
+<link rel="stylesheet" type="text/css" href="{% static 'common/assets/global/plugins/bootstrap-toastr/toastr.min.css' %}"/>
+<link rel="shortcut icon" href="{% static 'common/images/icono-top.png' %}"/>
+
+{% block css %}
+
+{% endblock %}
+
+</head>
+<!-- END HEAD -->
+<!-- BEGIN BODY -->
+<!-- DOC: Apply "page-header-fixed-mobile" and "page-footer-fixed-mobile" class to body element to force fixed header or footer in mobile devices -->
+<!-- DOC: Apply "page-sidebar-closed" class to the body and "page-sidebar-menu-closed" class to the sidebar menu element to hide the sidebar by default -->
+<!-- DOC: Apply "page-sidebar-hide" class to the body to make the sidebar completely hidden on toggle -->
+<!-- DOC: Apply "page-sidebar-closed-hide-logo" class to the body element to make the logo hidden on sidebar toggle -->
+<!-- DOC: Apply "page-sidebar-hide" class to body element to completely hide the sidebar on sidebar toggle -->
+<!-- DOC: Apply "page-sidebar-fixed" class to have fixed sidebar -->
+<!-- DOC: Apply "page-footer-fixed" class to the body element to have fixed footer -->
+<!-- DOC: Apply "page-sidebar-reversed" class to put the sidebar on the right side -->
+<!-- DOC: Apply "page-full-width" class to the body element to have full width page without the sidebar menu -->
+<body class="page-header-fixed page-sidebar-closed-hide-logo page-content-white">
+	<div class="page-wrapper">
+        <div class="imagehotspot-container" style="position: relative; max-width: 800px; /* max-width: actual width of image */ width: 100%; height: auto; z-index: 101;">
+                <img id="imagen" class="img-responsive" src="{% static plano_3d %}" style="position: absolute; top: {{ plano_3d_top }}; left: 0px; z-index: 102">
+
+        </div>
+        <div style="position:absolute; top:500px" id="dbg"></div>
+    </div>
+
+</body>
+
+<script>
+    function onMousemove(e){
+        var m_posx = 0, m_posy = 0, e_posx = 0, e_posy = 0,
+               obj = this;
+        //get mouse position on document crossbrowser
+        if (!e){e = window.event;}
+        if (e.pageX || e.pageY){
+            m_posx = e.pageX;
+            m_posy = e.pageY;
+        } else if (e.clientX || e.clientY){
+            m_posx = e.clientX + document.body.scrollLeft
+                     + document.documentElement.scrollLeft;
+            m_posy = e.clientY + document.body.scrollTop
+                     + document.documentElement.scrollTop;
+        }
+        //get parent element position in document
+        if (obj.offsetParent){
+            do{
+                e_posx += obj.offsetLeft;
+                e_posy += obj.offsetTop;
+            } while (obj = obj.offsetParent);
+        }
+        // mouse position minus elm position is mouseposition relative to element:
+        var texto = ' X Position: ' + (m_posx-e_posx)
+                      + ' Y Position: ' + (m_posy-e_posy)
+                    + ' width : ' + (elem.width)
+                    + ' height : ' + (elem.height)
+                    + '  top: ' + (m_posy-e_posy-28.9)/650.71*100
+                    + '  left: ' + ((m_posx-e_posx-34.24)/806.2*100)
+
+        console.log(texto)
+    }
+
+    var elem = document.getElementById('imagen');
+    elem.addEventListener('mousemove', onMousemove, false);
+
+    var dbg=document.getElementById('dbg');
+</script>
+</html>

@@ -25,7 +25,7 @@ from fu.forms import RegistroDescargaForm, RegistroForm, ParadasForm,ReporteForm
 from fu.models import Componente, ConfiguracionFU, Contractual, Plan, EstadoFU
 from fu.models import ParqueEolico, Membership
 from fu.models import Registros, Paradas
-from ncr.views import serializeGrafico
+from ncr.views import serialize_grafico
 from usuarios.models import Log
 from querystring_parser import parser
 
@@ -49,19 +49,19 @@ from easy_pdf.rendering import render_to_pdf
 from django.core.exceptions import MultipleObjectsReturned
 import json
 
-meses_espanol = {"1":"Enero",
-       "2":"Febrero",
-       "3":"Marzo",
-       "4":"Abril",
-       "5":"Mayo",
-       "6":"Junio",
-       "7":"Julio",
-       "8":"Agosto",
-       "9":"Septiembre",
-       "10":"Octubre",
-       "11":"Noviembre",
-       "12":"Diciembre",
-       }
+meses_espanol = {"1": "Enero",
+                 "2": "Febrero",
+                 "3": "Marzo",
+                 "4": "Abril",
+                 "5": "Mayo",
+                 "6": "Junio",
+                 "7": "Julio",
+                 "8": "Agosto",
+                 "9": "Septiembre",
+                 "10": "Octubre",
+                 "11": "Noviembre",
+                 "12": "Diciembre"
+                 }
 
 
 logger = logging.getLogger('oritec')
@@ -136,7 +136,7 @@ def graficoComponentes(parque_eolico, estado, fecha_calculo):
         data_graficos.append({"name": m.componente.nombre, "y": value})
     data_full.append({"name": "Real", "data": data_graficos})
 
-    datos = serializeGrafico(data_full)
+    datos = serialize_grafico(data_full)
     return datos
 
 
@@ -499,13 +499,13 @@ def graficoAvances(parque_eolico,anho,semana,actual_date,data_proyeccion):
     data_full.append({"name": "Real", "data": data_graficos})
 
     if len(data_proyeccion):
-        data_full.append({"name": "Proyección", "data": data_proyeccion,"dashStyle" : "Dot"})
+        data_full.append({"name": "Proyección", "data": data_proyeccion, "dashStyle": "Dot"})
 
-    datos = serializeGrafico(data_full)
+    datos = serialize_grafico(data_full)
     return datos
 
 
-def posicionAerogeneradores(parque_eolico, fecha_calculo):
+def posicion_aerogeneradores(parque_eolico, fecha_calculo):
     parque = parque_eolico.parque
     d = str(fecha_calculo.isocalendar()[0]) + '-W' + str(fecha_calculo.isocalendar()[1])
     estado = EstadoFU.objects.get(idx=3)
@@ -1707,6 +1707,313 @@ def posicionAerogeneradores(parque_eolico, fecha_calculo):
         pos[x]['top'] = 46.4
         pos[x]['left'] = 44.8
         pos[x]['zindex'] = 403
+    elif parque.codigo == 'EES-001.1':  # Espinal
+        x = 'WTG01'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 20.3
+        pos[x]['left'] = 5.8
+        pos[x]['zindex'] = 403
+
+        x = 'WTG02'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 18
+        pos[x]['left'] = 14.8
+        pos[x]['zindex'] = 403
+
+        x = 'WTG03'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 16.4
+        pos[x]['left'] = 19.8
+        pos[x]['zindex'] = 403
+
+        x = 'WTG04'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 15
+        pos[x]['left'] = 23
+        pos[x]['zindex'] = 403
+
+        x = 'WTG05'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 14
+        pos[x]['left'] = 25.5
+        pos[x]['zindex'] = 403
+
+        x = 'WTG06'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 11.5
+        pos[x]['left'] = 30.6
+        pos[x]['zindex'] = 403
+
+        x = 'WTG07'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 10.5
+        pos[x]['left'] = 33.6
+        pos[x]['zindex'] = 403
+
+        x = 'WTG08'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 9.4
+        pos[x]['left'] = 36.9
+        pos[x]['zindex'] = 403
+
+        x = 'WTG09'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 7.7
+        pos[x]['left'] = 40.2
+        pos[x]['zindex'] = 403
+
+        x = 'WTG10'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 7.2
+        pos[x]['left'] = 43
+        pos[x]['zindex'] = 403
+
+        x = 'WTG11'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 6
+        pos[x]['left'] = 45.5
+        pos[x]['zindex'] = 403
+
+        x = 'WTG12'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 4.3
+        pos[x]['left'] = 47.9
+        pos[x]['zindex'] = 403
+
+        x = 'WTG13'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 27.7
+        pos[x]['left'] = 11.3
+        pos[x]['zindex'] = 403
+
+        x = 'WTG14'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 26.1
+        pos[x]['left'] = 14.8
+        pos[x]['zindex'] = 403
+
+        x = 'WTG15'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 20.8
+        pos[x]['left'] = 26.7
+        pos[x]['zindex'] = 403
+
+        x = 'WTG16'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 18.6
+        pos[x]['left'] = 31.3
+        pos[x]['zindex'] = 403
+
+        x = 'WTG17'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 17.5
+        pos[x]['left'] = 34.1
+        pos[x]['zindex'] = 403
+
+        x = 'WTG18'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 16
+        pos[x]['left'] = 36.7
+        pos[x]['zindex'] = 403
+
+        x = 'WTG19'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 14.5
+        pos[x]['left'] = 40.7
+        pos[x]['zindex'] = 403
+
+        x = 'WTG20'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 12.5
+        pos[x]['left'] = 45.2
+        pos[x]['zindex'] = 403
+
+        x = 'WTG21'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 10.9
+        pos[x]['left'] = 47.4
+        pos[x]['zindex'] = 403
+
+        x = 'WTG22'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 9.7
+        pos[x]['left'] = 51.3
+        pos[x]['zindex'] = 403
+
+        x = 'WTG23'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 8.5
+        pos[x]['left'] = 54.2
+        pos[x]['zindex'] = 403
+
+        x = 'WTG24'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 7.2
+        pos[x]['left'] = 56.7
+        pos[x]['zindex'] = 403
+
+        x = 'WTG25'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 5.7
+        pos[x]['left'] = 60.2
+        pos[x]['zindex'] = 403
+
+        x = 'WTG26'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 2.8
+        pos[x]['left'] = 50
+        pos[x]['zindex'] = 403
+
+        x = 'WTG27'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 0.9
+        pos[x]['left'] = 52.7
+        pos[x]['zindex'] = 403
+
+        x = 'WTG28'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 24.6
+        pos[x]['left'] = 17.9
+        pos[x]['zindex'] = 403
+
+        x = 'WTG29'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 33.9
+        pos[x]['left'] = 19.4
+        pos[x]['zindex'] = 403
+
+        x = 'WTG30'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 30.4
+        pos[x]['left'] = 21.9
+        pos[x]['zindex'] = 403
+
+        x = 'WTG31'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 27.8
+        pos[x]['left'] = 26.5
+        pos[x]['zindex'] = 403
+
+        x = 'WTG32'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 26.5
+        pos[x]['left'] = 49.6
+        pos[x]['zindex'] = 403
+
+        x = 'WTG33'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 25
+        pos[x]['left'] = 32.3
+        pos[x]['zindex'] = 403
+
+        x = 'WTG34'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 22.9
+        pos[x]['left'] = 37.6
+        pos[x]['zindex'] = 403
+
+        x = 'WTG35'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 21.7
+        pos[x]['left'] = 40.8
+        pos[x]['zindex'] = 403
+
+        x = 'WTG36'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 19.7
+        pos[x]['left'] = 43.6
+        pos[x]['zindex'] = 403
+
+        x = 'WTG37'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 17.7
+        pos[x]['left'] = 47.9
+        pos[x]['zindex'] = 403
+
+        x = 'WTG38'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 16.3
+        pos[x]['left'] = 51.6
+        pos[x]['zindex'] = 403
+
+        x = 'WTG39'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 12
+        pos[x]['left'] = 61.3
+        pos[x]['zindex'] = 403
+
+        x = 'WTG40'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 10.5
+        pos[x]['left'] = 64.8
+        pos[x]['zindex'] = 403
+
+        x = 'WTG41'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 9.2
+        pos[x]['left'] = 67.9
+        pos[x]['zindex'] = 403
+
+        x = 'WTG42'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 7.7
+        pos[x]['left'] = 70.9
+        pos[x]['zindex'] = 403
+
+        x = 'WTG43'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 6.3
+        pos[x]['left'] = 73.0
+        pos[x]['zindex'] = 403
+
+        x = 'WTG44'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 4.8
+        pos[x]['left'] = 77.3
+        pos[x]['zindex'] = 403
+
+        x = 'WTG45'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 43.7
+        pos[x]['left'] = 19.2
+        pos[x]['zindex'] = 403
+
+        x = 'WTG46'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 42.1
+        pos[x]['left'] = 22.2
+        pos[x]['zindex'] = 403
+
+        x = 'WTG47'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 40.0
+        pos[x]['left'] = 25.4
+        pos[x]['zindex'] = 403
+
+        x = 'WTG48'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 35.7
+        pos[x]['left'] = 31.5
+        pos[x]['zindex'] = 403
+
+        x = 'WTG49'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 34.0
+        pos[x]['left'] = 34.2
+        pos[x]['zindex'] = 403
+
+        x = 'WTG50'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 32.0
+        pos[x]['left'] = 38.9
+        pos[x]['zindex'] = 403
+
+    elif parque.codigo == 'EES-001.2':  # Juchitan
+        x = 'WTG01'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 9.0
+        pos[x]['left'] = 18.7
+        pos[x]['zindex'] = 403
     else:
         return pos
 
@@ -1733,7 +2040,7 @@ def posicionAerogeneradores(parque_eolico, fecha_calculo):
                     if os.path.isfile(unicode(filename).encode('utf-8')):
                         found = True
                         [nombre, width, top, left] = get_image_data(os.path.basename(filename),
-                                                            pos[ag.nombre]['top'] ,
+                                                            pos[ag.nombre]['top'],
                                                             pos[ag.nombre]['left'])
                         pos[ag.nombre]['width'] = width
                         pos[ag.nombre]['top'] = top
@@ -1742,9 +2049,9 @@ def posicionAerogeneradores(parque_eolico, fecha_calculo):
                         break
             # Inicio Pruebas
             # path = os.path.join(settings.BASE_DIR, 'static/common/images/ag')
-            # #filename = path + '/' + unicode(r.componente.nombre) + '.png'
+            # # filename = path + '/' + unicode(r.componente.nombre) + '.png'
             # filename = path + '/' + unicode('T1') + '.png'
-            # #filename = path + '/' + unicode('Pala 3') + '.png'
+            # # filename = path + '/' + unicode('Pala 3') + '.png'
             # if os.path.isfile(unicode(filename).encode('utf-8')):
             #     found = True
             #     [nombre, width, top, left] = get_image_data(os.path.basename(filename),
@@ -1828,17 +2135,21 @@ def get_image_data(filename, top_i, left_i):
 
 def get_plano3d_img(parque):
     if parque.codigo == 'PCR-001':
-        return  ['/common/images/plano-bicentenario.png','0px','85%','0px']
+        return  ['/common/images/plano-bicentenario.png', '0px', '85%', '0px']
     elif parque.codigo == 'MST-002.2':
-        return ['/common/images/plano-sarco2.png','50px','2%','80px']
+        return ['/common/images/plano-sarco2.png', '50px', '2%', '80px']
     elif parque.codigo == 'MST-002.1':
-        return ['/common/images/plano-aurora.png','50px','85%','80px']
+        return ['/common/images/plano-aurora.png', '50px', '85%', '80px']
+    elif parque.codigo == 'EES-001.1':
+        return ['/common/images/plano-espinal.jpg', '50px', '85%', '80px']
+    elif parque.codigo == 'EES-001.2':
+        return ['/common/images/plano_juchitan.jpg', '50px', '85%', '80px']
     else:
-        return ['/common/images/plano2.png','0px','85%','0px']
+        return ['/common/images/plano2.png', '0px', '85%', '0px']
 
 
 @login_required(login_url='ingresar')
-def dashboard(request,slug):
+def dashboard(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     try:
@@ -1899,7 +2210,7 @@ def dashboard(request,slug):
     else:
         d = str(anho) + '-W' + str(semana)
         fecha = datetime.strptime(d + '-0', "%Y-W%W-%w")
-    pos_ag = posicionAerogeneradores(parque_eolico, last_day_week)
+    pos_ag = posicion_aerogeneradores(parque_eolico, last_day_week)
 
     fecha_aux= configuracion.fecha_inicio #+ relativedelta.relativedelta(weeks=1)
     semana_calculo = fecha_aux.isocalendar()[1]
@@ -1962,7 +2273,46 @@ def dashboard(request,slug):
 
 
 @login_required(login_url='ingresar')
-def dashboard_diario(request,slug):
+def dashboard_imagen(request, slug):
+    parque = get_object_or_404(ParqueSolar, slug=slug)
+    aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
+    try:
+        parque_eolico = ParqueEolico.objects.get(parque=parque)
+    except ParqueEolico.DoesNotExist:
+        parque_eolico = ParqueEolico(parque=parque)
+        parque_eolico.save()
+
+    contenido = ContenidoContainer()
+    contenido.user = request.user
+    contenido.titulo = u'Dashboard Follow Up'
+    contenido.subtitulo = u'Parque Eólico - ' + parque.nombre
+    contenido.menu = ['menu-fu', 'menu2-dashboard']
+
+    try:
+        configuracion = ConfiguracionFU.objects.get(parque=parque)
+    except ConfiguracionFU.DoesNotExist:
+        return TemplateResponse(request, 'fu/dashboard.html',
+                      {'cont': contenido,
+                       'parque': parque,
+                       'aerogeneradores': aerogeneradores,
+                       'configuracion': None,
+                       })
+
+    [plano_3d, plano_3d_top, boton_left, plano_3d_top_zoom] = get_plano3d_img(parque)
+
+    return TemplateResponse(request, 'fu/dashboard-imagen.html',
+                  {'cont': contenido,
+                   'parque': parque,
+                   'aerogeneradores': aerogeneradores,
+                   'plano_3d': plano_3d,
+                   'plano_3d_top': plano_3d_top,
+                   'boton_left': boton_left,
+                   'plano_3d_top_zoom': plano_3d_top_zoom,
+                   })
+
+
+@login_required(login_url='ingresar')
+def dashboard_diario(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     try:
@@ -2023,7 +2373,7 @@ def dashboard_diario(request,slug):
     thisweek = str(anho) + "-" + str(semana)
     week_str = 'Semana ' + str(semana)
     fecha = t
-    pos_ag = posicionAerogeneradores(parque_eolico,t)
+    pos_ag = posicion_aerogeneradores(parque_eolico,t)
 
     fecha_aux= configuracion.fecha_inicio #+ relativedelta.relativedelta(weeks=1)
     semana_calculo = fecha_aux.isocalendar()[1]
@@ -2097,7 +2447,7 @@ def avance(request,slug):
     contenido.subtitulo = u'Parque Eólico - ' + parque.nombre
     contenido.menu = ['menu-fu', 'menu2-avance']
 
-    pos_ag = posicionAerogeneradores(parque_eolico, 2017, 39)
+    pos_ag = posicion_aerogeneradores(parque_eolico, 2017, 39)
 
     return TemplateResponse(request, 'fu/avance.html',
                   {'cont': contenido,

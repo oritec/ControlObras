@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 
 import os
 from sys import platform
+import raven
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -26,9 +27,7 @@ SECRET_KEY = '!s4ctetu$%eqv_pwpo66yj(qlzrub-o7c@92uqrhpbr-zo-^$!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost','67.205.142.111']
-
-import raven
+ALLOWED_HOSTS = ['localhost', '67.205.142.111']
 
 if platform == "linux" or platform == "linux2":
     RAVEN_CONFIG = {
@@ -70,8 +69,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'usuarios.middleware.ChangePasswordMiddleware', # Para obligar a resetear la contrasena
-    'usuarios.middleware.PermissionMiddleware', # Para ayudar un poco con los permisos
+    'usuarios.middleware.ChangePasswordMiddleware',  # Para obligar a resetear la contrasena
+    'usuarios.middleware.PermissionMiddleware',  # Para ayudar un poco con los permisos
 ]
 
 if platform == "linux" or platform == "linux2":
@@ -109,9 +108,15 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {
-            'read_default_file': os.path.join(BASE_DIR,'db.conf'),
+            'read_default_file': os.path.join(BASE_DIR, 'db.conf'),
         },
-    }
+    },
+    'backup': {
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {
+            'read_default_file': os.path.join(BASE_DIR, 'db_backup.conf'),
+        },
+    },
 }
 
 
@@ -150,7 +155,7 @@ DATE_INPUT_FORMATS = ('%d-%m-%Y')
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
-#STATIC_ROOT = os.path.join(BASE_DIR,'static')
+# STATIC_ROOT = os.path.join(BASE_DIR,'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
@@ -158,8 +163,8 @@ STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(BASE_DIR,'static'),
-    #os.path.join(BASE_DIR,'media'),
+    os.path.join(BASE_DIR, 'static'),
+    # os.path.join(BASE_DIR,'media'),
 )
 
 STATICFILES_FINDERS = (

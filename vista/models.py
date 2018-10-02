@@ -24,21 +24,26 @@ class Aerogenerador(models.Model):
         self.slug = defaultfilters.slugify(self.nombre)
         super(Aerogenerador, self).save(*args, **kwargs)
 
+
 def logos_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'logos/{0}'.format(filename)
+
 
 def logos_excel_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'logos/excel/{0}'.format(filename)
 
+
 def word_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'word/{0}'.format(filename)
 
+
 def excel_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'excel/{0}'.format(filename)
+
 
 @python_2_unicode_compatible
 class ParqueSolar(models.Model):
@@ -57,8 +62,10 @@ class ParqueSolar(models.Model):
     pais = models.CharField(max_length=100, default='')
     region = models.CharField(max_length=100, default='')
     municipio = models.CharField(max_length=100, default='')
+
     class Meta:
         unique_together = (("nombre", "codigo"))
+
     def __str__(self):
         return '%s' % (self.nombre)
 

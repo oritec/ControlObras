@@ -15,6 +15,7 @@ logger = logging.getLogger('oritec')
 @python_2_unicode_compatible
 class Observador(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
+
     def __str__(self):
         return '%s' % (self.nombre)
 
@@ -23,6 +24,7 @@ class Observador(models.Model):
 class Componente(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
     orden_punchlist = models.IntegerField()
+
     def __str__(self):
         return '%s' % (self.nombre)
     def graphText(self):
@@ -251,14 +253,14 @@ class Fotos(models.Model):
         self.imagen.seek(0)
 
     def save(self, *args, **kwargs):
-        #logger.debug("Saving Image")
-        updateThumbnail = True
+        # logger.debug("Saving Image")
+        update_thumbnail = True
         if self.pk is not None:
             orig = Fotos.objects.get(pk=self.pk)
             if orig.imagen == self.imagen:
-                updateThumbnail = False
+                update_thumbnail = False
 
-        if updateThumbnail:
+        if update_thumbnail:
             try:
                 self.create_thumbnail()
                 self.create_reporte_img()
@@ -282,27 +284,27 @@ class Observacion(models.Model):
     parque = models.ForeignKey('vista.ParqueSolar', on_delete=models.CASCADE)
     observacion_id = models.IntegerField(default=0)
     nombre = models.CharField(max_length=100, unique=False)
-    aerogenerador = models.ForeignKey('vista.Aerogenerador', on_delete=models.SET_NULL,null=True)
-    fecha_observacion = models.DateField(blank=False,null=False)
+    aerogenerador = models.ForeignKey('vista.Aerogenerador', on_delete=models.SET_NULL, null=True)
+    fecha_observacion = models.DateField(blank=False, null=False)
     componente = models.ForeignKey('Componente', on_delete=models.SET_NULL, null=True)
     sub_componente = models.ForeignKey('Subcomponente', on_delete=models.SET_NULL, null=True)
     tipo = models.ForeignKey('Tipo', on_delete=models.SET_NULL, null=True)
     punchlist = models.BooleanField(default=False)
     estado = models.ForeignKey('EstadoRevision', on_delete=models.SET_NULL, null=True, default=1)
     cerrado = models.BooleanField(default=False)  # False: No Cerrado, True:Cerrado
-    msg_cerrado = models.CharField(max_length=500, blank = True, null= True, default='')
-    clase = models.BooleanField(default=False) # True: NCR, False: Sin Categoría (antes Incidencia)
-    no_serie = models.CharField(max_length=100, unique=False,null=True,blank=True,default='')
+    msg_cerrado = models.CharField(max_length=500, blank=True, null=True, default='')
+    clase = models.BooleanField(default=False)  # True: NCR, False: Sin Categoría (antes Incidencia)
+    no_serie = models.CharField(max_length=100, unique=False, null=True, blank=True, default='')
     severidad = models.ForeignKey('Severidad', on_delete=models.SET_NULL, null=True)
     prioridad = models.ForeignKey('Prioridad', on_delete=models.SET_NULL, null=True)
     copied = models.BooleanField(default=False)
-    created_by = models.ForeignKey(User)
-    reported_by = models.ForeignKey(Observador)
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    reported_by = models.ForeignKey(Observador, null=True, blank=True, on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return '%s' % (self.nombre)
+        return '%s' % self.nombre
 
     def save(self, *args, **kwargs):
         change_observacion_id = False
@@ -346,12 +348,13 @@ class Revision(models.Model):
     fecha_revision = models.DateField(blank=False,null=False)
     severidad = models.ForeignKey('Severidad', on_delete=models.SET_NULL, null=True)
     nombre = models.CharField(max_length=100, unique=False)
-    descripcion = models.CharField(max_length=1000,blank=True,null=True)
-    estado = models.ForeignKey('EstadoRevision', on_delete=models.SET_NULL, null=True, default =1)
-    prioridad = models.ForeignKey('Prioridad', on_delete=models.SET_NULL, null = True, default=1)
+    descripcion = models.CharField(max_length=1000, blank=True, null=True)
+    estado = models.ForeignKey('EstadoRevision', on_delete=models.SET_NULL, null=True, default=1)
+    prioridad = models.ForeignKey('Prioridad', on_delete=models.SET_NULL, null=True, default=1)
     created_by = models.ForeignKey(User)
     reported_by = models.ForeignKey(Observador)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
     def __str__(self):
-        return '%s' % (self.descripcion)
+        return '%s' % self.descripcion

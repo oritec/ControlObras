@@ -32,7 +32,6 @@ from django.core.exceptions import PermissionDenied
 from usuarios.models import Log
 from django.db import transaction
 from django.contrib import messages
-
 from slimit import ast
 from slimit.parser import Parser
 from slimit.visitors import nodevisitor
@@ -43,8 +42,9 @@ from django.db import IntegrityError
 
 logger = logging.getLogger('oritec')
 
+
 @login_required(login_url='ingresar')
-def home(request,slug):
+def home(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
@@ -54,12 +54,13 @@ def home(request,slug):
     contenido.menu = ['menu-principal', 'menu2-resumen']
 
     return TemplateResponse(request, 'vista/home.html',
-        {'cont': contenido,
-         'parque': parque,
-         'aerogeneradores':aerogeneradores,
-        })
+                            {'cont': contenido,
+                             'parque': parque,
+                             'aerogeneradores': aerogeneradores,
+                             })
 
-def serializeGrafico(d):
+
+def serialize_grafico(d):
     s = '['
     if len(d) > 0:
         for v in d:
@@ -71,7 +72,7 @@ def serializeGrafico(d):
                     else:
                         s += key + ':' + str(value) + ','
                 elif isinstance(value,(dict,list)):
-                    s2 = serializeGrafico(value)
+                    s2 = serialize_grafico(value)
                     s += key + ':' + s2 + ','
                 else:
                     s +=  key + ':"' + value + '",'
@@ -84,7 +85,8 @@ def serializeGrafico(d):
 
     return s
 
-def graficoBarrasSimple(resultados,field,secciones, showall = False):
+
+def graficoBarrasSimple(resultados, field, secciones, showall=False):
     data_graficos = []
     count = 0
     for s in secciones:
@@ -94,10 +96,11 @@ def graficoBarrasSimple(resultados,field,secciones, showall = False):
             data_graficos.append({"name":s.graphText(),"y":aux.count()})
             count += 1
 
-    datos= serializeGrafico(data_graficos)
+    datos= serialize_grafico(data_graficos)
     return datos
 
-def graficoBarrasCompleto(resultados, field, secciones, showall = False):
+
+def grafico_barras_completo(resultados, field, secciones, showall=False):
     data_full = []
     count = 0
     filtros = Severidad.objects.all()
@@ -112,51 +115,56 @@ def graficoBarrasCompleto(resultados, field, secciones, showall = False):
                 data_graficos.append({"name":s.graphText(),"y":aux.count()})
                 count += 1
         data_full.append({"name": f.graphText(), "data": data_graficos})
-    datos = serializeGrafico(data_full)
+    datos = serialize_grafico(data_full)
     return datos
+
 
 @login_required(login_url='ingresar')
 def observaciones_resumen(request,slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
-    contenido=ContenidoContainer()
-    contenido.user=request.user
-    contenido.titulo=u'Resumen de Observaciones'
-    contenido.subtitulo='Parque '+parque.nombre
+    contenido = ContenidoContainer()
+    contenido.user = request.user
+    contenido.titulo = u'Resumen de Observaciones'
+    contenido.subtitulo = 'Parque ' + parque.nombre
     contenido.menu = ['menu-ncr', 'menu2-observaciones-resumen']
     observaciones = Observacion.objects.filter(parque=parque)
     url_append = ''
     table_show_ag = True
 
-    observaciones2 = observaciones.exclude(cerrado = True)
+    observaciones2 = observaciones.exclude(cerrado=True)
 
-    grafico_estado = graficoBarrasSimple(observaciones2,'estado',EstadoRevision.objects.all().order_by('-id'),showall=True)
+    grafico_estado = graficoBarrasSimple(observaciones2,
+                                         'estado',
+                                         EstadoRevision.objects.all().order_by('-id'),
+                                         showall=True)
 
     observaciones2 = observaciones2.exclude(estado__nombre__exact='Solucionado')
 
-    grafico_severidad = graficoBarrasSimple(observaciones2,'severidad',Severidad.objects.all(), showall=True)
+    grafico_severidad = graficoBarrasSimple(observaciones2, 'severidad', Severidad.objects.all(), showall=True)
     grafico_prioridad = graficoBarrasSimple(observaciones2, 'prioridad', Prioridad.objects.all(), showall=True)
-    grafico_componente = graficoBarrasSimple(observaciones2,'componente',Componente.objects.all())
+    grafico_componente = graficoBarrasSimple(observaciones2, 'componente', Componente.objects.all())
     grafico_subcomponente = graficoBarrasSimple(observaciones2, 'sub_componente', Subcomponente.objects.all())
     grafico_tipo = graficoBarrasSimple(observaciones2, 'tipo', Tipo.objects.all())
 
-    grafico_aerogenerador = graficoBarrasCompleto(observaciones2,'aerogenerador',aerogeneradores, showall=True)
+    grafico_aerogenerador = grafico_barras_completo(observaciones2, 'aerogenerador', aerogeneradores, showall=True)
 
     return TemplateResponse(request, 'ncr/resumen.html',
-                  {'cont': contenido,
-                   'parque': parque,
-                   'observaciones': observaciones,
-                   'url_append':url_append,
-                   'table_show_ag': table_show_ag,
-                   'aerogeneradores':aerogeneradores,
-                   'grafico_estado':grafico_estado,
-                   'grafico_severidad': grafico_severidad,
-                   'grafico_prioridad': grafico_prioridad,
-                   'grafico_componente': grafico_componente,
-                   'grafico_subcomponente': grafico_subcomponente,
-                   'grafico_tipo': grafico_tipo,
-                   'grafico_aerogenerador': grafico_aerogenerador,
-                   })
+                            {'cont': contenido,
+                             'parque': parque,
+                             'observaciones': observaciones,
+                             'url_append':url_append,
+                             'table_show_ag': table_show_ag,
+                             'aerogeneradores':aerogeneradores,
+                             'grafico_estado':grafico_estado,
+                             'grafico_severidad': grafico_severidad,
+                             'grafico_prioridad': grafico_prioridad,
+                             'grafico_componente': grafico_componente,
+                             'grafico_subcomponente': grafico_subcomponente,
+                             'grafico_tipo': grafico_tipo,
+                             'grafico_aerogenerador': grafico_aerogenerador,
+                             })
+
 
 @login_required(login_url='ingresar')
 def observaciones_duplicadas(request,slug):
@@ -186,17 +194,18 @@ def observaciones_duplicadas(request,slug):
                    'aerogeneradores':aerogeneradores,
                    })
 
+
 @login_required(login_url='ingresar')
-def observaciones(request,slug,slug_ag):
+def observaciones(request, slug, slug_ag):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     aerogenerador = get_object_or_404(Aerogenerador,parque=parque,slug=slug_ag)
-    contenido=ContenidoContainer()
-    contenido.user=request.user
-    contenido.titulo=u'NCR Aerogenerador '+ aerogenerador.nombre
-    contenido.subtitulo='Parque '+ parque.nombre
+    contenido = ContenidoContainer()
+    contenido.user = request.user
+    contenido.titulo = u'NCR Aerogenerador '+ aerogenerador.nombre
+    contenido.subtitulo = 'Parque '+ parque.nombre
     contenido.menu = ['menu-ncr', 'menu2-observaciones-'+str(aerogenerador.idx)]
-    url_append='?aerogenerador='+str(aerogenerador.idx)
+    url_append = '?aerogenerador='+str(aerogenerador.idx)
 
     observaciones = Observacion.objects.filter(aerogenerador__idx__exact=aerogenerador.idx, parque= parque)
 
@@ -211,23 +220,24 @@ def observaciones(request,slug,slug_ag):
     grafico_tipo = graficoBarrasSimple(observaciones2, 'tipo', Tipo.objects.all())
 
     return TemplateResponse(request, 'ncr/resumen.html',
-        {'cont': contenido,
-            'parque': parque,
-            'observaciones': observaciones,
-            'url_append': url_append,
-            'aerogeneradores':aerogeneradores,
-            'grafico_estado':grafico_estado,
-            'grafico_severidad': grafico_severidad,
-            'grafico_prioridad': grafico_prioridad,
-            'grafico_componente': grafico_componente,
-            'grafico_subcomponente': grafico_subcomponente,
-            'grafico_tipo': grafico_tipo,
-            'wtg': aerogenerador
-        })
+                            {'cont': contenido,
+                             'parque': parque,
+                             'observaciones': observaciones,
+                             'url_append': url_append,
+                             'aerogeneradores':aerogeneradores,
+                             'grafico_estado':grafico_estado,
+                             'grafico_severidad': grafico_severidad,
+                             'grafico_prioridad': grafico_prioridad,
+                             'grafico_componente': grafico_componente,
+                             'grafico_subcomponente': grafico_subcomponente,
+                             'grafico_tipo': grafico_tipo,
+                             'wtg': aerogenerador
+                             })
+
 
 @login_required(login_url='ingresar')
 @permission_required('ncr.add_observacion', raise_exception=True)
-def add_observacion(request,slug,observacion_id=0):
+def add_observacion(request, slug, observacion_id=0):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     edit_observacion = None
@@ -324,8 +334,9 @@ def add_observacion(request,slug,observacion_id=0):
          'edit_observacion': edit_observacion,
         })
 
+
 @login_required(login_url='ingresar')
-def show_observacion(request,slug,observacion_id):
+def show_observacion(request, slug, observacion_id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     observacion=get_object_or_404(Observacion, id=observacion_id)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
@@ -398,15 +409,16 @@ def show_observacion(request,slug,observacion_id):
          'duplicarForm': duplicarForm
         })
 
+
 @login_required(login_url='ingresar')
 @permission_required('ncr.delete_observacion', raise_exception=True)
-def del_observacion(request,slug):
+def del_observacion(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
-    contenido=ContenidoContainer()
-    contenido.user=request.user
-    contenido.titulo=u'Listado de observadores'
-    contenido.subtitulo='Parque '+ parque.nombre
+    contenido = ContenidoContainer()
+    contenido.user = request.user
+    contenido.titulo = u'Listado de observadores'
+    contenido.subtitulo = 'Parque ' + parque.nombre
     contenido.menu = ['menu-principal', 'menu2-observadores']
     observadores = Observador.objects.all().order_by('id')
     response_data = {}
@@ -419,13 +431,14 @@ def del_observacion(request,slug):
                   " - Nombre" + obs.nombre
         log = Log(texto=log_msg, tipo=3, user=request.user)
         log.save()
-        if not (request.user.has_perm('ncr.delete_observacion') or request.user == obs.created_by) :
+        if not (request.user.has_perm('ncr.delete_observacion') or request.user == obs.created_by):
             raise PermissionDenied
         obs.delete()
         return HttpResponseRedirect(request.POST['back_url'])
 
+
 @login_required(login_url='ingresar')
-def add_images(request,slug,revision_id):
+def add_images(request, slug, revision_id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     revision= Revision.objects.get(pk=revision_id)
     logger.debug('Enter add_images')
@@ -488,8 +501,9 @@ def add_images(request,slug,revision_id):
             content_type="application/json"
         )
 
+
 @login_required(login_url='ingresar')
-def list_fotos(request,slug):
+def list_fotos(request, slug):
     logger.debug("Enter list_fotos")
     parque = get_object_or_404(ParqueSolar, slug=slug)
     response_data = {}
@@ -515,8 +529,9 @@ def list_fotos(request,slug):
             content_type="application/json"
         )
 
+
 @login_required(login_url='ingresar')
-def table_fotos(request,slug,revision_id):
+def table_fotos(request, slug, revision_id):
     logger.debug("Enter list_fotos")
     parque = get_object_or_404(ParqueSolar, slug=slug)
     response_data = {}
@@ -547,8 +562,9 @@ def table_fotos(request,slug,revision_id):
         content_type="application/json"
     )
 
+
 @login_required(login_url='ingresar')
-def del_image(request,slug,image_id):
+def del_image(request, slug, image_id):
     logger.debug("Enter del_image")
     response_data = {}
     response_data['files'] = []
@@ -578,14 +594,16 @@ def del_image(request,slug,image_id):
             content_type="application/json"
         )
 
-def set_primary_photo(foto_id, estado = True):
+
+def set_primary_photo(foto_id, estado=True):
     foto = Fotos.objects.get(pk=foto_id)
     #logger.debug("Enter set_primary_photo: " + foto.imagen.name + ', estado = '+primary_image)
     foto.principal = estado
     foto.save(update_fields=["principal"])
 
+
 @login_required(login_url='ingresar')
-def primary_image(request,slug):
+def primary_image(request, slug):
     if request.method == 'POST':
         #logger.debug("primary image")
         if request.POST['estado'] == 'true':
@@ -608,8 +626,9 @@ def primary_image(request,slug):
             foto2 = Fotos.objects.filter(revision=foto.revision).order_by('orden')[0]
         return HttpResponse(foto2.thumbnail.url)
 
+
 @login_required(login_url='ingresar')
-def set_orden(request,slug):
+def set_orden(request, slug):
     if request.method == 'POST':
         #logger.debug("primary image")
         revision_id = int(request.POST['revision_id'])
@@ -701,7 +720,7 @@ def add_revision(request, slug, observacion_id, revision_id=0):
         })
 
 
-def generateExcelNCR(resultados):
+def generate_excel_ncr(resultados):
     wb = Workbook()
     ws = wb.active
     ws.title = "ReporteNCR"
@@ -749,7 +768,7 @@ def generateExcelNCR(resultados):
 
 
 @login_required(login_url='ingresar')
-def informeNCR(request,slug):
+def informe_ncr(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
@@ -836,7 +855,7 @@ def informeNCR(request,slug):
                     raise PermissionDenied
                 logger.debug('Excel')
                 resultados = resultados.order_by('aerogenerador__idx')
-                target_stream = generateExcelNCR(resultados)
+                target_stream = generate_excel_ncr(resultados)
                 response = HttpResponse(
                     content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 response['Content-Disposition'] = 'attachment; filename="ReporteNCR.xlsx"'
@@ -866,11 +885,11 @@ def informeNCR(request,slug):
                     nombre_archivo = request.POST['nombre']
                 nombre = 'INFNCR_' + parque.codigo + '-' + nombre_archivo + '_' + fecha.strftime("%y%m%d") + '.pdf'
 
-                respuesta = generatePdf(parque,resultados,imagenes,request.POST['titulo'],request,
-                                        colores=colores,
-                                        estados=estados,
-                                        fecha=fecha,
-                                        nombre=nombre)
+                respuesta = generate_pdf(parque,resultados, imagenes, request.POST['titulo'], request,
+                                         colores=colores,
+                                         estados=estados,
+                                         fecha=fecha,
+                                         nombre=nombre)
                 respuesta['Content-Disposition'] = 'attachment; filename="' + nombre + '"'
                 return respuesta
 
@@ -889,13 +908,9 @@ def informeNCR(request,slug):
         })
 
 
-def generatePdf(parque, resultados, imagenes, titulo,
-                request=None,
-                show_fotos=True,
-                colores=True,
-                estados=True,
-                fecha=date.today,
-                nombre=''):
+def generate_pdf(parque, resultados, imagenes, titulo, request=None, show_fotos=True, colores=True, estados=True,
+                 fecha=date.today,
+                 nombre=''):
 
     with open(os.path.join(settings.BASE_DIR, 'static/common/images/saroenlogo.png'), "rb") as image_file:
         logo_saroen = base64.b64encode(image_file.read())
@@ -945,6 +960,7 @@ def generatePdf(parque, resultados, imagenes, titulo,
                              })
         return StringIO.StringIO(pdf)
 
+
 def listFotos(resultados):
     main_fotos = {}
     for res in resultados:
@@ -953,6 +969,7 @@ def listFotos(resultados):
         if results.count() > 0:
             main_fotos[res.id] = results[0].reporte_img.url
     return main_fotos
+
 
 def listFotos_v2(resultados, punchlist_orden=False):
     main_fotos = []
@@ -985,6 +1002,7 @@ def listFotos_v2(resultados, punchlist_orden=False):
             main_fotos.append(cuadro_foto)
     return main_fotos
 
+
 def punchlistResults(parque, aerogenerador, form):
     reparadas = form.cleaned_data['reparadas']
     resultados = Observacion.objects.filter(parque=parque, aerogenerador=aerogenerador, punchlist=True)
@@ -1004,7 +1022,8 @@ def punchlistResults(parque, aerogenerador, form):
     main_fotos = listFotos_v2(resultados, True)
     return [resultados, main_fotos, titulo]
 
-def generateWord(parque, aerogenerador,form, incluir_fotos = True):
+
+def generateWord(parque, aerogenerador,form, incluir_fotos=True):
     [resultados, main_fotos, titulo] = punchlistResults(parque, aerogenerador, form)
     if parque.word:
         nombre_archivo = parque.word.file.name
@@ -1087,8 +1106,9 @@ def generateWord(parque, aerogenerador,form, incluir_fotos = True):
     document.save(target_stream)
     return target_stream
 
+
 @login_required(login_url='ingresar')
-def punchlist(request,slug):
+def punchlist(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
@@ -1152,7 +1172,7 @@ def punchlist(request,slug):
                     estados = form.cleaned_data['estados']
                     fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
                     nombre = 'PL_' + parque.codigo + '-' + ag.nombre + '_' + fecha_str + '.pdf'
-                    respuesta = generatePdf(parque,resultados, main_fotos, titulo, request,
+                    respuesta = generate_pdf(parque,resultados, main_fotos, titulo, request,
                                             show_fotos=show_fotos,
                                             colores=colores,
                                             estados=estados,
@@ -1173,12 +1193,11 @@ def punchlist(request,slug):
                         estados = form.cleaned_data['estados']
                         fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
                         archivo_name = 'PL_' + parque.codigo + '-' + ag.nombre + '_' + fecha_str + '.pdf'
-                        archivo = generatePdf(parque, resultados, main_fotos, titulo,
-                                              show_fotos=show_fotos,
-                                              colores = colores,
-                                              estados=estados,
-                                              fecha=form.cleaned_data['fecha'],
-                                              nombre=archivo_name)
+                        archivo = generate_pdf(parque, resultados, main_fotos, titulo, show_fotos=show_fotos,
+                                               colores=colores,
+                                               estados=estados,
+                                               fecha=form.cleaned_data['fecha'],
+                                               nombre=archivo_name)
 
                         logger.debug(archivo_name)
                         archive.writestr(archivo_name, archivo.getvalue())
@@ -1197,14 +1216,15 @@ def punchlist(request,slug):
          'resultados': resultados,
         })
 
+
 @login_required(login_url='ingresar')
-def observadores(request,slug):
+def observadores(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
-    contenido=ContenidoContainer()
-    contenido.user=request.user
-    contenido.titulo=u'Listado de inspectores'
-    contenido.subtitulo='Parque '+ parque.nombre
+    contenido = ContenidoContainer()
+    contenido.user = request.user
+    contenido.titulo = u'Listado de inspectores'
+    contenido.subtitulo = 'Parque ' + parque.nombre
     contenido.menu = ['menu-principal', 'menu2-observadores']
     observadores = Observador.objects.all().order_by('id')
     response_data = {}
@@ -1225,7 +1245,7 @@ def observadores(request,slug):
         #logger.debug('DELETE')
         data = dict(urlparse.parse_qsl(request.body))
         borrar = Observador.objects.get(id=data['id'])
-        logger.debug("Borrando nombre=" +borrar.nombre)
+        logger.debug("Borrando nombre=" + borrar.nombre)
         borrar.delete()
         return HttpResponse(
             '',
@@ -1241,6 +1261,7 @@ def observadores(request,slug):
             response,
             content_type="application/json"
         )
+
     return TemplateResponse(request, 'ncr/agregarObservador.html',
         {'cont': contenido,
          'parque': parque,
@@ -1248,8 +1269,9 @@ def observadores(request,slug):
          'aerogeneradores':aerogeneradores,
         })
 
+
 @login_required(login_url='ingresar')
-def del_revision(request,slug):
+def del_revision(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
@@ -1275,8 +1297,9 @@ def del_revision(request,slug):
         observacion.save()  # Necesario para actualizar campos
         return HttpResponseRedirect(request.POST['back_url'])
 
+
 @login_required(login_url='ingresar')
-def close_observacion(request,slug):
+def close_observacion(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
@@ -1311,8 +1334,9 @@ def close_observacion(request,slug):
         observacion.save()
         return HttpResponseRedirect(request.POST['back_url'])
 
+
 @login_required(login_url='ingresar')
-def imagenes_aerogenerador(request,slug,slug_ag):
+def imagenes_aerogenerador(request, slug, slug_ag):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     if slug_ag != 'resumen':
@@ -1334,7 +1358,7 @@ def imagenes_aerogenerador(request,slug,slug_ag):
     grafico_subcomponente = graficoBarrasSimple(observaciones, 'sub_componente', Subcomponente.objects.all())
     grafico_tipo = graficoBarrasSimple(observaciones, 'tipo', Tipo.objects.all())
     if slug_ag == 'resumen':
-        grafico_aerogenerador = graficoBarrasCompleto(observaciones, 'aerogenerador', aerogeneradores, showall=True)
+        grafico_aerogenerador = grafico_barras_completo(observaciones, 'aerogenerador', aerogeneradores, showall=True)
 
     with open('static/common/js/ncr-charts.js', 'r') as myfile:
         data_js_file = myfile.read().replace('\n', '')
@@ -1470,8 +1494,9 @@ def imagenes_aerogenerador(request,slug,slug_ag):
                                   filename= nombre_archivo,
                                   response_class=HttpResponse)
 
+
 @login_required(login_url='ingresar')
-def configuracion(request,slug):
+def configuracion(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido = ContenidoContainer()
