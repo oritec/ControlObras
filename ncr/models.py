@@ -351,8 +351,8 @@ class Revision(models.Model):
     descripcion = models.CharField(max_length=1000, blank=True, null=True)
     estado = models.ForeignKey('EstadoRevision', on_delete=models.SET_NULL, null=True, default=1)
     prioridad = models.ForeignKey('Prioridad', on_delete=models.SET_NULL, null=True, default=1)
-    created_by = models.ForeignKey(User)
-    reported_by = models.ForeignKey(Observador)
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    reported_by = models.ForeignKey(Observador, null=True, blank=True, on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
