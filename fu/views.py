@@ -2174,10 +2174,52 @@ def posicion_aerogeneradores(parque_eolico, fecha_calculo):
         pos[x]['left'] = 56.3
         pos[x]['zindex'] = 403
 
-        x = 'H1-WTG35-C6'
+        x = 'F6-WTG06-C1'
         pos[x]['width'] = 7.0
-        pos[x]['top'] = 52.7
-        pos[x]['left'] = 22.7
+        pos[x]['top'] = 10.2
+        pos[x]['left'] = 58.6
+        pos[x]['zindex'] = 403
+
+        x = 'F7-WTG07-C1'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 8.8
+        pos[x]['left'] = 61.0
+        pos[x]['zindex'] = 403
+
+        x = 'F8-WTG08-C1'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 7.7
+        pos[x]['left'] = 63.0
+        pos[x]['zindex'] = 403
+
+        x = 'F9-WTG09-C1'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 6.4
+        pos[x]['left'] = 64.9
+        pos[x]['zindex'] = 403
+
+        x = 'F10-WTG10-C1'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 5.2
+        pos[x]['left'] = 67.2
+        pos[x]['zindex'] = 403
+
+        x = 'F11-WTG11-C1'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 3.7
+        pos[x]['left'] = 69.7
+        pos[x]['zindex'] = 403
+
+        x = 'F12-WTG12-C1'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 2.2
+        pos[x]['left'] = 72.2
+        pos[x]['zindex'] = 403
+
+        x = 'F13-WTG13-C1'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 0.8
+        pos[x]['left'] = 74.4
         pos[x]['zindex'] = 403
 
         x = 'F14-WTG14-C1'
@@ -2185,6 +2227,283 @@ def posicion_aerogeneradores(parque_eolico, fecha_calculo):
         pos[x]['top'] = -0.8
         pos[x]['left'] = 77.9
         pos[x]['zindex'] = 403
+
+        x = 'G1-WTG15-C7'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 34.6
+        pos[x]['left'] = 28.0
+        pos[x]['zindex'] = 403
+
+        x = 'G2-WTG16-C7'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 33.4
+        pos[x]['left'] = 30.5
+        pos[x]['zindex'] = 403
+
+        x = 'G3-WTG17-C7'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 30.8
+        pos[x]['left'] = 39.6
+        pos[x]['zindex'] = 403
+
+        x = 'G4-WTG18-C7'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 29.1
+        pos[x]['left'] = 42.8
+        pos[x]['zindex'] = 403
+
+        x = 'G5-WTG19-C3'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 23.9
+        pos[x]['left'] = 46.5
+        pos[x]['zindex'] = 403
+
+        x = 'G6-WTG20-C3'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 23.0
+        pos[x]['left'] = 50.1
+        pos[x]['zindex'] = 403
+
+        x = 'G7-WTG21-C3'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 21.7
+        pos[x]['left'] = 54.2
+        pos[x]['zindex'] = 403
+
+        x = 'G8-WTG22-C3'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 19.7
+        pos[x]['left'] = 56.9
+        pos[x]['zindex'] = 403
+
+        x = 'G9-WTG23-C3'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 18.1
+        pos[x]['left'] = 59.9
+        pos[x]['zindex'] = 403
+
+        x = 'G10-WTG24-C3'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 16.5
+        pos[x]['left'] = 61.9
+        pos[x]['zindex'] = 403
+
+        x = 'G11-WTG25-C3'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 14.2
+        pos[x]['left'] = 65.8
+        pos[x]['zindex'] = 403
+
+        x = 'G12-WTG26-C3'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 12.5
+        pos[x]['left'] = 68.2
+        pos[x]['zindex'] = 403
+
+        x = 'G13-WTG27-C3'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 11.1
+        pos[x]['left'] = 71.1
+        pos[x]['zindex'] = 403
+
+        x = 'G14-WTG28-C3'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 8.8
+        pos[x]['left'] = 74.2
+        pos[x]['zindex'] = 403
+
+        x = 'G15-WTG29-C3'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 6.8
+        pos[x]['left'] = 75.5
+        pos[x]['zindex'] = 403
+
+        x = 'G16-WTG30-C3'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 6.3
+        pos[x]['left'] = 77.8
+        pos[x]['zindex'] = 403
+
+        x = 'G17-WTG31-C3'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 4.3
+        pos[x]['left'] = 78.6
+        pos[x]['zindex'] = 403
+
+        x = 'G18-WTG32-C3'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 3.2
+        pos[x]['left'] = 79.8
+        pos[x]['zindex'] = 403
+
+        x = 'G19-WTG33-C3'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 2.2
+        pos[x]['left'] = 82.0
+        pos[x]['zindex'] = 403
+
+        x = 'G20-WTG34-C3'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 1.3
+        pos[x]['left'] = 83.3
+        pos[x]['zindex'] = 403
+
+        x = 'H1-WTG35-C6'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 52.7
+        pos[x]['left'] = 22.7
+        pos[x]['zindex'] = 403
+
+        x = 'H2-WTG36-C6'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 49.8
+        pos[x]['left'] = 27.5
+        pos[x]['zindex'] = 403
+
+        x = 'H3-WTG37-C6'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 48.1
+        pos[x]['left'] = 31.0
+        pos[x]['zindex'] = 403
+
+        x = 'H4-WTG38-C6'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 46.7
+        pos[x]['left'] = 34.8
+        pos[x]['zindex'] = 403
+
+        x = 'H5-WTG39-C6'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 44.6
+        pos[x]['left'] = 40.4
+        pos[x]['zindex'] = 403
+
+        x = 'H6-WTG40-C6'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 42.6
+        pos[x]['left'] = 45.2
+        pos[x]['zindex'] = 403
+
+        x = 'H7-WTG41-C7'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 39.4
+        pos[x]['left'] = 45.6
+        pos[x]['zindex'] = 403
+
+        x = 'H8-WTG42-C7'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 36.4
+        pos[x]['left'] = 47.7
+        pos[x]['zindex'] = 403
+
+        x = 'H9-WTG43-C8'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 34.6
+        pos[x]['left'] = 49.7
+        pos[x]['zindex'] = 403
+
+        x = 'H10-WTG44-C8'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 33.7
+        pos[x]['left'] = 52.3
+        pos[x]['zindex'] = 403
+
+        x = 'H11-WTG45-C8'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 32.1
+        pos[x]['left'] = 54.4
+        pos[x]['zindex'] = 403
+
+        x = 'H12-WTG46-C8'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 30.4
+        pos[x]['left'] = 57.4
+        pos[x]['zindex'] = 403
+
+        x = 'H13-WTG47-C8'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 27.4
+        pos[x]['left'] = 61.5
+        pos[x]['zindex'] = 403
+
+        x = 'H14-WTG48-C8'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 24.2
+        pos[x]['left'] = 67.4
+        pos[x]['zindex'] = 403
+
+        x = 'H15-WTG49-C9'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 22.5
+        pos[x]['left'] = 69.8
+        pos[x]['zindex'] = 403
+
+        x = 'H16-WTG50-C9'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 20.6
+        pos[x]['left'] = 72.5
+        pos[x]['zindex'] = 403
+
+        x = 'H17-WTG51-C9'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 18.8
+        pos[x]['left'] = 74.9
+        pos[x]['zindex'] = 403
+
+        x = 'H18-WTG52-C9'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 17.7
+        pos[x]['left'] = 76.3
+        pos[x]['zindex'] = 403
+
+        x = 'H19-WTG53-C9'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 16.2
+        pos[x]['left'] = 78.4
+        pos[x]['zindex'] = 403
+
+        x = 'H20-WTG54-C9'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 14.5
+        pos[x]['left'] = 80.1
+        pos[x]['zindex'] = 403
+
+        x = 'H21-WTG55-C10'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 12.6
+        pos[x]['left'] = 81.8
+        pos[x]['zindex'] = 403
+
+        x = 'H22-WTG56-C10'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 10.9
+        pos[x]['left'] = 83.3
+        pos[x]['zindex'] = 403
+
+        x = 'H23-WTG57-C10'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 9.7
+        pos[x]['left'] = 85.6
+        pos[x]['zindex'] = 403
+
+        x = 'H24-WTG58-C10'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 8.2
+        pos[x]['left'] = 87.4
+        pos[x]['zindex'] = 403
+
+        x = 'H25-WTG59-C10'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 6.3
+        pos[x]['left'] = 89.3
+        pos[x]['zindex'] = 403
+
+        x = 'H26-WTG60-C10'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 4.8
+        pos[x]['left'] = 90.2
+        pos[x]['zindex'] = 403
+
     else:
         return pos
 
