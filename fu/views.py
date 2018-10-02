@@ -2008,11 +2008,179 @@ def posicion_aerogeneradores(parque_eolico, fecha_calculo):
         pos[x]['left'] = 38.9
         pos[x]['zindex'] = 403
 
-    elif parque.codigo == 'EES-001.2':  # Juchitan
-        x = 'WTG01'
+        x = 'WTG51'
         pos[x]['width'] = 7.0
-        pos[x]['top'] = 9.0
-        pos[x]['left'] = 18.7
+        pos[x]['top'] = 24.6
+        pos[x]['left'] = 53.6
+        pos[x]['zindex'] = 403
+
+        x = 'WTG52'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 23
+        pos[x]['left'] = 57.2
+        pos[x]['zindex'] = 403
+
+        x = 'WTG53'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 21.5
+        pos[x]['left'] = 60.0
+        pos[x]['zindex'] = 403
+
+        x = 'WTG54'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 19.6
+        pos[x]['left'] = 63.7
+        pos[x]['zindex'] = 403
+
+        x = 'WTG55'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 18.4
+        pos[x]['left'] = 68.1
+        pos[x]['zindex'] = 403
+
+        x = 'WTG56'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 16.5
+        pos[x]['left'] = 71.9
+        pos[x]['zindex'] = 403
+
+        x = 'WTG57'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 15.5
+        pos[x]['left'] = 74.2
+        pos[x]['zindex'] = 403
+
+        x = 'WTG58'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 14.4
+        pos[x]['left'] = 76.8
+        pos[x]['zindex'] = 403
+
+        x = 'WTG59'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 62.6
+        pos[x]['left'] = 13.9
+        pos[x]['zindex'] = 403
+
+        x = 'WTG60'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 60.7
+        pos[x]['left'] = 19.0
+        pos[x]['zindex'] = 403
+
+        x = 'WTG61'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 58.3
+        pos[x]['left'] = 23.0
+        pos[x]['zindex'] = 403
+
+        x = 'WTG62'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 54.7
+        pos[x]['left'] = 26.1
+        pos[x]['zindex'] = 403
+
+        x = 'WTG63'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 52.9
+        pos[x]['left'] = 41.7
+        pos[x]['zindex'] = 403
+
+        x = 'WTG64'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 50.0
+        pos[x]['left'] = 45.2
+        pos[x]['zindex'] = 403
+
+        x = 'WTG65'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 49.6
+        pos[x]['left'] = 49.3
+        pos[x]['zindex'] = 403
+
+        x = 'WTG66'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 46.0
+        pos[x]['left'] = 54.6
+        pos[x]['zindex'] = 403
+
+        x = 'WTG67'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 32.3
+        pos[x]['left'] = 68.5
+        pos[x]['zindex'] = 403
+
+        x = 'WTG68'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 30.7
+        pos[x]['left'] = 71.9
+        pos[x]['zindex'] = 403
+
+        x = 'WTG69'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 29.4
+        pos[x]['left'] = 74.3
+        pos[x]['zindex'] = 403
+
+        x = 'WTG70'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 28.1
+        pos[x]['left'] = 79.9
+        pos[x]['zindex'] = 403
+
+        x = 'WTG71'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 26.6
+        pos[x]['left'] = 83.4
+        pos[x]['zindex'] = 403
+
+        x = 'WTG72'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 24.5
+        pos[x]['left'] = 85.7
+        pos[x]['zindex'] = 403
+
+    elif parque.codigo == 'EES-001.2':  # Juchitan
+        x = 'F1-WTG01-C1'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 17.7
+        pos[x]['left'] = 45.1
+        pos[x]['zindex'] = 403
+
+        x = 'F2-WTG02-C1'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 16.2
+        pos[x]['left'] = 47.5
+        pos[x]['zindex'] = 403
+
+        x = 'F3-WTG03-C1'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 14.5
+        pos[x]['left'] = 52.2
+        pos[x]['zindex'] = 403
+
+        x = 'F4-WTG04-C1'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 13.4
+        pos[x]['left'] = 55.1
+        pos[x]['zindex'] = 403
+
+        x = 'F5-WTG05-C1'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 11.6
+        pos[x]['left'] = 56.3
+        pos[x]['zindex'] = 403
+
+        x = 'H1-WTG35-C6'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 52.7
+        pos[x]['left'] = 22.7
+        pos[x]['zindex'] = 403
+
+        x = 'F14-WTG14-C1'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = -0.8
+        pos[x]['left'] = 77.9
         pos[x]['zindex'] = 403
     else:
         return pos
@@ -2048,20 +2216,20 @@ def posicion_aerogeneradores(parque_eolico, fecha_calculo):
                         pos[ag.nombre]['img'] = nombre
                         break
             # Inicio Pruebas
-            # path = os.path.join(settings.BASE_DIR, 'static/common/images/ag')
-            # # filename = path + '/' + unicode(r.componente.nombre) + '.png'
-            # filename = path + '/' + unicode('T1') + '.png'
-            # # filename = path + '/' + unicode('Pala 3') + '.png'
-            # if os.path.isfile(unicode(filename).encode('utf-8')):
-            #     found = True
-            #     [nombre, width, top, left] = get_image_data(os.path.basename(filename),
-            #                                                 pos[ag.nombre]['top'],
-            #                                                 pos[ag.nombre]['left'])
-            #     pos[ag.nombre]['width'] = width
-            #     pos[ag.nombre]['top'] = top
-            #     pos[ag.nombre]['left'] = left
-            #     pos[ag.nombre]['img'] = nombre
-            # found = True
+            path = os.path.join(settings.BASE_DIR, 'static/common/images/ag')
+            # filename = path + '/' + unicode(r.componente.nombre) + '.png'
+            filename = path + '/' + unicode('T1') + '.png'
+            # filename = path + '/' + unicode('Pala 3') + '.png'
+            if os.path.isfile(unicode(filename).encode('utf-8')):
+                found = True
+                [nombre, width, top, left] = get_image_data(os.path.basename(filename),
+                                                            pos[ag.nombre]['top'],
+                                                            pos[ag.nombre]['left'])
+                pos[ag.nombre]['width'] = width
+                pos[ag.nombre]['top'] = top
+                pos[ag.nombre]['left'] = left
+                pos[ag.nombre]['img'] = nombre
+            found = True
             # Fin Pruebas
             if not found:
                 pos[ag.nombre]['width'] = 0.5
