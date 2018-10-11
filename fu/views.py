@@ -996,6 +996,13 @@ def posicion_aerogeneradores(parque_eolico, fecha_calculo):
         pos[x]['top'] = 27.3
         pos[x]['left'] = 87.1
         pos[x]['zindex'] = 403
+
+        x = 'WTG35'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 34.7
+        pos[x]['left'] = 73.4
+        pos[x]['zindex'] = 403
+
     elif parque.codigo == 'MST-002.2': # Sarco
         x = 'WTG03'
         pos[x]['width'] = 7.0
@@ -2625,7 +2632,7 @@ def get_image_data(filename, top_i, left_i):
 
 def get_plano3d_img(parque):
     if parque.codigo == 'PCR-001':
-        return  ['/common/images/plano-bicentenario.png', '0px', '85%', '0px']
+        return  ['/common/images/plano-bicentenario-v2.png', '0px', '85%', '0px']
     elif parque.codigo == 'MST-002.2':
         return ['/common/images/plano-sarco2.png', '50px', '2%', '80px']
     elif parque.codigo == 'MST-002.1':
