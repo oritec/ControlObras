@@ -722,11 +722,14 @@ def create_dr_word(request, slug, dr_id):
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 4
                 row_cells = table.rows[1].cells
-                foto = FotosDR.objects.get(composicion=composicion, orden=3)
-                img_temp = fix_image_rotation(foto, draft)
-                r = row_cells[1].paragraphs[0].add_run()
-                r.add_picture(img_temp, width=Mm(70), height=Mm(52.6))
-                row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
+                try:
+                    foto = FotosDR.objects.get(composicion=composicion, orden=3)
+                    img_temp = fix_image_rotation(foto, draft)
+                    r = row_cells[1].paragraphs[0].add_run()
+                    r.add_picture(img_temp, width=Mm(70), height=Mm(52.6))
+                    row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
+                except FotosDR.DoesNotExist:
+                    logger.debug('Foto does not exist!')
 
                 p = document.add_paragraph('Ilustración ' + str(foto_count) + '. ' + composicion.pie)
                 p.alignment = WD_ALIGN_PARAGRAPH.LEFT
