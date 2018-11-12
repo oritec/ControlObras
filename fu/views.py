@@ -2634,13 +2634,13 @@ def get_plano3d_img(parque):
     if parque.codigo == 'PCR-001':
         return  ['/common/images/plano-bicentenario-v2.png', '0px', '85%', '0px']
     elif parque.codigo == 'MST-002.2':
-        return ['/common/images/plano-sarco2.png', '50px', '2%', '80px']
+        return ['/common/images/plano-sarco2.png', '10.9%', '2%', '10.9%']
     elif parque.codigo == 'MST-002.1':
-        return ['/common/images/plano-aurora.png', '50px', '85%', '80px']
+        return ['/common/images/plano-aurora.png', '10.9%', '85%', '10.6%']
     elif parque.codigo == 'EES-001.1':
-        return ['/common/images/plano-espinal.jpg', '50px', '85%', '80px']
+        return ['/common/images/plano-espinal.jpg', '10.9%', '85%', '10.6%']
     elif parque.codigo == 'EES-001.2':
-        return ['/common/images/plano_juchitan.jpg', '50px', '85%', '80px']
+        return ['/common/images/plano_juchitan.jpg', '10.9%', '85%', '10.6%']
     else:
         return ['/common/images/plano2.png', '0px', '85%', '0px']
 

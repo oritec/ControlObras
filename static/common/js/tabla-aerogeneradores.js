@@ -17,8 +17,7 @@ var TableDatatablesEditable = function () {
             var aData = oTable.fnGetData(nRow);
             var jqTds = $('>td', nRow);
 
-            jqTds[0].innerHTML = '<input type="hidden" class="form-control input-small" value="' + aData[0] + '">'+aData[0];
-
+            jqTds[0].innerHTML = '<input type="hidden" class="form-control input-small" value="' + aData[0] + '">' + aData[0];
             jqTds[1].innerHTML = '<input type="text" class="form-control input-small" value="' + aData[1] + '">';
             jqTds[2].innerHTML = '<a class="edit" href="">Guardar</a>';
             jqTds[3].innerHTML = '<a class="cancel" href="">Cancelar</a>';

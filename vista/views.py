@@ -16,48 +16,52 @@ from usuarios.views import check_password, check_permisos
 from usuarios.models import Usuario, Log
 logger = logging.getLogger('oritec')
 
+
 @login_required(login_url='ingresar')
 def index(request):
     usuario = Usuario.objects.get(user=request.user)
-    parques=usuario.parques.all()
-    formAddParque = ParqueForm()
+    parques = usuario.parques.all()
+    form_add_parque = ParqueForm()
     if request.method == 'POST':
         if 'addParque' in request.POST:
-            formParque = ParqueForm(request.POST)
-            if formParque.is_valid():
-                p=formParque.save()
+            form_parque = ParqueForm(request.POST)
+            if form_parque.is_valid():
+                p = form_parque.save()
                 usuarios = Usuario.objects.all()
                 for u in usuarios:
                     if u.user.is_superuser:
                         u.parques.add(p)
                 usuario.parques.add(p)
                 log_msg = "Se crea parque " + p.nombre
-                log = Log(texto=log_msg,tipo=1,user=request.user)
+                log = Log(texto=log_msg, tipo=1, user=request.user)
                 log.save()
             else:
                 logger.debug('error')
                 mensaje = 'Código de parque ya existe!'
                 messages.add_message(request, messages.ERROR, mensaje)
     return TemplateResponse(request, 'vista/index.html',
-                  {'parques': parques,
-                   'formAddParque': formAddParque,
-                   'user':request.user})
+                            {'parques': parques,
+                                'formAddParque': form_add_parque,
+                                'user': request.user
+                             })
+
 
 @login_required(login_url='ingresar')
-def home(request,slug):
+def home(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
-    aerogeneradores = Aerogenerador.objects.filter(parque=parque)
-    contenido=ContenidoContainer()
-    contenido.user=request.user
-    contenido.titulo=u'Parque Eólico'
-    contenido.subtitulo=parque.nombre
+    ags = Aerogenerador.objects.filter(parque=parque)
+    contenido = ContenidoContainer()
+    contenido.user = request.user
+    contenido.titulo = u'Parque Eólico'
+    contenido.subtitulo = parque.nombre
     contenido.menu = ['menu-principal', 'menu2-resumen']
 
     return TemplateResponse(request, 'vista/home.html',
-        {'cont': contenido,
-         'parque': parque,
-         'aerogeneradores':aerogeneradores
-        })
+                            {'cont': contenido,
+                                'parque': parque,
+                                'aerogeneradores': ags
+                             })
+
 
 @login_required(login_url='ingresar')
 @permission_required('vista.delete_parquesolar', raise_exception=True)
@@ -71,15 +75,16 @@ def del_parque(request):
             log.save()
     return HttpResponseRedirect(reverse('vista:index'))
 
+
 @login_required(login_url='ingresar')
 @permission_required('vista.change_parquesolar', raise_exception=True)
-def configuracion(request,slug):
+def configuracion(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque)
-    contenido=ContenidoContainer()
+    contenido = ContenidoContainer()
     contenido.user=request.user
-    contenido.titulo=u'Parque Eólico'
-    contenido.subtitulo=parque.nombre
+    contenido.titulo = u'Parque Eólico'
+    contenido.subtitulo = parque.nombre
     contenido.menu = ['menu-principal', 'menu2-configuracion']
     form = None
     if request.method == 'POST':
@@ -96,18 +101,18 @@ def configuracion(request,slug):
             if parque.prev_no_aerogeneradores != parque.no_aerogeneradores:
                 logger.debug('Se debe actualizar tabla de Aerogeneradores.')
                 if parque.prev_no_aerogeneradores < parque.no_aerogeneradores:
-                    ag = Aerogenerador.objects.filter(parque=parque,idx__gt=0).order_by('-idx')
-                    last_idx=0
-                    if ag.count()>0:
+                    ag = Aerogenerador.objects.filter(parque=parque, idx__gt=0).order_by('-idx')
+                    last_idx = 0
+                    if ag.count() > 0:
                         ultimo = ag[0]
                         last_idx = ag[0].idx
-                    for idx in range(last_idx+1,parque.no_aerogeneradores+1):
-                        nuevo = Aerogenerador(parque=parque,idx=idx,nombre='WTG'+str(idx).zfill(2))
+                    for idx in range(last_idx+1, parque.no_aerogeneradores+1):
+                        nuevo = Aerogenerador(parque=parque, idx=idx, nombre='WTG'+str(idx).zfill(2))
                         nuevo.save()
                 else:
-                    Aerogenerador.objects.filter(parque=parque,idx__gt=parque.no_aerogeneradores)
+                    Aerogenerador.objects.filter(parque=parque, idx__gt=parque.no_aerogeneradores)
                 parque.prev_no_aerogeneradores = parque.no_aerogeneradores
-            ag = Aerogenerador.objects.filter(parque=parque, idx = -1)
+            ag = Aerogenerador.objects.filter(parque=parque, idx=-1)
             if ag.count() == 0:
                 nuevo = Aerogenerador(parque=parque, idx=-2, nombre='General')
                 nuevo.save()
@@ -124,11 +129,12 @@ def configuracion(request,slug):
         form = ParqueFormFull(instance=parque)
 
     return TemplateResponse(request, 'vista/configuracion.html',
-        {'cont': contenido,
-         'parque': parque,
-         'form': form,
-         'aerogeneradores':aerogeneradores,
-        })
+                            {'cont': contenido,
+                                'parque': parque,
+                                'form': form,
+                                'aerogeneradores': aerogeneradores,
+                             })
+
 
 @login_required(login_url='ingresar')
 @permission_required('vista.change_parquesolar', raise_exception=True)
@@ -137,8 +143,8 @@ def aerogeneradores(request,slug):
     aerogeneradores = Aerogenerador.objects.filter(parque=parque)
     contenido=ContenidoContainer()
     contenido.user=request.user
-    contenido.titulo=u'Listado de Aerogeneradores'
-    contenido.subtitulo='Parque '+ parque.nombre
+    contenido.titulo = u'Listado de Aerogeneradores'
+    contenido.subtitulo = 'Parque ' + parque.nombre
     contenido.menu = ['menu-principal', 'menu2-aerogeneradores']
     observadores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     response_data = {}
@@ -146,7 +152,7 @@ def aerogeneradores(request,slug):
     # Me decido por interfaz RESTful. POST: Crear Nuevo, DELETE: Eliminar, PUT: Editar
     if request.method == 'POST':
         logger.debug('POST Aerogeneradores')
-        editar = Aerogenerador.objects.get(idx=int(request.POST['id']),parque=parque)
+        editar = Aerogenerador.objects.get(idx=int(request.POST['id']), parque=parque)
         editar.nombre = request.POST['nombre']
         try:
             editar.save()
@@ -164,8 +170,8 @@ def aerogeneradores(request,slug):
         )
 
     return TemplateResponse(request, 'vista/agregarAerogenerador.html',
-        {'cont': contenido,
-         'parque': parque,
-         'observadores': observadores,
-         'aerogeneradores':aerogeneradores,
-        })
+                            {'cont': contenido,
+                                'parque': parque,
+                                'observadores': observadores,
+                                'aerogeneradores':aerogeneradores,
+                             })

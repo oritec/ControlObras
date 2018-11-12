@@ -404,7 +404,7 @@ def show_observacion(request, slug, observacion_id):
          'observacion': observacion,
          'main_fotos': main_fotos,
          'fotos': fotos,
-         'aerogeneradores':aerogeneradores,
+         'aerogeneradores': aerogeneradores,
          'breadcrumbs': breadcrumbs,
          'duplicarForm': duplicarForm
         })
@@ -506,23 +506,23 @@ def add_images(request, slug, revision_id):
 def list_fotos(request, slug):
     logger.debug("Enter list_fotos")
     parque = get_object_or_404(ParqueSolar, slug=slug)
-    response_data = {}
+    response_data = dict()
     response_data['files'] = []
     if request.method == 'POST':
         revision = Revision.objects.get(pk=request.POST['revision_id'])
         results = Fotos.objects.filter(revision=revision).order_by('orden')
         for foto in results:
-            data={'name': os.path.basename(foto.imagen.name),
-                  'size':str(foto.imagen.size),
-                  'url':foto.imagen.url,
-                  'thumbnailUrl':foto.thumbnail.url,
-                  'deleteUrl':reverse('ncr:imagenes-delete',args=[parque.slug,foto.id]),
-                  "deleteType": "DELETE",
-                  "mainPhoto": foto.principal,
-                  "photoId" : str(foto.id)}
+            data = {'name': os.path.basename(foto.imagen.name),
+                    'size': str(foto.imagen.size),
+                    'url': foto.imagen.url,
+                    'thumbnailUrl': foto.thumbnail.url,
+                    'deleteUrl': reverse('ncr:imagenes-delete', args=[parque.slug, foto.id]),
+                    "deleteType": "DELETE",
+                    "mainPhoto": foto.principal,
+                    "photoId": str(foto.id)}
             response_data['files'].append(data)
 
-        response=json.dumps(response_data)
+        response = json.dumps(response_data)
 
         return HttpResponse(
             response,
@@ -1263,11 +1263,11 @@ def observadores(request, slug):
         )
 
     return TemplateResponse(request, 'ncr/agregarObservador.html',
-        {'cont': contenido,
-         'parque': parque,
-         'observadores': observadores,
-         'aerogeneradores':aerogeneradores,
-        })
+                            {'cont': contenido,
+                                'parque': parque,
+                                'observadores': observadores,
+                                'aerogeneradores': aerogeneradores,
+                             })
 
 
 @login_required(login_url='ingresar')
