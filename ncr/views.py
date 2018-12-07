@@ -252,7 +252,9 @@ def add_observacion(request, slug, observacion_id=0):
         ag_readonly = True
         back_url = reverse('ncr:observaciones', args=[parque.slug,request.GET['aerogenerador']])
     elif edit_observacion is not None:
-        if not (request.user.has_perm('ncr.change_observacion') or request.user == edit_observacion.created_by) :
+        if not (request.user.has_perm('ncr.change_observacion') or request.user == edit_observacion.created_by):
+            logger.debug('User ' + request.user.username + ', no tiene permiso para editar observación de ' +
+                         edit_observacion.created_by.username)
             raise PermissionDenied
         contenido.titulo = u'Editar Observación'
         contenido.menu = ['menu-ncr', 'menu2-observaciones-' + str(edit_observacion.aerogenerador.idx)]
