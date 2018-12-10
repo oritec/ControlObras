@@ -879,10 +879,13 @@ def create_dr_word(request, slug, dr_id):
                 table.alignment = WD_TABLE_ALIGNMENT.CENTER
                 row_cells = table.rows[0].cells
                 # foto 1
-                foto = FotosDR.objects.get(composicion=composicion, orden=0)
-                img_temp = fix_image_rotation(foto, draft)
-                r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
+                try:
+                    foto = FotosDR.objects.get(composicion=composicion, orden=0)
+                    img_temp = fix_image_rotation(foto, draft)
+                    r = row_cells[0].paragraphs[0].add_run()
+                    r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
+                except FotosDR.DoesNotExist:
+                    logger.debug('Foto does not exist!')
                 row_cells[0].width = Mm(ancho)
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 2
