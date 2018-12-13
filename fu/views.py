@@ -3713,7 +3713,7 @@ def download_config(request,slug):
             first_row = row
             first = True
             for idx, nombre in componentes.iteritems():
-                d=ws.cell(row=row, column=column , value=nombre)
+                d = ws.cell(row=row, column=column, value=nombre)
                 d.alignment = alignment2
                 d.fill = bg
                 d.font = font
@@ -3735,9 +3735,10 @@ def download_config(request,slug):
                 d2.border = borderbottom
                 d2.alignment = alignment3
                 columna_aux = 4
-                if planExist :
+                if planExist:
                     for semana in semanas:
-                        d_str = anhos[semana] + "-W" + semana + "-0"
+                        semana_str = semanas[idx].split('-')[0]
+                        d_str = anhos[semana] + "-W" + semana_str + "-0"
                         fecha_aux = datetime.strptime(d_str, "%Y-W%W-%w")
                         try:
                             plan = Plan.objects.get(parque=parque,
