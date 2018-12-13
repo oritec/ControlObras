@@ -3295,10 +3295,21 @@ def checkValidFile(ws, parque_eolico):
 def getLastColumn(ws):
     fila = 3
     columna = 4
-    valor = ws.cell(row=fila,column=columna).value
+    valor = ws.cell(row=fila, column=columna).value
     while valor is not None:
         # Verifica que los nombres sean componentes válidos
         columna = columna + 2
+        valor = ws.cell(row=fila, column=columna).value
+    return columna
+
+
+def getLastColumn_v2(ws):
+    fila = 3
+    columna = 4
+    valor = ws.cell(row=fila, column=columna).value
+    while valor is not None:
+        # Verifica que los nombres sean componentes válidos
+        columna += 1
         valor = ws.cell(row=fila, column=columna).value
     return columna
 
@@ -3369,7 +3380,7 @@ def readPlanFile(configuracion, parque_eolico):
         objs = Contractual.objects.filter(parque = configuracion.parque)
         for obj in objs:
             obj.delete()
-    last_column = getLastColumn(ws)
+    last_column = getLastColumn_v2(ws)
     fila = 4
     ultimo_estado = None
     ultimo_anho = None
@@ -3404,8 +3415,8 @@ def readPlanFile(configuracion, parque_eolico):
                 if anho is not None:
                     if anho != ultimo_anho:
                         ultimo_anho = anho
-                contractual = ws.cell(row=fila,column = columna).value
-                plan = ws.cell(row=fila+1,column = columna).value
+                contractual = ws.cell(row=fila, column=columna).value
+                plan = ws.cell(row=fila+1, column=columna).value
                 d = ultimo_anho + "-W" + semana + "-0"
                 fecha = datetime.strptime(d, "%Y-W%W-%w")
                 if plan is not None:
