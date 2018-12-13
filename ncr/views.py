@@ -272,13 +272,13 @@ def add_observacion(request, slug, observacion_id=0):
 
     if request.method == 'POST':
         if edit_observacion is not None:
-            if not request.user.has_perm('ncr.change_observacion'):
+            if not (request.user.has_perm('ncr.change_observacion') or request.user == edit_observacion.created_by):
                 raise PermissionDenied
-            observacionForm = ObservacionForm(request.POST,instance=edit_observacion)
+            observacionForm = ObservacionForm(request.POST, instance=edit_observacion)
             rev = edit_observacion.revision_set.order_by('id')[0]
-            revisionForm = RevisionForm(request.POST,instance=rev)
+            revisionForm = RevisionForm(request.POST, instance=rev)
         else:
-            observacionForm = ObservacionForm(request.POST,initial={"parque":parque})
+            observacionForm = ObservacionForm(request.POST, initial={"parque": parque})
             revisionForm = RevisionForm(request.POST)
         if observacionForm.is_valid() and revisionForm.is_valid():
             if edit_observacion is not None:
