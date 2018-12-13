@@ -3584,13 +3584,13 @@ def download_config(request,slug):
     semanas = []
     meses = {}
     anhos = {}
-    semana = str(aux.isocalendar()[1])
+    semana = str(aux.isocalendar()[1]) + '-' + str(aux.isocalendar()[0])
     semanas.append(semana)
     meses[semana] = meses_espanol[str(aux.month)]
     anhos[semana] = str(aux.isocalendar()[0])
     aux = aux + relativedelta.relativedelta(weeks=1)
     while aux < final:
-        semana = str(aux.isocalendar()[1])
+        semana = str(aux.isocalendar()[1]) + '-' + str(aux.isocalendar()[0])
         semanas.append(semana)
         meses[semana] = meses_espanol[str(aux.month)]
         anhos[semana] = str(aux.isocalendar()[0])
@@ -3643,7 +3643,8 @@ def download_config(request,slug):
     prev_year_col = 0
 
     for s in semanas:
-        d = ws.cell(row=row, column=column+idx, value=semanas[idx])
+        semana_str = semanas[idx].split('-')[0]
+        d = ws.cell(row=row, column=column+idx, value=semana_str)
         d.fill = bg
         d.font = font
         d.border = borderfull
@@ -3676,7 +3677,7 @@ def download_config(request,slug):
     ws.merge_cells(start_row=row - 2, start_column=prev_year_col, end_row=row - 2, end_column=column + idx - 1)
     ws.merge_cells(start_row=row - 1, start_column=prev_month_col, end_row=row - 1, end_column=column + idx - 1)
 
-    for aux_col in range(4,column+idx):
+    for aux_col in range(4, column+idx):
         d = ws.cell(row=row - 2, column=aux_col)
         d.border = borderbottom
 
@@ -4460,7 +4461,7 @@ def printDataExcel(ws,datos, initial_row,initial_col,alignment = None, column_wi
 
 def planificacionExcel(parque, wb):
     [filas,columnas,datos] = dataPlanificacion(parque)
-    if 'Planificacion'  in wb.sheetnames:
+    if 'Planificacion' in wb.sheetnames:
         ws = wb['Planificacion']
     else:
         ws = wb.create_sheet("Planificacion")
