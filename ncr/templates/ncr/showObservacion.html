@@ -60,7 +60,7 @@
                         {% endif %}
                     </a>
                     <row>
-                        {% if perms.ncr.change_revision or user == observacion.created_by %}
+                        {% if perms.ncr.change_revision or user == observacion.created_by or user == revision.created_by %}
                         <a data-toggle="modal" href="#long" class="btn btn-sm green" id="addPhotoModal-{{ revision.id }}" name="addPhoto" onclick="$('#fileupload').attr('action','{% url 'ncr:imagenes-agregar' parque.slug revision.id %}');">
                             <i class="fa fa-plus"></i> Fotos
                         </a>

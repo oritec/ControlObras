@@ -120,7 +120,7 @@ def grafico_barras_completo(resultados, field, secciones, showall=False):
 
 
 @login_required(login_url='ingresar')
-def observaciones_resumen(request,slug):
+def observaciones_resumen(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido = ContenidoContainer()
@@ -167,7 +167,7 @@ def observaciones_resumen(request,slug):
 
 
 @login_required(login_url='ingresar')
-def observaciones_duplicadas(request,slug):
+def observaciones_duplicadas(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     contenido=ContenidoContainer()
@@ -242,10 +242,10 @@ def add_observacion(request, slug, observacion_id=0):
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     edit_observacion = None
     if observacion_id != 0:
-        edit_observacion = get_object_or_404(Observacion,id=observacion_id)
+        edit_observacion = get_object_or_404(Observacion, id=observacion_id)
     contenido=ContenidoContainer()
-    contenido.user=request.user
-    contenido.subtitulo=parque.nombre
+    contenido.user = request.user
+    contenido.subtitulo = parque.nombre
     if 'aerogenerador' in request.GET:
         contenido.titulo = u'Agregar Observación'
         contenido.menu = ['menu-ncr', 'menu2-observaciones-'+str(request.GET['aerogenerador'])]
@@ -320,7 +320,7 @@ def add_observacion(request, slug, observacion_id=0):
         else:
             if 'aerogenerador' in request.GET:
                 ag = get_object_or_404(Aerogenerador, idx=int(request.GET['aerogenerador']), parque=parque)
-                observacionForm = ObservacionForm(initial={"parque":parque,"aerogenerador":ag.id})
+                observacionForm = ObservacionForm(initial={"parque": parque, "aerogenerador": ag.id})
             else:
                 observacionForm = ObservacionForm(initial={"parque": parque})
             revisionForm = RevisionForm()
@@ -332,7 +332,7 @@ def add_observacion(request, slug, observacion_id=0):
          'revisionForm': revisionForm,
          'ag_readonly': ag_readonly,
          'back_url': back_url,
-         'aerogeneradores':aerogeneradores,
+         'aerogeneradores': aerogeneradores,
          'edit_observacion': edit_observacion,
         })
 
@@ -444,7 +444,7 @@ def add_images(request, slug, revision_id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     revision= Revision.objects.get(pk=revision_id)
     logger.debug('Enter add_images')
-    response_data = {}
+    response_data = dict()
     response_data['files'] = []
     if not (request.user.has_perm('ncr.change_revision') or request.user == revision.created_by):
         raise PermissionDenied
@@ -468,14 +468,14 @@ def add_images(request, slug, revision_id):
                 instance = Fotos(imagen=file,revision=revision,orden=last_orden+1)
                 last_orden += 1
                 instance.save()
-            logger.debug('Imagen:'+ file.name + ', orden=' + str(instance.orden))
+            logger.debug('Imagen:' + file.name + ', orden=' + str(instance.orden))
             log_msg = "Se agrega imagen para parque " + parque.nombre + \
                       " - Aerogenerador " + revision.observacion.aerogenerador.nombre + \
                       " - Observacion " + revision.observacion.nombre + \
                       " - Nombre " + file.name
             log = Log(texto=log_msg, tipo=1, user=request.user)
             log.save()
-            principales =request.POST.getlist('radio')
+            principales = request.POST.getlist('radio')
             if file.name in principales:
                 set_primary_photo(foto_id=instance.id)
                 primary = True
@@ -486,17 +486,17 @@ def add_images(request, slug, revision_id):
                 log = Log(texto=log_msg, tipo=1, user=request.user)
                 log.save()
 
-            data={'name': file.name,
-                  'size':str(file.size),
-                  'url':instance.imagen.url,
-                  'thumbnailUrl':instance.thumbnail.url,
-                  'deleteUrl':reverse('ncr:imagenes-delete',args=[parque.slug,instance.id]),
-                  "deleteType": "DELETE",
-                  "mainPhoto": primary,
-                  "photoId" : str(instance.id)}
+            data= {'name': file.name,
+                   'size': str(file.size),
+                   'url': instance.imagen.url,
+                   'thumbnailUrl': instance.thumbnail.url,
+                   'deleteUrl': reverse('ncr:imagenes-delete', args=[parque.slug,instance.id]),
+                   "deleteType": "DELETE",
+                   "mainPhoto": primary,
+                   "photoId": str(instance.id)}
             response_data['files'].append(data)
             #logger.debug(instance.imagen.url)
-        response=json.dumps(response_data)
+        response = json.dumps(response_data)
 
         return HttpResponse(
             response,
