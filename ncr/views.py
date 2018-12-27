@@ -248,9 +248,10 @@ def add_observacion(request, slug, observacion_id=0):
     contenido.subtitulo = parque.nombre
     if 'aerogenerador' in request.GET:
         contenido.titulo = u'Agregar Observación'
-        contenido.menu = ['menu-ncr', 'menu2-observaciones-'+str(request.GET['aerogenerador'])]
+        contenido.menu = ['menu-ncr', 'menu2-observaciones-' + str(request.GET['aerogenerador'])]
         ag_readonly = True
-        back_url = reverse('ncr:observaciones', args=[parque.slug,request.GET['aerogenerador']])
+        wtg_obj = get_object_or_404(Aerogenerador, parque=parque, idx=int(request.GET['aerogenerador']))
+        back_url = reverse('ncr:observaciones', args=[parque.slug, wtg_obj.slug])
     elif edit_observacion is not None:
         if not (request.user.has_perm('ncr.change_observacion') or request.user == edit_observacion.created_by):
             logger.debug('User ' + request.user.username + ', no tiene permiso para editar observación de ' +
@@ -308,7 +309,7 @@ def add_observacion(request, slug, observacion_id=0):
                 log = Log(texto=log_msg, tipo=1, user=request.user)
                 log.save()
                 observacion.save()
-            return HttpResponseRedirect(reverse('ncr:observaciones-show', args=[parque.slug,observacion.id]))
+            return HttpResponseRedirect(reverse('ncr:observaciones-show', args=[parque.slug, observacion.id]))
         else:
             logger.debug('Formulario no es válido...')
 
@@ -490,7 +491,7 @@ def add_images(request, slug, revision_id):
                    'size': str(file.size),
                    'url': instance.imagen.url,
                    'thumbnailUrl': instance.thumbnail.url,
-                   'deleteUrl': reverse('ncr:imagenes-delete', args=[parque.slug,instance.id]),
+                   'deleteUrl': reverse('ncr:imagenes-delete', args=[parque.slug, instance.id]),
                    "deleteType": "DELETE",
                    "mainPhoto": primary,
                    "photoId": str(instance.id)}
@@ -536,11 +537,11 @@ def list_fotos(request, slug):
 def table_fotos(request, slug, revision_id):
     logger.debug("Enter list_fotos")
     parque = get_object_or_404(ParqueSolar, slug=slug)
-    response_data = {}
+    response_data = dict()
     response_data['data'] = []
     revision = Revision.objects.get(pk=revision_id)
     results = Fotos.objects.filter(revision=revision).order_by('orden')
-    if results.count()> 0:
+    if results.count() > 0:
         last_orden = results.reverse()[0].orden
     else:
         last_orden = 0
@@ -568,7 +569,7 @@ def table_fotos(request, slug, revision_id):
 @login_required(login_url='ingresar')
 def del_image(request, slug, image_id):
     logger.debug("Enter del_image")
-    response_data = {}
+    response_data = dict()
     response_data['files'] = []
     if request.method == 'DELETE':
         foto = Fotos.objects.get(pk=image_id)
@@ -599,7 +600,7 @@ def del_image(request, slug, image_id):
 
 def set_primary_photo(foto_id, estado=True):
     foto = Fotos.objects.get(pk=foto_id)
-    #logger.debug("Enter set_primary_photo: " + foto.imagen.name + ', estado = '+primary_image)
+    # logger.debug("Enter set_primary_photo: " + foto.imagen.name + ', estado = '+primary_image)
     foto.principal = estado
     foto.save(update_fields=["principal"])
 
@@ -607,12 +608,12 @@ def set_primary_photo(foto_id, estado=True):
 @login_required(login_url='ingresar')
 def primary_image(request, slug):
     if request.method == 'POST':
-        #logger.debug("primary image")
+        # logger.debug("primary image")
         if request.POST['estado'] == 'true':
             estado = True
         else:
             estado = False
-        set_primary_photo(foto_id=request.POST['foto_id'], estado = estado)
+        set_primary_photo(foto_id=request.POST['foto_id'], estado=estado)
         foto = Fotos.objects.get(pk=request.POST['foto_id'])
         logger.debug('foto actualizada')
         if estado:
@@ -621,7 +622,7 @@ def primary_image(request, slug):
             log_msg = "Se extrae imagen de reporte " + foto.imagen.name
         log = Log(texto=log_msg, tipo=2, user=request.user)
         log.save()
-        fotos = Fotos.objects.filter(principal=True,revision=foto.revision).order_by('orden')
+        fotos = Fotos.objects.filter(principal=True, revision=foto.revision).order_by('orden')
         if fotos.count() > 0:
             foto2 = fotos[0]
         else:
@@ -632,24 +633,24 @@ def primary_image(request, slug):
 @login_required(login_url='ingresar')
 def set_orden(request, slug):
     if request.method == 'POST':
-        #logger.debug("primary image")
+        # logger.debug("primary image")
         revision_id = int(request.POST['revision_id'])
         old = request.POST.getlist('old[]')
         new = request.POST.getlist('new[]')
         fotos = []
         for idx,val in enumerate(old):
-            foto = Fotos.objects.get(revision_id=revision_id,orden=int(val))
+            foto = Fotos.objects.get(revision_id=revision_id, orden=int(val))
             foto.orden = int(new[idx])
             fotos.append(foto)
         for foto in fotos:
             foto.save(update_fields=['orden'])
 
-        fotos = Fotos.objects.filter(principal=True,revision_id=revision_id).order_by('orden')
+        fotos = Fotos.objects.filter(principal=True, revision_id=revision_id).order_by('orden')
         if fotos.count() > 0:
             return HttpResponse(fotos[0].thumbnail.url)
         else:
             return HttpResponse(Fotos.objects.filter(revision_id=revision_id).order_by('orden')[0].thumbnail.url)
-        #return HttpResponse('ok')
+        # return HttpResponse('ok')
     else:
         return HttpResponse('fail')
 
@@ -699,7 +700,7 @@ def add_revision(request, slug, observacion_id, revision_id=0):
                 log = Log(texto=log_msg, tipo=1, user=request.user)
                 log.save()
             revision.observacion.save() # Necesario para actualizar campos
-            return HttpResponseRedirect(reverse('ncr:observaciones-show', args=[parque.slug,observacion.id]))
+            return HttpResponseRedirect(reverse('ncr:observaciones-show', args=[parque.slug, observacion.id]))
         else:
             logger.debug('Formulario no es válido...')
 
