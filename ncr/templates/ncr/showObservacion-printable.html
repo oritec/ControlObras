@@ -600,7 +600,7 @@
         $("table tbody.files").empty();
     })
 
-    $("#formDelObservacion > #back_url").val("{% url 'ncr:observaciones' parque.slug observacion.aerogenerador.id %}");
+    $("#formDelObservacion > #back_url").val("{% url 'ncr:observaciones' parque.slug observacion.aerogenerador.slug %}");
     $("#formDelRevision > #back_url").val(window.location.href);
     $("#formCloseObs > #back_url").val(window.location.href);
     $("#formOpenObs > #back_url").val(window.location.href);
