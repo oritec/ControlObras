@@ -897,10 +897,13 @@ def create_dr_word(request, slug, dr_id):
                 row_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
                 # foto 3
                 row_cells = table.rows[1].cells
-                foto = FotosDR.objects.get(composicion=composicion, orden=2)
-                img_temp = fix_image_rotation(foto, draft)
-                r = row_cells[0].paragraphs[0].add_run()
-                r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
+                try:
+                    foto = FotosDR.objects.get(composicion=composicion, orden=2)
+                    img_temp = fix_image_rotation(foto, draft)
+                    r = row_cells[0].paragraphs[0].add_run()
+                    r.add_picture(img_temp, width=Mm(ancho), height=Mm(alto))
+                except FotosDR.DoesNotExist:
+                    logger.debug('Foto does not exist!')
                 row_cells[0].width = Mm(ancho)
                 row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # foto 4
