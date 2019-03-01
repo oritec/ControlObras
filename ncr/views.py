@@ -186,13 +186,13 @@ def observaciones_duplicadas(request, slug):
         messages.add_message(request, messages.SUCCESS, 'Observación removida del listado')
 
     return TemplateResponse(request, 'ncr/duplicadas.html',
-                  {'cont': contenido,
-                   'parque': parque,
-                   'observaciones': observaciones,
-                   'url_append':url_append,
-                   'table_show_ag': table_show_ag,
-                   'aerogeneradores':aerogeneradores,
-                   })
+                            {'cont': contenido,
+                             'parque': parque,
+                             'observaciones': observaciones,
+                             'url_append':url_append,
+                             'table_show_ag': table_show_ag,
+                             'aerogeneradores':aerogeneradores,
+                             })
 
 
 @login_required(login_url='ingresar')
@@ -327,36 +327,38 @@ def add_observacion(request, slug, observacion_id=0):
             revisionForm = RevisionForm()
 
     return TemplateResponse(request, 'ncr/agregarObservacion.html',
-        {'cont': contenido,
-         'parque': parque,
-         'observacionForm':observacionForm,
-         'revisionForm': revisionForm,
-         'ag_readonly': ag_readonly,
-         'back_url': back_url,
-         'aerogeneradores': aerogeneradores,
-         'edit_observacion': edit_observacion,
-        })
+                            {'cont': contenido,
+                             'parque': parque,
+                             'observacionForm':observacionForm,
+                             'revisionForm': revisionForm,
+                             'ag_readonly': ag_readonly,
+                             'back_url': back_url,
+                             'aerogeneradores': aerogeneradores,
+                             'edit_observacion': edit_observacion,
+                             })
 
 
 @login_required(login_url='ingresar')
 def show_observacion(request, slug, observacion_id):
     parque = get_object_or_404(ParqueSolar, slug=slug)
-    observacion=get_object_or_404(Observacion, id=observacion_id)
+    observacion = get_object_or_404(Observacion, id=observacion_id)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
-    contenido=ContenidoContainer()
-    contenido.user=request.user
-    contenido.titulo=u'Observación OBS_' + parque.codigo +\
-                     '-' + observacion.aerogenerador.nombre + '-' + str(observacion.observacion_id)
-    contenido.subtitulo=parque.nombre
+    contenido = ContenidoContainer()
+    contenido.user = request.user
+    contenido.titulo = u'Observación OBS_' + parque.codigo + \
+                       '-' + observacion.aerogenerador.nombre + '-' + str(observacion.observacion_id)
+    contenido.subtitulo = parque.nombre
     contenido.menu = ['menu-ncr', 'menu2-observaciones-'+str(observacion.aerogenerador.idx)]
     main_fotos = {}
     fotos = {}
     for r in observacion.revision_set.all().order_by('id'):
-        #logger.debug(r)
-        fotos[r.id]=[]
-        results = Fotos.objects.filter(revision=r,principal=True).order_by('orden')
+        # logger.debug(r)
+        fotos[r.id] = list()
+        results = Fotos.objects.filter(revision=r, principal=True).order_by('orden')
         if results.count() > 0:
-            main_fotos[r.id]=results[0].thumbnail.url
+            if not results[0].thumbnail.name:
+                results[0].create_thumbnail()
+            main_fotos[r.id] = results[0].thumbnail.url
         results = Fotos.objects.filter(revision=r)
         for foto in results:
             fotos[r.id].append(foto.imagen.url)
@@ -402,15 +404,15 @@ def show_observacion(request, slug, observacion_id):
         breadcrumbs = True
 
     return TemplateResponse(request, template_name,
-        {'cont': contenido,
-         'parque': parque,
-         'observacion': observacion,
-         'main_fotos': main_fotos,
-         'fotos': fotos,
-         'aerogeneradores': aerogeneradores,
-         'breadcrumbs': breadcrumbs,
-         'duplicarForm': duplicarForm
-        })
+                            {'cont': contenido,
+                             'parque': parque,
+                             'observacion': observacion,
+                             'main_fotos': main_fotos,
+                             'fotos': fotos,
+                             'aerogeneradores': aerogeneradores,
+                             'breadcrumbs': breadcrumbs,
+                             'duplicarForm': duplicarForm
+                             })
 
 
 @login_required(login_url='ingresar')
@@ -714,13 +716,13 @@ def add_revision(request, slug, observacion_id, revision_id=0):
             revisionForm = RevisionFormFull(initial=initial)
 
     return TemplateResponse(request, 'ncr/agregarRevision.html',
-        {'cont': contenido,
-         'parque': parque,
-         'observacion': observacion,
-         'revisionForm': revisionForm,
-         'aerogeneradores':aerogeneradores,
-         'edit_revision': edit_revision,
-        })
+                            {'cont': contenido,
+                             'parque': parque,
+                             'observacion': observacion,
+                             'revisionForm': revisionForm,
+                             'aerogeneradores':aerogeneradores,
+                             'edit_revision': edit_revision,
+                             })
 
 
 def generate_excel_ncr(resultados):
@@ -838,7 +840,7 @@ def informe_ncr(request, slug):
 
             if len(form.cleaned_data['estado']) > 1:
                 grafico_estado = graficoBarrasSimple(resultados, 'estado', EstadoRevision.objects.all().order_by('-id'),
-                                                 showall=True)
+                                                     showall=True)
 
             if len(form.cleaned_data['severidad']) > 1:
                 grafico_severidad = graficoBarrasSimple(resultados, 'severidad', Severidad.objects.all(), showall=True)
@@ -897,18 +899,18 @@ def informe_ncr(request, slug):
                 return respuesta
 
     return TemplateResponse(request, 'ncr/informeNCR.html',
-        {'cont': contenido,
-         'parque': parque,
-         'aerogeneradores':aerogeneradores,
-         'form':form,
-         'resultados':resultados,
-         'grafico_estado':grafico_estado,
-         'grafico_severidad': grafico_severidad,
-         'grafico_componente': grafico_componente,
-         'grafico_subcomponente': grafico_subcomponente,
-         'grafico_tipo': grafico_tipo,
-         'graficos':graficos,
-        })
+                            {'cont': contenido,
+                             'parque': parque,
+                             'aerogeneradores':aerogeneradores,
+                             'form':form,
+                             'resultados':resultados,
+                             'grafico_estado':grafico_estado,
+                             'grafico_severidad': grafico_severidad,
+                             'grafico_componente': grafico_componente,
+                             'grafico_subcomponente': grafico_subcomponente,
+                             'grafico_tipo': grafico_tipo,
+                             'graficos':graficos,
+                             })
 
 
 def generate_pdf(parque, resultados, imagenes, titulo, request=None, show_fotos=True, colores=True, estados=True,
@@ -926,23 +928,23 @@ def generate_pdf(parque, resultados, imagenes, titulo, request=None, show_fotos=
 
     if request is not None:
         return render_to_pdf_response(request, 'ncr/punchlistPDF_v2.html',
-                                           {'pagesize': 'LETTER',
-                                            'title': 'Reporte Punchlist',
-                                            'resultados': resultados,
-                                            'main_fotos': imagenes,
-                                            'parque': parque,
-                                            'titulo': titulo,
-                                            'show_fotos': show_fotos,
-                                            'img_solucionado': img_solucionado,
-                                            'img_parcialsolucionado': img_parcialsolucionado,
-                                            'img_nosolucionado': img_nosolucionado,
-                                            'logo_saroen': logo_saroen,
-                                            'colores' : colores,
-                                            'estados': estados,
-                                            'fecha': fecha,
-                                            'nombre': nombre,
-                                            }, content_type='application/pdf',
-                                           response_class=HttpResponse)
+                                      {'pagesize': 'LETTER',
+                                       'title': 'Reporte Punchlist',
+                                       'resultados': resultados,
+                                       'main_fotos': imagenes,
+                                       'parque': parque,
+                                       'titulo': titulo,
+                                       'show_fotos': show_fotos,
+                                       'img_solucionado': img_solucionado,
+                                       'img_parcialsolucionado': img_parcialsolucionado,
+                                       'img_nosolucionado': img_nosolucionado,
+                                       'logo_saroen': logo_saroen,
+                                       'colores' : colores,
+                                       'estados': estados,
+                                       'fecha': fecha,
+                                       'nombre': nombre,
+                                       }, content_type='application/pdf',
+                                      response_class=HttpResponse)
     else:
         pdf = render_to_pdf('ncr/punchlistPDF_v2.html',
                             {'pagesize': 'LETTER',
@@ -997,7 +999,7 @@ def listFotos_v2(resultados, punchlist_orden=False):
             cuadro_foto['numero'] = numeros[observacion.id]
             cuadro_foto['url'] = f.reporte_img.url
             cuadro_foto['texto'] = 'OBS_' + observacion.parque.codigo + '-' + observacion.aerogenerador.nombre + \
-                                    '-' + str(observacion.observacion_id)
+                                   '-' + str(observacion.observacion_id)
             if results.count() > 1:
                 cuadro_foto['texto'] += ' (' + str(count) + ')'
                 count += 1
@@ -1176,11 +1178,11 @@ def punchlist(request, slug):
                     fecha_str = form.cleaned_data['fecha'].strftime("%y%m%d")
                     nombre = 'PL_' + parque.codigo + '-' + ag.nombre + '_' + fecha_str + '.pdf'
                     respuesta = generate_pdf(parque,resultados, main_fotos, titulo, request,
-                                            show_fotos=show_fotos,
-                                            colores=colores,
-                                            estados=estados,
-                                            fecha=form.cleaned_data['fecha'],
-                                            nombre=nombre)
+                                             show_fotos=show_fotos,
+                                             colores=colores,
+                                             estados=estados,
+                                             fecha=form.cleaned_data['fecha'],
+                                             nombre=nombre)
                     respuesta['Content-Disposition'] = 'attachment; filename='+nombre
                     return respuesta
                 elif len(form.cleaned_data['aerogenerador']) > 1:
@@ -1212,12 +1214,12 @@ def punchlist(request, slug):
                     return response
 
     return TemplateResponse(request, 'ncr/punchlist.html',
-        {'cont': contenido,
-         'parque': parque,
-         'aerogeneradores':aerogeneradores,
-         'form': form,
-         'resultados': resultados,
-        })
+                            {'cont': contenido,
+                             'parque': parque,
+                             'aerogeneradores':aerogeneradores,
+                             'form': form,
+                             'resultados': resultados,
+                             })
 
 
 @login_required(login_url='ingresar')
@@ -1267,9 +1269,9 @@ def observadores(request, slug):
 
     return TemplateResponse(request, 'ncr/agregarObservador.html',
                             {'cont': contenido,
-                                'parque': parque,
-                                'observadores': observadores,
-                                'aerogeneradores': aerogeneradores,
+                             'parque': parque,
+                             'observadores': observadores,
+                             'aerogeneradores': aerogeneradores,
                              })
 
 

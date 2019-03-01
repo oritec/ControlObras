@@ -120,7 +120,7 @@ def thumbnails_directory_path(instance, filename):
 class Fotos(models.Model):
     revision = models.ForeignKey('Revision', on_delete=models.CASCADE)
     imagen = models.ImageField(upload_to=rev_directory_path)
-    thumbnail = models.ImageField(upload_to=thumbnails_directory_path,max_length=500, null=True, blank=True)
+    thumbnail = models.ImageField(upload_to=thumbnails_directory_path, max_length=500, null=True, blank=True)
     reporte_img = models.ImageField(upload_to=thumbnails_directory_path, null=True, blank=True)
     principal = models.BooleanField(default=False)
     orden = models.SmallIntegerField(default=0)
