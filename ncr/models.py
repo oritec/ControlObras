@@ -156,6 +156,8 @@ class Fotos(models.Model):
                 DJANGO_TYPE = 'image/jpeg'
             elif self.imagen.name.lower().endswith(".PNG"):
                 DJANGO_TYPE = 'image/png'
+            else:
+                return False
 
         if DJANGO_TYPE == 'image/jpeg':
             PIL_TYPE = 'jpeg'

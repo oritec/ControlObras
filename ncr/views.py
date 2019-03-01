@@ -356,9 +356,8 @@ def show_observacion(request, slug, observacion_id):
         fotos[r.id] = list()
         results = Fotos.objects.filter(revision=r, principal=True).order_by('orden')
         if results.count() > 0:
-            if not results[0].thumbnail.name:
-                results[0].create_thumbnail()
-            main_fotos[r.id] = results[0].thumbnail.url
+            if results[0].thumbnail.name:
+                main_fotos[r.id] = results[0].thumbnail.url
         results = Fotos.objects.filter(revision=r)
         for foto in results:
             fotos[r.id].append(foto.imagen.url)
