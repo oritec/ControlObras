@@ -683,6 +683,7 @@
                 imageOrientation: true,
                 imageCrop: false, // Force cropped images
                 sequentialUploads: true,
+                acceptFileTypes: '/(\.|\/)(gif|jpe?g|png)$/i',
             })
 
             $('#fileupload').bind('fileuploadadded', function (e, data) {
