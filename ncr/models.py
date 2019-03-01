@@ -147,6 +147,7 @@ class Fotos(models.Model):
         try:
             DJANGO_TYPE = self.imagen.file.content_type
         except Exception as e:
+            logger.debug("Exception DJANGO_TYPE: " + self.imagen.name.lower())
             if self.imagen.name.lower().endswith(".jpg"):
                 DJANGO_TYPE = 'image/jpeg'
             elif self.imagen.name.lower().endswith(".png"):
