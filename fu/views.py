@@ -2149,7 +2149,6 @@ def posicion_aerogeneradores(parque_eolico, fecha_calculo):
         pos[x]['top'] = 24.5
         pos[x]['left'] = 85.7
         pos[x]['zindex'] = 403
-
     elif parque.codigo == 'EES-001.2':  # Juchitan
         x = 'F1-WTG01-C1'
         pos[x]['width'] = 7.0
@@ -2510,7 +2509,24 @@ def posicion_aerogeneradores(parque_eolico, fecha_calculo):
         pos[x]['top'] = 4.8
         pos[x]['left'] = 90.2
         pos[x]['zindex'] = 403
+    elif parque.codigo in ['ARCO-002.1', 'ARCO-002.2']:  # El Maiten, El Nogal
+        x = 'WTG01'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 22.5
+        pos[x]['left'] = 23.2
+        pos[x]['zindex'] = 403
 
+        x = 'WTG02'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 23.2
+        pos[x]['left'] = 40.5
+        pos[x]['zindex'] = 403
+
+        x = 'WTG03'
+        pos[x]['width'] = 7.0
+        pos[x]['top'] = 23.5
+        pos[x]['left'] = 59.2
+        pos[x]['zindex'] = 403
     else:
         return pos
 
@@ -2536,9 +2552,14 @@ def posicion_aerogeneradores(parque_eolico, fecha_calculo):
                     filename = path + '/' + unicode(m.componente.nombre) + '.png'
                     if os.path.isfile(unicode(filename).encode('utf-8')):
                         found = True
-                        [nombre, width, top, left] = get_image_data(os.path.basename(filename),
-                                                            pos[ag.nombre]['top'],
-                                                            pos[ag.nombre]['left'])
+                        if parque.codigo in ['ARCO-002.1', 'ARCO-002.2']:
+                            [nombre, width, top, left] = get_image_data_small(os.path.basename(filename),
+                                                                              pos[ag.nombre]['top'],
+                                                                              pos[ag.nombre]['left'])
+                        else:
+                            [nombre, width, top, left] = get_image_data(os.path.basename(filename),
+                                                                        pos[ag.nombre]['top'],
+                                                                        pos[ag.nombre]['left'])
                         pos[ag.nombre]['width'] = width
                         pos[ag.nombre]['top'] = top
                         pos[ag.nombre]['left'] = left
@@ -2547,13 +2568,18 @@ def posicion_aerogeneradores(parque_eolico, fecha_calculo):
             # Inicio Pruebas
             # path = os.path.join(settings.BASE_DIR, 'static/common/images/ag')
             # # filename = path + '/' + unicode(r.componente.nombre) + '.png'
+            # # filename = path + '/' + unicode('T1') + '.png'
             # filename = path + '/' + unicode('T1') + '.png'
-            # # filename = path + '/' + unicode('Pala 3') + '.png'
             # if os.path.isfile(unicode(filename).encode('utf-8')):
             #     found = True
-            #     [nombre, width, top, left] = get_image_data(os.path.basename(filename),
-            #                                                 pos[ag.nombre]['top'],
-            #                                                 pos[ag.nombre]['left'])
+            #     if parque.codigo in ['ARCO-002.1', 'ARCO-002.2']:
+            #         [nombre, width, top, left] = get_image_data_small(os.path.basename(filename),
+            #                                                           pos[ag.nombre]['top'],
+            #                                                           pos[ag.nombre]['left'])
+            #     else:
+            #         [nombre, width, top, left] = get_image_data(os.path.basename(filename),
+            #                                                     pos[ag.nombre]['top'],
+            #                                                     pos[ag.nombre]['left'])
             #     pos[ag.nombre]['width'] = width
             #     pos[ag.nombre]['top'] = top
             #     pos[ag.nombre]['left'] = left
@@ -2578,7 +2604,7 @@ def get_image_data(filename, top_i, left_i):
     try:
         top = top_i + 12.7
     except:
-        pass;
+        pass
     left = left_i + 3.7
     width = 0.5
 
@@ -2627,7 +2653,64 @@ def get_image_data(filename, top_i, left_i):
         width = 4.5
         top = top_i + 5.4
         left = left_i + 1.4
-    return ['common/images/ag/'+name, width,top,left]
+    return ['common/images/ag/'+name, width, top, left]
+
+
+def get_image_data_small(filename, top_i, left_i):
+    name = '0.png'
+    try:
+        top = top_i + 12.7
+    except:
+        pass;
+    left = left_i + 3.7
+    width = 0.5
+
+    if filename == 'Pala 3.png':
+        name = filename
+        width = 8.5
+        top = top_i + 5.4
+        left = left_i + 1.4
+    elif filename == 'T1.png':
+        name = filename
+        width = 0.90
+        top = top_i + 18.7
+        left = left_i + 5.7
+    elif filename == 'T2.png':
+        name = filename
+        width = 1.1
+        top = top_i + 16.1
+        left = left_i + 5.7
+    elif filename == 'T3.png':
+        name = filename
+        width = 1.15
+        top = top_i + 12.9
+        left = left_i + 5.7
+    elif filename == 'Nacelle.png':
+        name = filename
+        width = 1.2
+        top = top_i + 11.8
+        left = left_i + 5.6
+    elif filename == 'Buje.png':
+        name = filename
+        width = 1.5
+        top = top_i + 11.7
+        left = left_i + 5.2
+    elif filename == 'Pala 1.png':
+        name = filename
+        width = 2.05
+        top = top_i + 5.8
+        left = left_i + 5.1
+    elif filename == 'Pala 2.png':
+        name = filename
+        width = 7.9
+        top = top_i + 11.4
+        left = left_i + 1.4
+    elif filename == 'Rotor.png':
+        name = filename
+        width = 8.5
+        top = top_i + 5.4
+        left = left_i + 1.4
+    return ['common/images/ag/'+name, width, top, left]
 
 
 def get_plano3d_img(parque):
@@ -2641,6 +2724,8 @@ def get_plano3d_img(parque):
         return ['/common/images/plano-espinal.jpg', '10.9%', '85%', '10.6%']
     elif parque.codigo == 'EES-001.2':
         return ['/common/images/plano_juchitan.jpg', '10.9%', '85%', '10.6%']
+    elif parque.codigo in ['ARCO-002.1', 'ARCO-002.2']:
+        return ['/common/images/plano_maiten_nogal_v2.png', '10.9%', '85%', '10.6%']
     else:
         return ['/common/images/plano2.png', '0px', '85%', '0px']
 
