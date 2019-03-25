@@ -3661,7 +3661,7 @@ def planificacion(request,slug):
 
 
 @login_required(login_url='ingresar')
-def download_config(request,slug):
+def download_config(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     try:
         configuracion = ConfiguracionFU.objects.get(parque=parque)
@@ -3739,6 +3739,7 @@ def download_config(request,slug):
     prev_year_col = 0
 
     for s in semanas:
+        logger.debug("Semana= " + s + ", idx= " + str(idx))
         semana_str = semanas[idx].split('-')[0]
         d = ws.cell(row=row, column=column+idx, value=semana_str)
         d.fill = bg
@@ -3767,7 +3768,7 @@ def download_config(request,slug):
             if prev_month_col == 0:
                 prev_month_col = column + idx
             else:
-                ws.merge_cells(start_row=row-1, start_column=prev_month_col, end_row=row - 1, end_column=column+ idx -1)
+                ws.merge_cells(start_row=row-1, start_column=prev_month_col, end_row=row - 1, end_column=column + idx - 1)
                 prev_month_col = column + idx
         idx += 1
     ws.merge_cells(start_row=row - 2, start_column=prev_year_col, end_row=row - 2, end_column=column + idx - 1)
