@@ -3794,9 +3794,9 @@ def download_config(request, slug):
     row = 4
 
     planExist = False
-    if Plan.objects.filter(parque=parque).count()>0:
+    if Plan.objects.filter(parque=parque).count() > 0:
         planExist = True
-    if Contractual.objects.filter(parque=parque).count()>0:
+    if Contractual.objects.filter(parque=parque).count() > 0:
         planExist = True
 
     for e, titulo in estados.iteritems():
@@ -3834,7 +3834,8 @@ def download_config(request, slug):
                 columna_aux = 4
                 if planExist:
                     for semana in semanas:
-                        semana_str = semanas[idx].split('-')[0]
+                        # semana_str = semanas[idx].split('-')[0]
+                        semana_str = semana.split('-')[0]
                         d_str = anhos[semana] + "-W" + semana_str + "-0"
                         fecha_aux = datetime.strptime(d_str, "%Y-W%W-%w")
                         try:
