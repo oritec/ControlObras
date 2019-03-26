@@ -33,132 +33,132 @@
         <p></p>
         <div class="row">
             {% for e, lista in actividades.items %}
-            <div class="col-md-{{ actividades|get_column_width }}">
-                <div class="panel panel-default" style="margin-bottom: 10px;">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">{{ titulos|get_item:e }}</h3>
-                    </div>
-                    <div class="panel-body">
-                        {% if lista %}
-                        <div class="dd" id="nestable-{{ e }}">
-                            <ol class="dd-list">
-                            {% for k, l in lista.items %}
-                                <li class="dd-item" data-id="{{ k }}">
-                                    <div class="dd-handle">{{ l }}</div>
-                                </li>
-                            {% endfor %}
-                            </ol>
+                <div class="col-md-{{ actividades|get_column_width }}">
+                    <div class="panel panel-default" style="margin-bottom: 10px;">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">{{ titulos|get_item:e }}</h3>
                         </div>
-                        {% else %}
-                            Sin componentes.
-                        {% endif %}
+                        <div class="panel-body">
+                            {% if lista %}
+                                <div class="dd" id="nestable-{{ e }}">
+                                    <ol class="dd-list">
+                                        {% for k, l in lista.items %}
+                                            <li class="dd-item" data-id="{{ k }}">
+                                                <div class="dd-handle">{{ l }}</div>
+                                            </li>
+                                        {% endfor %}
+                                    </ol>
+                                </div>
+                            {% else %}
+                                Sin componentes.
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
-            </div>
             {% endfor %}
 
         </div>
 
     {% endif %}
 
-<div class="modal fade bs-modal-lg" id="basic" tabindex="-1" role="basic" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
-                <h4 class="modal-title">
-                    <span class="glyphicon glyphicon-plus" style="color:rgba(74,182,100,0.89);font-size:20px"></span>
-                     <b>Agregar Componente</b> </h4>
-            </div>
-            <form action="{% url 'fu:actividades' parque.slug %}" method="post" id="formModal" class="horizontal-form">
-            {% csrf_token %}
-            <div class="modal-body">
-                <div class="form-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="control-label">{{ choicesComponentesForm.componente.label }}:</label>
-                                {{ choicesComponentesForm.componente }}
-                                <span class="help-block"> {{ choicesComponentesForm.componente.errors }} </span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group form-md-checkboxes">
-                                <label style="color: #333333;">Estados posibles:</label>
-                                <div class="md-checkbox-list">
-                                {% for choice in choicesComponentesForm.estadofu %}
-                                    <div class="md-checkbox">
-                                        {{ choice.tag }}
-                                        <label for="{{ choice.id_for_label }}">
-                                            <span></span>
-                                            <span class="check"></span>
-                                            <span class="box"></span> {{ choice.choice_label }}
-                                        </label>
-                                    </div>
-                                {% endfor %}
-                                </div>
-                                <span class="help-block"> {{ choicesComponentesForm.estadofu.errors }} </span>
-                            </div>
-                        </div>
-                    </div>
+    <div class="modal fade bs-modal-lg" id="basic" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">
+                        <span class="glyphicon glyphicon-plus" style="color:rgba(74,182,100,0.89);font-size:20px"></span>
+                        <b>Agregar Componente</b> </h4>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn default" data-dismiss="modal" onclick="cancelComponente()">Cancelar</button>
-                <button type="submit" id='enviarmodal' class="btn green" name="addComponente">Agregar</button>
-                    <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
-                <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
-            </div>
-            </form>
-        </div>
-        <!-- /.modal-content -->
-    </div>
-    <!-- /.modal-dialog -->
-</div>
-
-<div class="modal fade bs-modal-lg" id="delete" tabindex="-1" role="basic" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
-                <h4 class="modal-title">
-                    <span class="glyphicon glyphicon-remove-sign" style="color:rgba(244,52,42,0.89);font-size:20px"></span>
-                     <b>Eliminar Componente</b> </h4>
-            </div>
-            <div class="modal-body">
                 <form action="{% url 'fu:actividades' parque.slug %}" method="post" id="formModal" class="horizontal-form">
-                {% csrf_token %}
-                <div class="form-body">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label class="control-label">{{ deleteComponentesForm.componente.label }}:</label>
-                                {{ deleteComponentesForm.componente }}
-                                <span class="help-block"> {{ deleteComponentesForm.componente.errors }} </span>
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label">{{ choicesComponentesForm.componente.label }}:</label>
+                                        {{ choicesComponentesForm.componente }}
+                                        <span class="help-block"> {{ choicesComponentesForm.componente.errors }} </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group form-md-checkboxes">
+                                        <label style="color: #333333;">Estados posibles:</label>
+                                        <div class="md-checkbox-list">
+                                            {% for choice in choicesComponentesForm.estadofu %}
+                                                <div class="md-checkbox">
+                                                    {{ choice.tag }}
+                                                    <label for="{{ choice.id_for_label }}">
+                                                        <span></span>
+                                                        <span class="check"></span>
+                                                        <span class="box"></span> {{ choice.choice_label }}
+                                                    </label>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        <span class="help-block"> {{ choicesComponentesForm.estadofu.errors }} </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn default" data-dismiss="modal" onclick="cancelComponente()">Cancelar</button>
+                        <button type="submit" id='enviarmodal' class="btn green" name="addComponente">Agregar</button>
+                        <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                        <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
+                    </div>
+                </form>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+
+    <div class="modal fade bs-modal-lg" id="delete" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">
+                        <span class="glyphicon glyphicon-remove-sign" style="color:rgba(244,52,42,0.89);font-size:20px"></span>
+                        <b>Eliminar Componente</b> </h4>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url 'fu:actividades' parque.slug %}" method="post" id="formModal" class="horizontal-form">
+                        {% csrf_token %}
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="control-label">{{ deleteComponentesForm.componente.label }}:</label>
+                                        {{ deleteComponentesForm.componente }}
+                                        <span class="help-block"> {{ deleteComponentesForm.componente.errors }} </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" id='enviarmodal' class="btn green" name="delComponente">Eliminar</button>
+                    <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
+                    </form>
+                    <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
+
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn default" data-dismiss="modal">Cancelar</button>
-                <button type="submit" id='enviarmodal' class="btn green" name="delComponente">Eliminar</button>
-                    <!--<a href="" id='enviarmodal' class="btn btn-success success">Save Changes</a>-->
-                </form>
-                <!--<button type="button" id="enviarmodal" class="btn blue">Save changes</button>-->
-
-            </div>
+            <!-- /.modal-content -->
         </div>
-        <!-- /.modal-content -->
+        <!-- /.modal-dialog -->
     </div>
-    <!-- /.modal-dialog -->
-</div>
 
 
 {% endblock %}
 
 {% block javascript %}
-<!-- BEGIN PAGE LEVEL PLUGINS -->
+    <!-- BEGIN PAGE LEVEL PLUGINS -->
     <script src="{% static 'common/assets/global/scripts/datatable.js' %}" type="text/javascript"></script>
     <script src="{% static 'common/assets/global/plugins/datatables/datatables.min.js' %}" type="text/javascript"></script>
     <script src="{% static 'common/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.js' %}" type="text/javascript"></script>
@@ -183,7 +183,7 @@
             $('#basic').modal();
         };
     </script>
-<!-- END PAGE LEVEL PLUGINS -->
+    <!-- END PAGE LEVEL PLUGINS -->
 {% endblock %}
 
 
@@ -191,52 +191,52 @@
 {% block jquery %}
 
     function csrfSafeMethod(method) {
-        // these HTTP methods do not require CSRF protection
-        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
     }
 
     $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                var csrftoken = Cookies.get('csrftoken');
-                xhr.setRequestHeader("X-CSRFToken", csrftoken);
-            }
-        }
+    beforeSend: function(xhr, settings) {
+    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+    var csrftoken = Cookies.get('csrftoken');
+    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+    }
+    }
     });
 
     $('.bs-select').selectpicker({
-        iconBase: 'fa',
-        tickIcon: 'fa-check',
-        dropupAuto: false,
-        liveSearch: true,
+    iconBase: 'fa',
+    tickIcon: 'fa-check',
+    dropupAuto: false,
+    liveSearch: true,
     });
 
     $('#id_componente').css('width', '100%');
 
 
     {% for e, lista in actividades.items %}
-    $('#nestable-{{ e }}').nestable({
+        $('#nestable-{{ e }}').nestable({
         maxDepth:1,
         group:1,
-    }).on('change', function() {
+        }).on('change', function() {
         s=$(this).nestable('serialize');
         console.log(s);
         $.ajax({
-            // Uncomment the following to send cross-domain cookies:
-            //xhrFields: {withCredentials: true},
-            url: "{% url 'fu:actividades-ordenar' parque.slug  e %}",
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                'lista' : s,
-            },
-            //context: $('#fileupload')[0]
+        // Uncomment the following to send cross-domain cookies:
+        //xhrFields: {withCredentials: true},
+        url: "{% url 'fu:actividades-ordenar' parque.slug  e %}",
+        type: 'POST',
+        dataType: 'json',
+        data: {
+        'lista' : s,
+        },
+        //context: $('#fileupload')[0]
         }).success(function (result) {
-            console.log("Pulento");
+        console.log("Pulento");
         }).fail(function( jqXHR, textStatus ) {
-            console.log( "Request failed: " + textStatus );
+        console.log( "Request failed: " + textStatus );
         });
-    });
+        });
     {% endfor %}
 
 {% endblock %}

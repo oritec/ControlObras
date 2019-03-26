@@ -3102,7 +3102,7 @@ def componente(request,slug):
         })
 
 
-def getOrden(componente, d,p,m,pm):
+def getOrden(componente, d, p, m, pm):
     ret_d = 0
     ret_p = 0
     ret_m = 0
@@ -3116,7 +3116,7 @@ def getOrden(componente, d,p,m,pm):
             ret_m = m + 1
         elif e.idx == 4:
             ret_pm = pm + 1
-    return [ret_d,ret_p,ret_m,ret_pm]
+    return [ret_d, ret_p, ret_m, ret_pm]
 
 
 def getComponentesbyState(parque_eolico, estado):
@@ -3141,7 +3141,7 @@ def getComponentesbyState(parque_eolico, estado):
 
     lista = OrderedDict()
 
-    members = parque_eolico.membership_set.filter(estado = e).order_by('orden')
+    members = parque_eolico.membership_set.filter(estado=e).order_by('orden')
     for m in members:
         lista[m.componente.id] = m.componente.nombre
     return lista
@@ -3156,40 +3156,12 @@ def getComponentesbyState(parque_eolico, estado):
 
 
 def addComponente(parque_eolico, new_componente, estados):
-    #print(new_componente)
+    # print(new_componente)
     for e in estados:
         aux = Membership(parque_eolico=parque_eolico,
                          componente=new_componente,
-                         estado = e)
+                         estado=e)
         aux.save()
-    #aux = RelacionesFU.objects.filter(componentes_parque=componentes_parque)
-    # if aux.exists():
-    #     maximos = aux.aggregate(Max('orden_descarga'),
-    #                             Max('orden_premontaje'),
-    #                             Max('orden_montaje'),
-    #                             Max('orden_puestaenmarcha'))
-    #     descarga = maximos['orden_descarga__max']
-    #     premontaje = maximos['orden_premontaje__max']
-    #     montaje = maximos['orden_montaje__max']
-    #     puestaenmarcha = maximos['orden_puestaenmarcha__max']
-    # else:
-    #     descarga = 0
-    #     premontaje = 0
-    #     montaje = 0
-    #     puestaenmarcha = 0
-    # [descarga, premontaje, montaje, puestaenmarcha] = getOrden(new_componente,
-    #                                                            descarga,
-    #                                                            premontaje,
-    #                                                            montaje,
-    #                                                            puestaenmarcha)
-    #
-    # r = RelacionesFU(componentes_parque=componentes_parque,
-    #                  componente=new_componente,
-    #                  orden_descarga=descarga,
-    #                  orden_premontaje=premontaje,
-    #                  orden_montaje=montaje,
-    #                  orden_puestaenmarcha=puestaenmarcha)
-    # r.save()
 
 
 def deleteComponente(parque_eolico, del_componente):
@@ -3246,7 +3218,7 @@ def fixOrdenComponentes(parque_eolico):
 
 @login_required(login_url='ingresar')
 @permission_required('fu.add_componentesparque', raise_exception=True)
-def actividades(request,slug):
+def actividades(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     try:
         parque_eolico = ParqueEolico.objects.get(parque=parque)
@@ -3255,10 +3227,10 @@ def actividades(request,slug):
         parque_eolico.save()
 
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
-    contenido=ContenidoContainer()
-    contenido.user=request.user
-    contenido.titulo=u'Actividades Follow Up'
-    contenido.subtitulo=u'Parque Eólico - ' + parque.nombre
+    contenido = ContenidoContainer()
+    contenido.user = request.user
+    contenido.titulo = u'Actividades Follow Up'
+    contenido.subtitulo = u'Parque Eólico - ' + parque.nombre
     contenido.menu = ['menu-fu', 'menu2-actividades']
 
     if request.method == 'POST':
@@ -3284,18 +3256,18 @@ def actividades(request,slug):
                 log = Log(texto=log_msg, tipo=1, user=request.user)
                 log.save()
 
-    choicesComponentesForm = AddComponentesForm(parque = parque)
-    deleteComponentesForm = DeleteComponentesForm(parque = parque)
-    lista_descarga = getComponentesbyState(parque_eolico,'descarga')
-    lista_premontaje = getComponentesbyState(parque_eolico,'premontaje')
-    lista_montaje = getComponentesbyState(parque_eolico,'montaje')
-    lista_puestaenmarcha = getComponentesbyState(parque_eolico,'puestaenmarcha')
+    choicesComponentesForm = AddComponentesForm(parque=parque)
+    deleteComponentesForm = DeleteComponentesForm(parque=parque)
+    lista_descarga = getComponentesbyState(parque_eolico, 'descarga')
+    lista_premontaje = getComponentesbyState(parque_eolico, 'premontaje')
+    lista_montaje = getComponentesbyState(parque_eolico, 'montaje')
+    lista_puestaenmarcha = getComponentesbyState(parque_eolico, 'puestaenmarcha')
 
     actividades = OrderedDict()
-    actividades['descarga']=lista_descarga
-    actividades['premontaje']= lista_premontaje
-    actividades['montaje']= lista_montaje
-    actividades['puestaenmarcha']= lista_puestaenmarcha
+    actividades['descarga'] = lista_descarga
+    actividades['premontaje'] = lista_premontaje
+    actividades['montaje'] = lista_montaje
+    actividades['puestaenmarcha'] = lista_puestaenmarcha
 
     titulos = {
         'descarga': 'Descarga',
@@ -3305,14 +3277,14 @@ def actividades(request,slug):
     }
 
     return TemplateResponse(request, 'fu/actividades.html',
-        {'cont': contenido,
-         'parque': parque,
-         'aerogeneradores':aerogeneradores,
-         'choicesComponentesForm': choicesComponentesForm,
-         'deleteComponentesForm': deleteComponentesForm,
-         'actividades': actividades,
-         'titulos': titulos,
-        })
+                            {'cont': contenido,
+                             'parque': parque,
+                             'aerogeneradores': aerogeneradores,
+                             'choicesComponentesForm': choicesComponentesForm,
+                             'deleteComponentesForm': deleteComponentesForm,
+                             'actividades': actividades,
+                             'titulos': titulos,
+                             })
 
 
 @csrf_exempt
@@ -3442,11 +3414,11 @@ def configuracion(request,slug):
         else:
             form = ConfiguracionFUForm(instance=configuracion)
     return TemplateResponse(request, 'fu/configuracion.html',
-                  {'cont': contenido,
-                   'parque': parque,
-                   'aerogeneradores': aerogeneradores,
-                   'form': form
-                   })
+                            {'cont': contenido,
+                             'parque': parque,
+                             'aerogeneradores': aerogeneradores,
+                             'form': form
+                             })
 
 
 def readPlanFile(configuracion, parque_eolico):
@@ -3532,13 +3504,12 @@ def readPlanFile(configuracion, parque_eolico):
 def graficoPlanificacion(parque):
     configuracion = ConfiguracionFU.objects.get(parque=parque)
     parque_eolico = ParqueEolico.objects.get(parque=parque)
-    aux = configuracion.fecha_inicio
     final = configuracion.fecha_final
     xvalues = {}
     yvalues = {}
     plan_values = {}
     contractual_values = {}
-    for i in range(1,5):
+    for i in range(1, 5):
         xlabels = '['
         ylabels = '['
         plan = '['
@@ -3552,25 +3523,23 @@ def graficoPlanificacion(parque):
             anho = aux.isocalendar()[0]
             d = str(anho) + "-W" + semana + "-0"
             fecha_query = datetime.strptime(d, "%Y-W%W-%w")
-            xlabels += '"'+ str(anho) + '-' + semana + '",'
+            xlabels += '"' + str(anho) + '-' + semana + '",'
             idy = 0
-            for componente in parque_eolico.componentes.all().distinct():
-                e = None
-                for aux_e in componente.estados.all():
-                    if aux_e.idx == i:
-                        e = aux_e
-                        break
+            # for componente in parque_eolico.componentes.all().distinct():
+            for m in Membership.objects.filter(parque_eolico=parque_eolico, estado__idx=i).order_by('-orden'):
+                e = m.estado
+                componente = m.componente
                 if e is not None:
                     if first:
                         ylabels += '"' + componente.nombre + '",'
                     try:
-                        q = Plan.objects.get(parque=parque, componente=componente, estado=e,fecha=fecha_query)
+                        q = Plan.objects.get(parque=parque, componente=componente, estado=e, fecha=fecha_query)
                         val = q.no_aerogeneradores
                     except Plan.DoesNotExist:
                         val = 0
                     plan += '['+str(idx)+','+str(idy)+','+str(val)+'],'
                     try:
-                        q = Contractual.objects.get(parque=parque, componente=componente, estado=e,fecha=fecha_query)
+                        q = Contractual.objects.get(parque=parque, componente=componente, estado=e, fecha=fecha_query)
                         val = q.no_aerogeneradores
                     except Contractual.DoesNotExist:
                         val = 0
@@ -3580,18 +3549,27 @@ def graficoPlanificacion(parque):
             idx += 1
             aux = aux + relativedelta.relativedelta(weeks=1)
         xlabels = xlabels[:-1] + ']'
-        ylabels = ylabels[:-1] + ']'
-        plan = plan[:-1] + ']'
-        contractual = contractual[:-1] + ']'
+        if len(ylabels) > 1:
+            ylabels = ylabels[:-1] + ']'
+        else:
+            ylabels = ylabels + ']'
+        if len(plan) > 1:
+            plan = plan[:-1] + ']'
+        else:
+            plan += ']'
+        if len(contractual) > 1:
+            contractual = contractual[:-1] + ']'
+        else:
+            contractual += ']'
         xvalues[i] = xlabels
         yvalues[i] = ylabels
         plan_values[i] = plan
         contractual_values[i] = contractual
-    return [xvalues,yvalues,plan_values,contractual_values]
+    return [xvalues, yvalues, plan_values, contractual_values]
 
 
 @login_required(login_url='ingresar')
-def planificacion(request,slug):
+def planificacion(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     try:
@@ -3600,17 +3578,16 @@ def planificacion(request,slug):
         parque_eolico = ParqueEolico(parque=parque)
         parque_eolico.save()
 
-    contenido=ContenidoContainer()
-    contenido.user=request.user
-    contenido.titulo= u'Planificación Follow Up'
-    contenido.subtitulo= u'Parque Eólico ' +parque.nombre
+    contenido = ContenidoContainer()
+    contenido.user = request.user
+    contenido.titulo = u'Planificación Follow Up'
+    contenido.subtitulo = u'Parque Eólico ' + parque.nombre
     contenido.menu = ['menu-fu', 'menu2-planificacion']
 
     try:
         configuracion = ConfiguracionFU.objects.get(parque=parque)
     except ConfiguracionFU.DoesNotExist:
         configuracion = None
-
 
     form = None
 
@@ -3631,7 +3608,7 @@ def planificacion(request,slug):
                 logger.debug('Se sube configuración, pero se mantiene igual.')
 
     if form is None and configuracion is not None:
-        form = PlanificacionForm(instance = configuracion)
+        form = PlanificacionForm(instance=configuracion)
 
     if configuracion:
         [x_axis, y_axis, plan,contractual] = graficoPlanificacion(parque)
@@ -3647,17 +3624,17 @@ def planificacion(request,slug):
     thisweek = str(anho) + "-" + semana
 
     return TemplateResponse(request, 'fu/planificacion.html',
-                  {'cont': contenido,
-                   'parque': parque,
-                   'aerogeneradores': aerogeneradores,
-                   'configuracion': configuracion,
-                   'form': form,
-                   'x_axis': x_axis,
-                   'y_axis': y_axis,
-                   'plan': plan,
-                   'contractual': contractual,
-                   'thisweek': thisweek
-                   })
+                            {'cont': contenido,
+                             'parque': parque,
+                             'aerogeneradores': aerogeneradores,
+                             'configuracion': configuracion,
+                             'form': form,
+                             'x_axis': x_axis,
+                             'y_axis': y_axis,
+                             'plan': plan,
+                             'contractual': contractual,
+                             'thisweek': thisweek
+                             })
 
 
 @login_required(login_url='ingresar')
@@ -3704,11 +3681,10 @@ def download_config(request, slug):
     bordertop = Border(top=thin, left=thin, right=thin)
     borderbottom = Border(left=thin, right=thin, bottom=thin)
     borderside = Border(left=thin, right=thin)
-    # alignment = Alignment(horizontal="center", vertical="center",text_rotation =90, wrap_text = False, shrink_to_fit = False, indent = 0)
     alignment1 = Alignment(horizontal="center", vertical="center", text_rotation=90)
     alignment2 = Alignment(vertical="center")
     alignment3 = Alignment(horizontal="center")
-    alignment4 = Alignment(horizontal="center", wrap_text = True)
+    alignment4 = Alignment(horizontal="center", wrap_text=True)
 
     row = 3
     column = 4
@@ -3739,7 +3715,7 @@ def download_config(request, slug):
     prev_year_col = 0
 
     for s in semanas:
-        logger.debug("Semana= " + s + ", idx= " + str(idx))
+        # logger.debug("Semana= " + s + ", idx= " + str(idx))
         semana_str = semanas[idx].split('-')[0]
         d = ws.cell(row=row, column=column+idx, value=semana_str)
         d.fill = bg
@@ -3783,8 +3759,8 @@ def download_config(request, slug):
     estados['premontaje'] = 'Pre-montaje'
     estados['montaje'] = 'Montaje'
     estados['puestaenmarcha'] = 'Puesta en marcha'
-    #estados = ['descarga','premontaje','montaje','puestaenmarcha']
-    estados_db = {}
+    # estados = ['descarga','premontaje','montaje','puestaenmarcha']
+    estados_db = dict()
     estados_db['descarga'] = EstadoFU.objects.get(idx=1)
     estados_db['premontaje'] = EstadoFU.objects.get(idx=2)
     estados_db['montaje'] = EstadoFU.objects.get(idx=3)
@@ -3800,7 +3776,7 @@ def download_config(request, slug):
         planExist = True
 
     for e, titulo in estados.iteritems():
-        componentes = getComponentesbyState(parque_eolico,e)
+        componentes = getComponentesbyState(parque_eolico, e)
         if len(componentes) > 0:
             d = ws.cell(row=row, column=1, value=titulo)
             d.alignment = alignment1
@@ -3851,7 +3827,7 @@ def download_config(request, slug):
                                                                   componente__nombre=nombre,
                                                                   estado=estados_db[e],
                                                                   fecha=fecha_aux)
-                            ws.cell(row=row , column=columna_aux, value=contractual.no_aerogeneradores)
+                            ws.cell(row=row, column=columna_aux, value=contractual.no_aerogeneradores)
                         except Contractual.DoesNotExist:
                             pass
                         columna_aux += 1
@@ -3954,7 +3930,7 @@ def getComponenteStatus(registros, idx, componente, miembros):
 
 
 @login_required(login_url='ingresar')
-def ingreso(request,slug,slug_ag):
+def ingreso(request, slug, slug_ag):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
     aerogenerador = get_object_or_404(Aerogenerador, parque=parque, slug=slug_ag)

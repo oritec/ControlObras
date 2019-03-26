@@ -2,116 +2,116 @@
 {% load customtags %}
 
 <!-- BEGIN SIDEBAR -->
-	<div class="page-sidebar-wrapper">
-		<!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
-		<!-- DOC: Change data-auto-speed="200" to adjust the sub menu slide up/down speed -->
-		<div class="page-sidebar navbar-collapse collapse">
-			<!-- BEGIN SIDEBAR MENU -->
-			<!-- DOC: Apply "page-sidebar-menu-light" class right after "page-sidebar-menu" to enable light sidebar menu style(without borders) -->
-			<!-- DOC: Apply "page-sidebar-menu-hover-submenu" class right after "page-sidebar-menu" to enable hoverable(hover vs accordion) sub menu mode -->
-			<!-- DOC: Apply "page-sidebar-menu-closed" class right after "page-sidebar-menu" to collapse("page-sidebar-closed" class must be applied to the body element) the sidebar sub menu mode -->
-			<!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
-			<!-- DOC: Set data-keep-expand="true" to keep the submenues expanded -->
-			<!-- DOC: Set data-auto-speed="200" to adjust the sub menu slide up/down speed -->
-			<ul class="page-sidebar-menu page-header-fixed " data-keep-expanded="false" data-auto-scroll="true" data-slide-speed="200" style="padding-top: 20px">
-				<!-- DOC: To remove the sidebar toggler from the sidebar you just need to completely remove the below "sidebar-toggler-wrapper" LI element -->
-				
-				<!-- BEGIN SIDEBAR TOGGLER BUTTON -->
-				<li class="sidebar-toggler-wrapper">
-                    <div class="sidebar-toggler">
-                        <span></span>
-                    </div>
-                </li>
-				<!-- END SIDEBAR TOGGLER BUTTON -->
-                &nbsp;
-				<!--<li class="start ">-->
-                <li class="nav-item start active open" id="menu-principal">
-					<a href="javascript:;" class="nav-link nav-toggle">
-						<i class="icon-home"></i>
-						<span class="title">Principal</span>
-						<span class="selected"></span>
-						<span class="arrow open"></span>
-					</a>
+<div class="page-sidebar-wrapper">
+    <!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
+    <!-- DOC: Change data-auto-speed="200" to adjust the sub menu slide up/down speed -->
+    <div class="page-sidebar navbar-collapse collapse">
+        <!-- BEGIN SIDEBAR MENU -->
+        <!-- DOC: Apply "page-sidebar-menu-light" class right after "page-sidebar-menu" to enable light sidebar menu style(without borders) -->
+        <!-- DOC: Apply "page-sidebar-menu-hover-submenu" class right after "page-sidebar-menu" to enable hoverable(hover vs accordion) sub menu mode -->
+        <!-- DOC: Apply "page-sidebar-menu-closed" class right after "page-sidebar-menu" to collapse("page-sidebar-closed" class must be applied to the body element) the sidebar sub menu mode -->
+        <!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
+        <!-- DOC: Set data-keep-expand="true" to keep the submenues expanded -->
+        <!-- DOC: Set data-auto-speed="200" to adjust the sub menu slide up/down speed -->
+        <ul class="page-sidebar-menu page-header-fixed " data-keep-expanded="false" data-auto-scroll="true" data-slide-speed="200" style="padding-top: 20px">
+            <!-- DOC: To remove the sidebar toggler from the sidebar you just need to completely remove the below "sidebar-toggler-wrapper" LI element -->
 
-					<ul class="sub-menu">
-						<li class="nav-item " id="menu2-resumen">
-							<a href="{% url 'vista:home' parque.slug %}" class="nav-link ">
-								<i class="fa fa-info-circle"></i>
-								<span class="title">Informaci&oacute;n Parque</span>
+            <!-- BEGIN SIDEBAR TOGGLER BUTTON -->
+            <li class="sidebar-toggler-wrapper">
+                <div class="sidebar-toggler">
+                    <span></span>
+                </div>
+            </li>
+            <!-- END SIDEBAR TOGGLER BUTTON -->
+            &nbsp;
+            <!--<li class="start ">-->
+            <li class="nav-item start active open" id="menu-principal">
+                <a href="javascript:;" class="nav-link nav-toggle">
+                    <i class="icon-home"></i>
+                    <span class="title">Principal</span>
+                    <span class="selected"></span>
+                    <span class="arrow open"></span>
+                </a>
 
-							</a>
-						</li>
+                <ul class="sub-menu">
+                    <li class="nav-item " id="menu2-resumen">
+                        <a href="{% url 'vista:home' parque.slug %}" class="nav-link ">
+                            <i class="fa fa-info-circle"></i>
+                            <span class="title">Informaci&oacute;n Parque</span>
+
+                        </a>
+                    </li>
                     <!--El resto de los menú solo se muestran si la configuración existe...-->
                     {% if perms.vista.change_parquesolar %}
-                    {% if parque.no_aerogeneradores > 0 %}
-                        <li class="nav-item " id="menu2-observadores">
-							<a href="{% url 'ncr:observadores' parque.slug %}" class="nav-link ">
-								<i class="fa fa-edit"></i>
-								<span class="title">Inspectores</span>
+                        {% if parque.no_aerogeneradores > 0 %}
+                            <li class="nav-item " id="menu2-observadores">
+                                <a href="{% url 'ncr:observadores' parque.slug %}" class="nav-link ">
+                                    <i class="fa fa-edit"></i>
+                                    <span class="title">Inspectores</span>
 
-							</a>
-						</li>
-                        <li class="nav-item " id="menu2-aerogeneradores">
-							<a href="{% url 'vista:aerogeneradores' parque.slug %}" class="nav-link ">
-								<i class="fa fa-location-arrow"></i>
-								<span class="title">Aerogeneradores</span>
+                                </a>
+                            </li>
+                            <li class="nav-item " id="menu2-aerogeneradores">
+                                <a href="{% url 'vista:aerogeneradores' parque.slug %}" class="nav-link ">
+                                    <i class="fa fa-location-arrow"></i>
+                                    <span class="title">Aerogeneradores</span>
 
-							</a>
-						</li>
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item " id="menu2-configuracion">
+                            <a href="{% url 'vista:configuracion' parque.slug %}" class="nav-link ">
+                                <i class="fa fa-wrench"></i>
+                                <span class="title">Configuraci&oacute;n</span>
+
+                            </a>
+                        </li>
                     {% endif %}
-						<li class="nav-item " id="menu2-configuracion">
-							<a href="{% url 'vista:configuracion' parque.slug %}" class="nav-link ">
-								<i class="fa fa-wrench"></i>
-								<span class="title">Configuraci&oacute;n</span>
+                </ul>
+            </li>
 
-							</a>
-						</li>
-                    {% endif %}
-					</ul>
-				</li>
-
-                {% if parque.no_aerogeneradores > 0 %}
+            {% if parque.no_aerogeneradores > 0 %}
                 <!--<li class="start ">-->
-                    <li class="nav-item" id="menu-ncr">
-                        <a href="javascript:;" class="nav-link nav-toggle">
-                            <i class="fa fa-edit"></i>
-                            <span class="title">NCRs</span>
-                            <span class="selected"></span>
-                            <span class="arrow open"></span>
-                        </a>
-                        <ul class="sub-menu">
-                            <li class="nav-item " id="menu2-observaciones-resumen">
-                                <a href="{% url 'ncr:observaciones-resumen' parque.slug %}" class="nav-link ">
-                                    <i class="fa fa-caret-right"></i>
-                                    <span class="title">Resumen</span>
-                                </a>
-                            </li>
-                            <li class="nav-item " id="menu2-informeNCR">
-                                <a href="{% url 'ncr:informeNCR' parque.slug %}" class="nav-link ">
-                                    <i class="fa fa-caret-right"></i>
-                                    <span class="title">Informe NCRs</span>
-                                </a>
-                            </li>
-                            <li class="nav-item " id="menu2-punchlist">
-                                <a href="{% url 'ncr:punchlist' parque.slug %}" class="nav-link ">
-                                    <i class="fa fa-caret-right"></i>
-                                    <span class="title">Punchlist</span>
-                                </a>
-                            </li>
-                            <li class="nav-item " id="menu2-duplicadas">
-                                <a href="{% url 'ncr:observaciones_duplicadas' parque.slug %}" class="nav-link ">
-                                    <i class="fa fa-caret-right"></i>
-                                    <span class="title">Duplicadas</span>
-                                </a>
-                            </li>
-                            {% if request.user.is_superuser %}
+                <li class="nav-item" id="menu-ncr">
+                    <a href="javascript:;" class="nav-link nav-toggle">
+                        <i class="fa fa-edit"></i>
+                        <span class="title">NCRs</span>
+                        <span class="selected"></span>
+                        <span class="arrow open"></span>
+                    </a>
+                    <ul class="sub-menu">
+                        <li class="nav-item " id="menu2-observaciones-resumen">
+                            <a href="{% url 'ncr:observaciones-resumen' parque.slug %}" class="nav-link ">
+                                <i class="fa fa-caret-right"></i>
+                                <span class="title">Resumen</span>
+                            </a>
+                        </li>
+                        <li class="nav-item " id="menu2-informeNCR">
+                            <a href="{% url 'ncr:informeNCR' parque.slug %}" class="nav-link ">
+                                <i class="fa fa-caret-right"></i>
+                                <span class="title">Informe NCRs</span>
+                            </a>
+                        </li>
+                        <li class="nav-item " id="menu2-punchlist">
+                            <a href="{% url 'ncr:punchlist' parque.slug %}" class="nav-link ">
+                                <i class="fa fa-caret-right"></i>
+                                <span class="title">Punchlist</span>
+                            </a>
+                        </li>
+                        <li class="nav-item " id="menu2-duplicadas">
+                            <a href="{% url 'ncr:observaciones_duplicadas' parque.slug %}" class="nav-link ">
+                                <i class="fa fa-caret-right"></i>
+                                <span class="title">Duplicadas</span>
+                            </a>
+                        </li>
+                        {% if request.user.is_superuser %}
                             <li class="nav-item " id="menu2-configuracion-ncr">
                                 <a href="{% url 'ncr:configuracion' parque.slug %}" class="nav-link ">
                                     <i class="fa fa-caret-right"></i>
                                     <span class="title">Configuración</span>
                                 </a>
                             </li>
-                            {% endif %}
+                        {% endif %}
                         {% for wtg in aerogeneradores %}
                             <li class="nav-item " id="menu2-observaciones-{{ wtg.idx }}">
                                 <a href="{% url 'ncr:observaciones' parque.slug wtg.slug %}" class="nav-link ">
@@ -120,81 +120,81 @@
                                 </a>
                             </li>
                         {% endfor %}
-                        </ul>
-                    </li>
-                    <li class="nav-item" id="menu-fu">
-                        <a href="javascript:;" class="nav-link nav-toggle">
-                            <i class="fa fa-line-chart"></i>
-                            <span class="title">Follow Up</span>
-                            <span class="selected"></span>
-                            <span class="arrow open"></span>
-                        </a>
-                        <ul class="sub-menu">
-                            <li class="nav-item " id="menu2-dashboard">
-                                <a href="{% url 'fu:dashboard' parque.slug %}" class="nav-link ">
-                                    <i class="fa fa-caret-right"></i>
-                                    <span class="title">Dashboard</span>
-                                </a>
-                            </li>
-                            <li class="nav-item " id="menu2-dashboard-diario">
-                                <a href="{% url 'fu:dashboard-diario' parque.slug %}" class="nav-link ">
-                                    <i class="fa fa-caret-right"></i>
-                                    <span class="title">Dashboard Diario</span>
-                                </a>
-                            </li>
-                            {% if perms.fu.add_componente %}
+                    </ul>
+                </li>
+                <li class="nav-item" id="menu-fu">
+                    <a href="javascript:;" class="nav-link nav-toggle">
+                        <i class="fa fa-line-chart"></i>
+                        <span class="title">Follow Up</span>
+                        <span class="selected"></span>
+                        <span class="arrow open"></span>
+                    </a>
+                    <ul class="sub-menu">
+                        <li class="nav-item " id="menu2-dashboard">
+                            <a href="{% url 'fu:dashboard' parque.slug %}" class="nav-link ">
+                                <i class="fa fa-caret-right"></i>
+                                <span class="title">Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item " id="menu2-dashboard-diario">
+                            <a href="{% url 'fu:dashboard-diario' parque.slug %}" class="nav-link ">
+                                <i class="fa fa-caret-right"></i>
+                                <span class="title">Dashboard Diario</span>
+                            </a>
+                        </li>
+                        {% if perms.fu.add_componente %}
                             <li class="nav-item " id="menu2-componentes">
                                 <a href="{% url 'fu:componentes' parque.slug %}" class="nav-link ">
                                     <i class="fa fa-caret-right"></i>
                                     <span class="title">Componentes</span>
                                 </a>
                             </li>
-                            {% endif %}
-                            {% if perms.fu.add_componentesparque %}
+                        {% endif %}
+                        {% if perms.fu.add_componentesparque %}
                             <li class="nav-item " id="menu2-actividades">
                                 <a href="{% url 'fu:actividades' parque.slug %}" class="nav-link ">
                                     <i class="fa fa-caret-right"></i>
                                     <span class="title">Actividades</span>
                                 </a>
                             </li>
-                            {% endif %}
-                            {% if perms.fu.add_configuracionfu %}
+                        {% endif %}
+                        {% if perms.fu.add_configuracionfu %}
                             <li class="nav-item " id="menu2-configuracionfu">
                                 <a href="{% url 'fu:configuracion' parque.slug %}" class="nav-link ">
                                     <i class="fa fa-caret-right"></i>
                                     <span class="title">Configuraci&oacute;n</span>
                                 </a>
                             </li>
-                            {% endif %}
-                            <li class="nav-item " id="menu2-planificacion">
-                                <a href="{% url 'fu:planificacion' parque.slug %}" class="nav-link ">
-                                    <i class="fa fa-caret-right"></i>
-                                    <span class="title">Planificaci&oacute;n</span>
-                                </a>
-                            </li>
-                            <li class="nav-item " id="menu2-paradas">
-                                <a href="{% url 'fu:paradas' parque.slug %}" class="nav-link ">
-                                    <i class="fa fa-caret-right"></i>
-                                    <span class="title">Listado de paradas</span>
-                                </a>
-                            </li>
-                            <li class="nav-item " id="menu2-reportes">
-                                <a href="{% url 'fu:reportes' parque.slug %}" class="nav-link ">
-                                    <i class="fa fa-caret-right"></i>
-                                    <span class="title">Reportes</span>
-                                </a>
-                            </li>
-                            {% for wtg in aerogeneradores|filter_ag_fu %}
+                        {% endif %}
+                        <li class="nav-item " id="menu2-planificacion">
+                            <a href="{% url 'fu:planificacion' parque.slug %}" class="nav-link ">
+                                <i class="fa fa-caret-right"></i>
+                                <span class="title">Planificaci&oacute;n</span>
+                            </a>
+                        </li>
+                        <li class="nav-item " id="menu2-paradas">
+                            <a href="{% url 'fu:paradas' parque.slug %}" class="nav-link ">
+                                <i class="fa fa-caret-right"></i>
+                                <span class="title">Listado de paradas</span>
+                            </a>
+                        </li>
+                        <li class="nav-item " id="menu2-reportes">
+                            <a href="{% url 'fu:reportes' parque.slug %}" class="nav-link ">
+                                <i class="fa fa-caret-right"></i>
+                                <span class="title">Reportes</span>
+                            </a>
+                        </li>
+                        {% for wtg in aerogeneradores|filter_ag_fu %}
                             <li class="nav-item " id="menu2-ingreso-{{ wtg.idx }}">
                                 <a href="{% url 'fu:ingreso' parque.slug wtg.slug %}" class="nav-link ">
                                     <i class="fa fa-caret-right"></i>
                                     <span class="title">{{ wtg.nombre }}</span>
                                 </a>
                             </li>
-                            {% endfor %}
-                        </ul>
-                    </li>
-                    {% if perms.dr.change_dr %}
+                        {% endfor %}
+                    </ul>
+                </li>
+                {% if perms.dr.change_dr %}
                     <li class="nav-item" id="menu-dr">
                         <a href="javascript:;" class="nav-link nav-toggle">
                             <i class="fa fa-calendar"></i>
@@ -211,10 +211,10 @@
                             </li>
                         </ul>
                     </li>
-                    {% endif %}
                 {% endif %}
-			</ul>
-			<!-- END SIDEBAR MENU -->
-		</div>
-	</div>
-	<!-- END SIDEBAR -->
+            {% endif %}
+        </ul>
+        <!-- END SIDEBAR MENU -->
+    </div>
+</div>
+<!-- END SIDEBAR -->

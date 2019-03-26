@@ -21,5 +21,5 @@ urlpatterns = [
     url(r'^paradas', views.paradas, name='paradas'),
     url(r'^reportes', views.reportes, name='reportes'),
     url(r'^status_componentes', views.status_componentes, name='status_componentes'),
-    #url(r'^componente/crear', views.create_componente, name='componente-create')
+    # url(r'^componente/crear', views.create_componente, name='componente-create')
 ]
