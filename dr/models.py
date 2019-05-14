@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
-from vista.models import Aerogenerador
 import logging
 
 logger = logging.getLogger('oritec')
@@ -20,11 +19,12 @@ class DR(models.Model):
     actividades = models.CharField(max_length=500, unique=False)
     hora_entrada = models.TimeField()
     hora_salida = models.TimeField()
-    created_by = models.ForeignKey(User)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
     def __str__(self):
-        return '%s' % (self.actividades)
+        return '%s' % self.actividades
 
 
 @python_2_unicode_compatible
@@ -34,8 +34,9 @@ class ActividadDR(models.Model):
     orden = models.SmallIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
     def __str__(self):
-        return '%s' % (self.descripcion)
+        return '%s' % self.descripcion
 
 
 @python_2_unicode_compatible
@@ -46,8 +47,9 @@ class ComposicionDR(models.Model):
     orden = models.SmallIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
     def __str__(self):
-        return '%s' % (self.descripcion)
+        return '%s' % self.descripcion
 
 
 def dr_path(instance, filename):
@@ -60,8 +62,8 @@ def dr_path(instance, filename):
 def thumbnail_dr_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'dr/dr_{0}/actividad_{1}/thumbnails/{2}'.format(instance.composicion.actividad.dr.id,
-                                                instance.composicion.actividad.id,
-                                                filename)
+                                                           instance.composicion.actividad.id,
+                                                           filename)
 
 
 @python_2_unicode_compatible
@@ -131,12 +133,12 @@ class FotosDR(models.Model):
         if image.height > 1200 or image.width >1200:
             THUMBNAIL_SIZE = (image.width*0.2, image.height*0.2)
 
-        #exif = dict((ExifTags.TAGS[k], v) for k, v in image._getexif().items() if k in ExifTags.TAGS)
-        #if not exif['Orientation']:
+        # exif = dict((ExifTags.TAGS[k], v) for k, v in image._getexif().items() if k in ExifTags.TAGS)
+        # if not exif['Orientation']:
         #    logging.debug('not orientation')
 
         image.thumbnail(THUMBNAIL_SIZE, Image.ANTIALIAS)
-        #return 0
+        # return 0
         # Save the thumbnail
         temp_handle = StringIO()
         image.save(temp_handle, PIL_TYPE)
@@ -158,7 +160,7 @@ class FotosDR(models.Model):
         return '%s' % (self.descripcion)
 
     def save(self, *args, **kwargs):
-        #logger.debug("Saving Image")
+        # logger.debug("Saving Image")
         updateThumbnail = True
         if self.pk is not None:
             orig = FotosDR.objects.get(pk=self.pk)
@@ -168,13 +170,13 @@ class FotosDR(models.Model):
         if updateThumbnail:
             try:
                 self.create_thumbnail()
-                #self.create_reporte_img()
+                # self.create_reporte_img()
             except Exception as e:
                 logger.debug(e.__doc__)
                 logger.debug(e.message)
 
         force_update = False
-        #self.create_reporte_img()
+        # self.create_reporte_img()
         # If the instance already has been saved, it has an id and we set
         # force_update to True
         if self.id:
