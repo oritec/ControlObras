@@ -14,12 +14,16 @@ class Aerogenerador(models.Model):
     nombre = models.CharField(max_length=100)
     parque = models.ForeignKey('ParqueSolar', on_delete=models.CASCADE)
     slug = models.SlugField()
+
     class Meta:
         unique_together = (("parque", "idx"),("parque", "nombre"))
+
     def __str__(self):
-        return '%s' % (self.nombre)
+        return '%s' % self.nombre
+
     def graphText(self):
-        return '%s' % (self.nombre)
+        return '%s' % self.nombre
+
     def save(self, *args, **kwargs):
         self.slug = defaultfilters.slugify(self.nombre)
         super(Aerogenerador, self).save(*args, **kwargs)
@@ -64,10 +68,10 @@ class ParqueSolar(models.Model):
     municipio = models.CharField(max_length=100, default='')
 
     class Meta:
-        unique_together = (("nombre", "codigo"))
+        unique_together = ("nombre", "codigo")
 
     def __str__(self):
-        return '%s' % (self.nombre)
+        return '%s' % self.nombre
 
     def getPrintName(self):
         return self.codigo + " " + self.nombre
