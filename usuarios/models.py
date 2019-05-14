@@ -9,6 +9,7 @@ import logging
 # Get an instance of a logger
 logger = logging.getLogger('oritec')
 
+
 # Dummy Model to create global permissions, a kind of helper.
 class General(models.Model):
     dummy = models.PositiveIntegerField()
@@ -27,6 +28,7 @@ class GlobalPermissionManager(models.Manager):
         return super(GlobalPermissionManager, self).\
             get_query_set().filter(content_type__name='global_permission')
 
+
 class GlobalPermission(Permission):
     """A global permission, not attached to a model"""
     objects = GlobalPermissionManager()
@@ -41,17 +43,16 @@ class GlobalPermission(Permission):
         logger.debug(ct)
         self.content_type = ct
         super(GlobalPermission, self).save(*args, **kwargs)
-        
+
+
 class Usuario(models.Model):
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     parques = models.ManyToManyField(ParqueSolar)
     changed_pass = models.BooleanField(default=False)
 
+
 class Log(models.Model):
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    tipo = models.IntegerField(default=0) # 1: Add, 2: Change, 3: Delete, 0: Sin tipo
+    tipo = models.IntegerField(default=0)  # 1: Add, 2: Change, 3: Delete, 0: Sin tipo
     texto = models.TextField(max_length=200)
-
-
-
