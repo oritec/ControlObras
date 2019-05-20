@@ -21,6 +21,25 @@ class EstadoFU(models.Model):
 
 
 @python_2_unicode_compatible
+class SectorObraElectrica(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    idx = models.IntegerField(unique=True)
+    orden = models.IntegerField(default=0)
+
+    def __str__(self):
+        return '%s' % self.nombre
+
+
+@python_2_unicode_compatible
+class ComponenteObraElectrica(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    sectores = models.ManyToManyField(SectorObraElectrica)
+
+    def __str__(self):
+        return '%s' % self.nombre
+
+
+@python_2_unicode_compatible
 class Componente(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
     estados = models.ManyToManyField(EstadoFU)
@@ -44,6 +63,9 @@ class ComponentesParque(models.Model):
 class ParqueEolico(models.Model):
     parque = models.ForeignKey(ParqueSolar, on_delete=models.CASCADE)
     componentes = models.ManyToManyField(Componente, through='Membership', related_name='members')
+    componentes_obraelectrica = models.ManyToManyField(ComponenteObraElectrica,
+                                                       through='MembershipObraElectrica',
+                                                       related_name='members_electricos')
 
     def __str__(self):
         return 'Componentes Parque Eolico' + '%s' % self.parque.nombre
@@ -71,6 +93,31 @@ class Membership(models.Model):
                 last = aux[0]
                 self.orden = last.orden + 1
         super(Membership, self).save()
+
+
+@python_2_unicode_compatible
+class MembershipObraElectrica(models.Model):
+    parque_eolico = models.ForeignKey(ParqueEolico, on_delete=models.CASCADE)
+    componente = models.ForeignKey(ComponenteObraElectrica, on_delete=models.CASCADE)
+    sector = models.ForeignKey(SectorObraElectrica, on_delete=models.CASCADE)
+    orden = models.SmallIntegerField()
+
+    class Meta:
+        unique_together = ("parque_eolico", "componente", "sector")
+
+    def __str__(self):
+        return 'Relacion Componente - Parque ' + '%s-%s' % (self.parque_eolico, self.componente.nombre)
+
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            aux = MembershipObraElectrica.objects.filter(parque_eolico=self.parque_eolico,
+                                                         sector=self.sector).order_by('-orden')
+            if aux.count() == 0:
+                self.orden = 1
+            else:
+                last = aux[0]
+                self.orden = last.orden + 1
+        super(MembershipObraElectrica, self).save()
 
 
 @python_2_unicode_compatible
@@ -165,6 +212,29 @@ class Registros(models.Model):
 
 
 @python_2_unicode_compatible
+class RegistrosObraElectrica(models.Model):
+    AVANCE_OPCIONES = [
+        (0, '0%'),
+        (25, '25%'),
+        (50, '50%'),
+        (75, '75%'),
+        (100, '100%'),
+    ]
+    parque = models.ForeignKey(ParqueSolar, on_delete=models.CASCADE)
+    componente = models.ForeignKey(ComponenteObraElectrica, on_delete=models.CASCADE)
+    sector = models.ForeignKey(SectorObraElectrica, on_delete=models.CASCADE)
+    fecha = models.DateField(blank=False, null=False)
+    avance = models.IntegerField(default=0, choices=AVANCE_OPCIONES)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    modified_date = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return 'Registro Obra Eléctrica, parque=' + self.parque.nombre + \
+               ',componente=' + self.componente.nombre + ', sector=' + self.sector.nombre + \
+               ',fecha=' + self.fecha.strftime("%d-%m-%Y")
+
+
+@python_2_unicode_compatible
 class ParadasTrabajo(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
 
@@ -205,3 +275,46 @@ class Paradas(models.Model):
             c = self.fecha_final - self.fecha_inicio
             self.duracion = c.total_seconds()/3600
         super(Paradas, self).save(*args, **kwargs)  # Call the "real" save() method.
+
+
+def caminos_directory_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    return 'caminos/{0}'.format(filename)
+
+
+@python_2_unicode_compatible
+class Camino(models.Model):
+    parque = models.ForeignKey(ParqueSolar, on_delete=models.CASCADE)
+    nombre = models.CharField(max_length=100, unique=True)
+    orden = models.IntegerField(default=0)
+    imagen = models.FileField(upload_to=caminos_directory_path, max_length=500, null=True, blank=True)
+
+    class Meta:
+        unique_together = ("parque", "nombre")
+
+    def __str__(self):
+        return '%s' % self.nombre
+
+    def save(self, *args, **kwargs):
+        if self.orden == 0:
+            last_orden = Camino.objects.filter(parque=self.parque).order_by('orden').last()
+            if last_orden:
+                self.orden = last_orden.orden + 1
+            else:
+                self.orden = 1
+        super(Camino, self).save(*args, **kwargs)
+
+
+@python_2_unicode_compatible
+class RegistrosCamino(models.Model):
+    parque = models.ForeignKey(ParqueSolar, on_delete=models.CASCADE)
+    camino = models.ForeignKey(Camino, on_delete=models.CASCADE)
+    fecha = models.DateField(blank=False, null=False)
+    avance = models.IntegerField(default=0, choices=RegistrosObraElectrica.AVANCE_OPCIONES)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    modified_date = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return 'Registro Camino, parque=' + self.parque.nombre + \
+               ',camino=' + self.camino.nombre + \
+               ',fecha=' + self.fecha.strftime("%d-%m-%Y")
