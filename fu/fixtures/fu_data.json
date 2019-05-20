@@ -4,7 +4,8 @@
         "pk": 1,
         "fields": {
             "nombre": "Inicio",
-            "idx":0
+            "idx":0,
+            "orden": 0
         }
     },
     {
@@ -12,7 +13,8 @@
         "pk": 2,
         "fields": {
             "nombre": "Descarga",
-            "idx":1
+            "idx":1,
+            "orden": 2
         }
     },
     {
@@ -20,7 +22,8 @@
         "pk": 3,
         "fields": {
             "nombre": "Pre-montaje",
-            "idx":2
+            "idx":2,
+            "orden": 3
         }
     },
     {
@@ -28,7 +31,8 @@
         "pk": 4,
         "fields": {
             "nombre": "Montaje",
-            "idx":3
+            "idx": 3,
+            "orden": 4
         }
     },
     {
@@ -36,15 +40,26 @@
         "pk": 5,
         "fields": {
             "nombre": "Puesta en marcha",
-            "idx":4
+            "idx":4,
+            "orden": 5
         }
     },
     {
         "model": "fu.estadofu",
         "pk": 6,
         "fields": {
+            "nombre": "Obra Civil",
+            "idx": 5,
+            "orden": 1
+        }
+    },
+    {
+        "model": "fu.estadofu",
+        "pk": 7,
+        "fields": {
             "nombre": "Fin",
-            "idx":5
+            "idx":6,
+            "orden": 0
         }
     },
     {
@@ -73,6 +88,33 @@
         "pk": 2,
         "fields": {
             "nombre": "Auxiliar"
+        }
+    },
+    {
+        "model": "fu.sectorobraelectrica",
+        "pk": 1,
+        "fields": {
+            "nombre": "Subestación",
+            "idx": 0,
+            "orden": 1
+        }
+    },
+    {
+        "model": "fu.sectorobraelectrica",
+        "pk": 2,
+        "fields": {
+            "nombre": "Red Colectora",
+            "idx": 1,
+            "orden": 2
+        }
+    },
+    {
+        "model": "fu.sectorobraelectrica",
+        "pk": 3,
+        "fields": {
+            "nombre": "Línea de evacuación",
+            "idx": 2,
+            "orden": 3
         }
     }
 ]
