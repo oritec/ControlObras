@@ -306,6 +306,33 @@ class Camino(models.Model):
 
 
 @python_2_unicode_compatible
+class CaminoImagenAvance(models.Model):
+    camino = models.ForeignKey(Camino, on_delete=models.CASCADE)
+    imagen = models.FileField(upload_to=caminos_directory_path, max_length=500, null=True, blank=True)
+    avance = models.IntegerField(default=0, choices=RegistrosObraElectrica.AVANCE_OPCIONES)
+
+    class Meta:
+        unique_together = ("camino", "avance")
+
+    def __str__(self):
+        return 'Imagen avance camino'
+
+
+@python_2_unicode_compatible
+class ObraElectricaImagenAvance(models.Model):
+    parque_eolico = models.ForeignKey(ParqueEolico, on_delete=models.CASCADE)
+    componente = models.ForeignKey(ComponenteObraElectrica, on_delete=models.CASCADE)
+    imagen = models.FileField(upload_to=caminos_directory_path, max_length=500, null=True, blank=True)
+    avance = models.IntegerField(default=0, choices=RegistrosObraElectrica.AVANCE_OPCIONES)
+
+    class Meta:
+        unique_together = ("parque_eolico", "componente", "avance")
+
+    def __str__(self):
+        return 'Imagen avance obra eléctrica'
+
+
+@python_2_unicode_compatible
 class RegistrosCamino(models.Model):
     parque = models.ForeignKey(ParqueSolar, on_delete=models.CASCADE)
     camino = models.ForeignKey(Camino, on_delete=models.CASCADE)
