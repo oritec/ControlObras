@@ -193,6 +193,42 @@ class Contractual(models.Model):
 
 
 @python_2_unicode_compatible
+class PlanObrasElectricas(models.Model):
+    parque = models.ForeignKey(ParqueSolar, on_delete=models.CASCADE)
+    componente = models.ForeignKey(ComponenteObraElectrica, on_delete=models.CASCADE)
+    sector = models.ForeignKey(SectorObraElectrica, on_delete=models.CASCADE)
+    fecha = models.DateField(blank=False, null=False)
+    avance = models.FloatField()
+
+    class Meta:
+        unique_together = ("parque", "componente", "sector", "fecha")
+
+    def __str__(self):
+        return 'Plan Obras Civiles, parque=' + self.parque.nombre + \
+               ',componente=' + self.componente.nombre + \
+               ',sector=' + self.sector.nombre + \
+               ',avance=' + str(self.avance)
+
+
+@python_2_unicode_compatible
+class ContractualObrasElectricas(models.Model):
+    parque = models.ForeignKey(ParqueSolar, on_delete=models.CASCADE)
+    componente = models.ForeignKey(ComponenteObraElectrica, on_delete=models.CASCADE)
+    sector = models.ForeignKey(SectorObraElectrica, on_delete=models.CASCADE)
+    fecha = models.DateField(blank=False, null=False)
+    avance = models.FloatField()
+
+    class Meta:
+        unique_together = ("parque", "componente", "sector", "fecha")
+
+    def __str__(self):
+        return 'Contractual Obras Civiles, parque=' + self.parque.nombre + \
+               ',componente=' + self.componente.nombre + \
+               ',sector=' + self.sector.nombre + \
+               ',avance=' + str(self.avance)
+
+
+@python_2_unicode_compatible
 class Registros(models.Model):
     parque = models.ForeignKey(ParqueSolar, on_delete=models.CASCADE)
     aerogenerador = models.ForeignKey(Aerogenerador, on_delete=models.CASCADE)
@@ -303,6 +339,38 @@ class Camino(models.Model):
             else:
                 self.orden = 1
         super(Camino, self).save(*args, **kwargs)
+
+
+@python_2_unicode_compatible
+class PlanCaminos(models.Model):
+    parque = models.ForeignKey(ParqueSolar, on_delete=models.CASCADE)
+    componente = models.ForeignKey(Camino, on_delete=models.CASCADE)
+    fecha = models.DateField(blank=False, null=False)
+    avance = models.FloatField()
+
+    class Meta:
+        unique_together = ("parque", "componente", "fecha")
+
+    def __str__(self):
+        return 'Plan Caminos, parque=' + self.parque.nombre + \
+               ',componente=' + self.componente.nombre + \
+               ',avance=' + str(self.avance)
+
+
+@python_2_unicode_compatible
+class ContractualCaminos(models.Model):
+    parque = models.ForeignKey(ParqueSolar, on_delete=models.CASCADE)
+    componente = models.ForeignKey(Camino, on_delete=models.CASCADE)
+    fecha = models.DateField(blank=False, null=False)
+    avance = models.FloatField()
+
+    class Meta:
+        unique_together = ("parque", "componente", "fecha")
+
+    def __str__(self):
+        return 'Contractual Caminos, parque=' + self.parque.nombre + \
+               ',componente=' + self.componente.nombre + \
+               ',avance=' + str(self.avance)
 
 
 @python_2_unicode_compatible
