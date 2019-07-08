@@ -6,6 +6,7 @@
     <!-- BEGIN PAGE LEVEL STYLES -->
     <link href="{% static 'common/bootstrap-fileinput/css/fileinput.css' %}" rel="stylesheet" type="text/css" />
     <link href="{% static 'common/assets/global/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'common/assets/global/plugins/bootstrap-select/css/bootstrap-select.min.css' %}" rel="stylesheet" type="text/css" />
 
     <!-- END PAGE LEVEL STYLES -->
 {% endblock %}
@@ -17,7 +18,7 @@
         <div class="portlet">
             <div class="portlet-title">
                 <div class="caption">
-                    <i class="fa fa-cogs"></i> Fechas de duraci&oacute;n del proyecto
+                    <i class="fa fa-cogs"></i> Configuración del proyecto
                 </div>
             </div>
             <div class="portlet-body form">
@@ -27,8 +28,8 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="control-label col-md-3">{{ form.fecha_inicio.label }}</label>
-                                    <div class="col-md-9">
+                                    <label class="control-label col-md-5">{{ form.fecha_inicio.label }}</label>
+                                    <div class="col-md-7">
                                         <div class="input-group input-medium date date-picker" data-date-format="dd-mm-yyyy" data-date-show-today-button="true">
                                             {{ form.fecha_inicio }}
                                             <span class="input-group-btn">
@@ -44,8 +45,8 @@
                             <!--/span-->
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="control-label col-md-3">{{ form.fecha_final.label }}</label>
-                                    <div class="col-md-9">
+                                    <label class="control-label col-md-5">{{ form.fecha_final.label }}</label>
+                                    <div class="col-md-7">
                                         <div class="input-group input-medium date date-picker" data-date-format="dd-mm-yyyy" data-date-show-today-button="true">
                                             {{ form.fecha_final }}
                                             <span class="input-group-btn">
@@ -59,6 +60,17 @@
                                 </div>
                             </div>
                             <!--/span-->
+                        </div>
+                        <div class="row" style="padding-top: 20px">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">{{ form.componente_montaje.label }}</label>
+                                    <div class="col-md-7">
+                                        {{ form.componente_montaje }}
+                                        <span class="help-block"> {{ form.componente_montaje.errors }} </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <!--/row-->
                     </div>
@@ -82,7 +94,7 @@
     <script src="{% static 'common/bootstrap-fileinput/js/locales/es.js' %}" type="text/javascript"></script>
     <script src="{% static 'common/assets/global/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js' %}" type="text/javascript"></script>
     <script src="{% static 'common/assets/global/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js' %}" type="text/javascript"></script>
-
+    <script src="{% static 'common/assets/global/plugins/bootstrap-select/js/bootstrap-select.min.js' %}" type="text/javascript"></script>
 <!-- END PAGE LEVEL PLUGINS -->
 {% endblock %}
 
@@ -101,5 +113,16 @@
             todayBtn:"linked",
         });
     }
+
+    $('.bs-select').selectpicker({
+        iconBase: 'fa',
+        tickIcon: 'fa-check',
+        dropupAuto: false,
+    });
+    {% if configuracion_obj.componente_montaje == None %}
+        $('.bs-select').selectpicker('val', '');
+    {% else %}
+        $('.bs-select').selectpicker('val', '{{ configuracion_obj.componente_montaje.id }}');
+    {% endif %}
 
 {% endblock %}

@@ -148,6 +148,7 @@ class ConfiguracionFU(models.Model):
     fecha_final = models.DateField(blank=False, null=False)
     plan = models.FileField(upload_to=plan_directory_path, max_length=500, null=True, blank=True)
     prev_plan = models.FileField(upload_to=plan_directory_path, max_length=500, null=True, blank=True)
+    componente_montaje = models.ForeignKey(Componente, null=True, default=None, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return 'Configuracion'

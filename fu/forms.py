@@ -44,23 +44,38 @@ class DeleteComponentesForm(forms.Form):
         self.fields['componente'].widget.attrs['class'] = 'bs-select form-control'
 
 class ConfiguracionFUForm(forms.ModelForm):
+    componente_montaje = forms.ModelChoiceField(queryset=Componente.objects.none())
     fecha_inicio = forms.DateField(widget=forms.DateInput(format='%d-%m-%Y'),
+                                   input_formats=('%d-%m-%Y',))
+    fecha_final = forms.DateField(widget=forms.DateInput(format='%d-%m-%Y'),
                                   input_formats=('%d-%m-%Y',))
-    fecha_final = forms.DateField(widget=forms.DateInput(format = '%d-%m-%Y'),
-                                 input_formats=('%d-%m-%Y',))
+
     class Meta:
         model = ConfiguracionFU
-        fields = ['fecha_inicio','fecha_final']
+        fields = ['fecha_inicio', 'fecha_final', 'componente_montaje']
         labels = {
             'fecha_inicio': 'Fecha Inicio del Proyecto',
             'fecha_final': 'Fecha Final del Proyecto',
+            'componente_montaje': 'Componente montaje',
         }
+
     def __init__(self, *args, **kwargs):
+        parque_obj = kwargs.pop('parque', None)
         super(ConfiguracionFUForm, self).__init__(*args, **kwargs)
         self.fields['fecha_inicio'].widget.attrs['class'] = 'form-control'
         self.fields['fecha_inicio'].widget.attrs['readonly'] = True
         self.fields['fecha_final'].widget.attrs['class'] = 'form-control'
         self.fields['fecha_final'].widget.attrs['readonly'] = True
+        instance_obj = kwargs.get('instance', None)
+        if instance_obj is not None:
+            self.fields['componente_montaje'].queryset = Componente.objects.\
+                filter(members__parque=instance_obj.parque,
+                       membership__estado__nombre='Montaje').order_by('membership__orden')
+        elif parque_obj is not None:
+            self.fields['componente_montaje'].queryset = Componente.objects. \
+                filter(members__parque=parque_obj,
+                       membership__estado__nombre='Montaje').order_by('membership__orden')
+        self.fields['componente_montaje'].widget.attrs['class'] = 'bs-select form-control'
 
 class PlanificacionForm(forms.ModelForm):
     class Meta:

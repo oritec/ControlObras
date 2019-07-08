@@ -326,22 +326,27 @@ def calcularProyeccionGrafico(parque_eolico, anho, semana):
 def aerogeneradoresAMontar(parque_eolico):
     estado_montaje = EstadoFU.objects.get(nombre='Montaje')
     estado_descarga = EstadoFU.objects.get(nombre='Descarga')
+    configuracion_obj = ConfiguracionFU.objects.get(parque=parque_eolico.parque)
 
-    try:
-        c = Componente.objects.get(nombre='Izado Cable HV')
-    except Componente.DoesNotExist:
-        c = None
+    if configuracion_obj.componente_montaje:
+        c = configuracion_obj.componente_montaje
+    else:
+        try:
+            c = Componente.objects.get(nombre='Izado Cable HV')
+        except Componente.DoesNotExist:
+            c = None
 
     if c is not None:
         try:
-            izado = Membership.objects.get(parque_eolico=parque_eolico,estado=estado_montaje, componente=c)
-            aux = Membership.objects.filter(parque_eolico=parque_eolico, estado=estado_montaje, orden__lt=izado.orden)
+            izado = Membership.objects.get(parque_eolico=parque_eolico, estado=estado_montaje, componente=c)
+            aux = Membership.objects.filter(parque_eolico=parque_eolico, estado=estado_montaje, orden__lte=izado.orden)
             return aux.count()
         except Membership.DoesNotExist:
             logger.debug('No se encontró actividad de Izaje en parque')
 
     # Si no encuentro el componente Izado, entonces el número de elementos es el numero de componentes que están en
     # descarga y montaje
+
     aux = Membership.objects.filter(parque_eolico=parque_eolico,
                                     estado=estado_montaje)
     cuenta_total = 0
@@ -3373,29 +3378,35 @@ def getLastColumn_v2(ws):
 
 @login_required(login_url='ingresar')
 @permission_required('fu.add_configuracionfu', raise_exception=True)
-def configuracion(request,slug):
+def configuracion(request, slug):
     parque = get_object_or_404(ParqueSolar, slug=slug)
     try:
-        configuracion = ConfiguracionFU.objects.get(parque=parque)
+        configuracion_obj = ConfiguracionFU.objects.get(parque=parque)
     except ConfiguracionFU.DoesNotExist:
-        configuracion = None
+        configuracion_obj = None
+
+    try:
+        parque_eolico = ParqueEolico.objects.get(parque=parque)
+    except ParqueEolico.DoesNotExist:
+        parque_eolico = ParqueEolico(parque=parque)
+        parque_eolico.save()
 
     aerogeneradores = Aerogenerador.objects.filter(parque=parque).order_by('idx')
-    contenido=ContenidoContainer()
-    contenido.user=request.user
-    contenido.titulo=u'Parque Eólico'
-    contenido.subtitulo= parque.nombre
+    contenido = ContenidoContainer()
+    contenido.user = request.user
+    contenido.titulo = u'Parque Eólico'
+    contenido.subtitulo = parque.nombre
     contenido.menu = ['menu-fu', 'menu2-configuracionfu']
 
     form = None
 
     if request.method == 'POST':
-        if configuracion is None:
-            form = ConfiguracionFUForm(request.POST)
+        if configuracion_obj is None:
+            form = ConfiguracionFUForm(request.POST, parque=parque_eolico)
         else:
-            form = ConfiguracionFUForm(request.POST, instance=configuracion)
+            form = ConfiguracionFUForm(request.POST, instance=configuracion_obj)
         if form.is_valid():
-            if configuracion is None:
+            if configuracion_obj is None:
                 conf = form.save(commit=False)
                 conf.parque = parque
                 conf.save()
@@ -3409,15 +3420,16 @@ def configuracion(request,slug):
             messages.add_message(request, messages.ERROR, 'Configuración no se ha podido guardar.')
 
     if form is None:
-        if configuracion is None:
-            form = ConfiguracionFUForm()
+        if configuracion_obj is None:
+            form = ConfiguracionFUForm(parque=parque_eolico)
         else:
-            form = ConfiguracionFUForm(instance=configuracion)
+            form = ConfiguracionFUForm(instance=configuracion_obj)
     return TemplateResponse(request, 'fu/configuracion.html',
                             {'cont': contenido,
                              'parque': parque,
                              'aerogeneradores': aerogeneradores,
-                             'form': form
+                             'form': form,
+                             'configuracion_obj': configuracion_obj,
                              })
 
 
