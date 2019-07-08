@@ -3402,7 +3402,7 @@ def configuracion(request, slug):
 
     if request.method == 'POST':
         if configuracion_obj is None:
-            form = ConfiguracionFUForm(request.POST, parque=parque_eolico)
+            form = ConfiguracionFUForm(request.POST, parque=parque)
         else:
             form = ConfiguracionFUForm(request.POST, instance=configuracion_obj)
         if form.is_valid():
@@ -3421,7 +3421,7 @@ def configuracion(request, slug):
 
     if form is None:
         if configuracion_obj is None:
-            form = ConfiguracionFUForm(parque=parque_eolico)
+            form = ConfiguracionFUForm(parque=parque)
         else:
             form = ConfiguracionFUForm(instance=configuracion_obj)
     return TemplateResponse(request, 'fu/configuracion.html',
