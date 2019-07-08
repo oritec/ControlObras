@@ -2509,7 +2509,7 @@ def posicion_aerogeneradores(parque_eolico, fecha_calculo):
         pos[x]['top'] = 4.8
         pos[x]['left'] = 90.2
         pos[x]['zindex'] = 403
-    elif parque.codigo in ['ARCO-002.1', 'ARCO-002.2']:  # El Maiten, El Nogal
+    elif parque.codigo in ['ARCO-002.1', 'ARCO-002.2', 'ENAP-009']:  # El Maiten, El Nogal
         x = 'WTG01'
         pos[x]['width'] = 7.0
         pos[x]['top'] = 22.5
@@ -2552,7 +2552,7 @@ def posicion_aerogeneradores(parque_eolico, fecha_calculo):
                     filename = path + '/' + unicode(m.componente.nombre) + '.png'
                     if os.path.isfile(unicode(filename).encode('utf-8')):
                         found = True
-                        if parque.codigo in ['ARCO-002.1', 'ARCO-002.2']:
+                        if parque.codigo in ['ARCO-002.1', 'ARCO-002.2', 'ENAP-009']:
                             [nombre, width, top, left] = get_image_data_small(os.path.basename(filename),
                                                                               pos[ag.nombre]['top'],
                                                                               pos[ag.nombre]['left'])
@@ -2724,7 +2724,7 @@ def get_plano3d_img(parque):
         return ['/common/images/plano-espinal.jpg', '10.9%', '85%', '10.6%']
     elif parque.codigo == 'EES-001.2':
         return ['/common/images/plano_juchitan.jpg', '10.9%', '85%', '10.6%']
-    elif parque.codigo in ['ARCO-002.1', 'ARCO-002.2']:
+    elif parque.codigo in ['ARCO-002.1', 'ARCO-002.2', 'ENAP-009']:
         return ['/common/images/plano_maiten_nogal_v2.png', '10.9%', '85%', '10.6%']
     else:
         return ['/common/images/plano2.png', '0px', '85%', '0px']
