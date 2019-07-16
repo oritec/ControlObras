@@ -143,12 +143,15 @@ def plan_directory_path(instance, filename):
 
 @python_2_unicode_compatible
 class ConfiguracionFU(models.Model):
-    parque = models.ForeignKey('vista.ParqueSolar', on_delete=models.CASCADE)
+    parque = models.OneToOneField('vista.ParqueSolar', on_delete=models.CASCADE)
     fecha_inicio = models.DateField(blank=False, null=False)
     fecha_final = models.DateField(blank=False, null=False)
     plan = models.FileField(upload_to=plan_directory_path, max_length=500, null=True, blank=True)
     prev_plan = models.FileField(upload_to=plan_directory_path, max_length=500, null=True, blank=True)
     componente_montaje = models.ForeignKey(Componente, null=True, default=None, blank=True, on_delete=models.SET_NULL)
+    obras_civiles = models.BooleanField(default=True)
+    caminos = models.BooleanField(default=True)
+    obras_electricas = models.BooleanField(default=True)
 
     def __str__(self):
         return 'Configuracion'
