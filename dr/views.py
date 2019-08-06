@@ -408,6 +408,12 @@ def fix_image_rotation(foto, draft):
             DJANGO_TYPE = 'image/jpeg'
         elif foto.imagen.name.lower().endswith(".PNG"):
             DJANGO_TYPE = 'image/png'
+        elif foto.imagen.name.lower().endswith(".jfif"):
+            DJANGO_TYPE = 'image/jpeg'
+        elif foto.imagen.name.lower().endswith(".jfif"):
+            DJANGO_TYPE = 'image/jpeg'
+        elif foto.imagen.name.lower().endswith(".jpeg"):
+            DJANGO_TYPE = 'image/jpeg'
 
     if DJANGO_TYPE == 'image/jpeg':
         PIL_TYPE = 'jpeg'
