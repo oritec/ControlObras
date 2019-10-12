@@ -152,6 +152,7 @@ class ConfiguracionFU(models.Model):
     obras_civiles = models.BooleanField(default=True)
     caminos = models.BooleanField(default=True)
     obras_electricas = models.BooleanField(default=True)
+    no_vistas = models.IntegerField(default=0)
 
     def __str__(self):
         return 'Configuracion'
@@ -417,3 +418,61 @@ class RegistrosCamino(models.Model):
         return 'Registro Camino, parque=' + self.parque.nombre + \
                ',camino=' + self.camino.nombre + \
                ',fecha=' + self.fecha.strftime("%d-%m-%Y")
+
+
+@python_2_unicode_compatible
+class CaminoImagenVista(models.Model):
+    vista = models.IntegerField()
+    camino = models.ForeignKey(Camino, on_delete=models.CASCADE)
+    imagen = models.FileField(upload_to=caminos_directory_path, max_length=500, null=True, blank=True)
+    avance = models.IntegerField(default=0, choices=RegistrosObraElectrica.AVANCE_OPCIONES)
+
+    class Meta:
+        unique_together = ("vista", "camino", "avance")
+
+    def __str__(self):
+        return 'Imagen vista' + str(self.vista) + ' camino'
+
+
+@python_2_unicode_compatible
+class ObraElectricaImagenVista(models.Model):
+    vista = models.IntegerField()
+    parque_eolico = models.ForeignKey(ParqueEolico, on_delete=models.CASCADE)
+    componente = models.ForeignKey(ComponenteObraElectrica, on_delete=models.CASCADE)
+    imagen = models.FileField(upload_to=caminos_directory_path, max_length=500, null=True, blank=True)
+    avance = models.IntegerField(default=0, choices=RegistrosObraElectrica.AVANCE_OPCIONES)
+
+    class Meta:
+        unique_together = ("vista", "parque_eolico", "componente", "avance")
+
+    def __str__(self):
+        return 'Imagen vista ' + str(self.vista) + ' obra eléctrica'
+
+
+@python_2_unicode_compatible
+class ParqueImagenVista(models.Model):
+    vista = models.IntegerField()
+    parque_eolico = models.ForeignKey(ParqueEolico, on_delete=models.CASCADE)
+    imagen = models.FileField(upload_to=caminos_directory_path, max_length=500, null=True, blank=True)
+
+    class Meta:
+        unique_together = ("vista", "parque_eolico")
+
+    def __str__(self):
+        return 'Imagen vista ' + str(self.vista) + ' parque'
+
+
+@python_2_unicode_compatible
+class PosicionAerogenerador(models.Model):
+    aerogenerador = models.ForeignKey(Aerogenerador, on_delete=models.CASCADE)
+    vista = models.IntegerField(default=0)
+    top = models.IntegerField(default=0)
+    left = models.IntegerField(default=0)
+    por_top = models.FloatField(default=0)
+    por_left = models.FloatField(default=0)
+
+    class Meta:
+        unique_together = ("aerogenerador", "vista")
+
+    def __str__(self):
+        return 'Aerogenerador vista ' + str(self.vista) + ' parque'

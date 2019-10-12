@@ -246,7 +246,7 @@ def calcularProyeccionGrafico(parque_eolico, anho, semana):
 
     aux = Membership.objects.filter(parque_eolico=parque_eolico,
                                     estado=estado_montaje,
-                                    orden__range=(1,ag_montar))
+                                    orden__range=(1, ag_montar))
     componentes_montaje = []
     for c in aux:
         componentes_montaje.append(c.componente.id)
