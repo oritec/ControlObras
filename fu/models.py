@@ -470,6 +470,7 @@ class PosicionAerogenerador(models.Model):
     left = models.IntegerField(default=0)
     por_top = models.FloatField(default=0)
     por_left = models.FloatField(default=0)
+    ratio = models.FloatField(default=0)
 
     class Meta:
         unique_together = ("aerogenerador", "vista")
